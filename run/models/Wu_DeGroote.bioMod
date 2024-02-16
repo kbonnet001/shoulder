@@ -187,7 +187,7 @@ endsegment
 
 
 
-
+/*
 musclegroup thorax_to_humerus
 	originParent		thorax
 	insertionParent		humerus_right
@@ -256,7 +256,7 @@ endmusclegroup
             musclegroup 	thorax_to_humerus
             position 		0.00202133 -0.0188908 -0.0214651
 		endviapoint
-
+*/
 
 musclegroup scapula_to_humerus
 	originParent		scapula_right
@@ -264,14 +264,15 @@ musclegroup scapula_to_humerus
 endmusclegroup
 
     muscle	DELT2
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.0275294 -0.0032022 0.00142634
 		insertionPosition	0.00455911 -0.103949 0.00775516
-		optimalLength		0.1318
+		optimalLength		0.1 // 0.1818
 		maximalForce		1098.4
-		tendonSlackLength 	0.0467
+		tendonSlackLength 	0.0367
 		pennationAngle		0.261799387799
+		maxshorteningspeed  0.1
 	endmuscle
 
 		viapoint via1
@@ -286,7 +287,7 @@ endmusclegroup
 			musclegroup 	scapula_to_humerus
 			position 		-0.00350025 -0.0579479 0.0283611
 		endviapoint
-
+/*
 	muscle	DELT3
 		type 				idealizedActuator
 		musclegroup 		scapula_to_humerus
@@ -440,8 +441,9 @@ endmusclegroup
 		tendonSlackLength 	0.0615
 		pennationAngle		0.0
 	endmuscle
+*/
 
-
+/*
 musclegroup scapula_to_ulna
 	originParent		scapula_right
 	insertionParent		ulna_right
@@ -478,22 +480,22 @@ endmusclegroup
 			position 		-0.02743 -0.275757 -0.01208 // -0.01743 -0.26757 -0.01208
 		endviapoint
 
-        /*
-        wrapping TRI
-            // parent humerus_right
-            parent ulna_right
-            type halfcylinder
-            musclegroup scapula_to_ulna
-            muscle TRIlong
-            // RT -0.14015 -0.00628 -0.155 xyz 0.0028 -0.2919 -0.0119
-            RT 0 0 pi/2+pi/4 xyz 0 0 0
-            // radius 0.016
-            radius 0.018
-            length 0.04
-        endwrapping
-        */
+        
+        // wrapping TRI
+        //     // parent humerus_right
+        //     parent ulna_right
+        //     type halfcylinder
+        //     musclegroup scapula_to_ulna
+        //     muscle TRIlong
+        //     // RT -0.14015 -0.00628 -0.155 xyz 0.0028 -0.2919 -0.0119
+        //     RT 0 0 pi/2+pi/4 xyz 0 0 0
+        //     // radius 0.016
+        //     radius 0.018
+        //     length 0.04
+        // endwrapping
+*/        
 
-
+/*
 musclegroup clavicle_to_humerus
 	originParent		clavicle_right
 	insertionParent		humerus_right
@@ -535,8 +537,10 @@ endmusclegroup
 			  musclegroup 	clavicle_to_humerus
 			  position 		-0.00230674 0.0315051 0.130618
 		endviapoint
+*/
 
 
+/*
 musclegroup scapula_to_radius
 	originParent		scapula_right
 	insertionParent		radius_right
@@ -634,4 +638,4 @@ endmusclegroup
 			  musclegroup 	scapula_to_radius
 			  position 		0.02280 -0.17540 -0.00630
 		endviapoint
-	
+*/

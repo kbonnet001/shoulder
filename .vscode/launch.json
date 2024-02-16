@@ -5,10 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Main",
+            "name": "Kinematic",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/run/main.py",
+            "program": "${workspaceFolder}/run/kinematic_analysis.py",
+            "cwd": "${workspaceFolder}/run",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Muscle",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run/muscle_analysis.py",
             "cwd": "${workspaceFolder}/run",
             "console": "integratedTerminal"
         },

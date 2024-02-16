@@ -1,0 +1,641 @@
+version 4
+
+gravity 0 -9.8 0
+
+// The kinematics model originates from (https://simtk.org/projects/wu-shoulder), which is itself based on Holzbaur
+// It was symmetrized by extracting the angles from RT (xyz sequence), opposing XY and recreating the matrix
+// from it (xyz sequence) and by opposing the Z translations
+//
+// Important note: due to the direct translation of functional axes to anatomical axes, the axis names of the
+// degrees of freedom (XYZ) does not necessarily correspond to their actual anatomical description. Therefore, a
+// rotation about the functional X axis can mean a rotation about the anatomical Y axis. This is the case,
+// for instance, for the clavicle
+//
+// The muscle model is based on a mixture of Wu (all muscles but biceps and triceps) and Holzbaur (biceps and triceps).
+// The values were change by hand based on the required ranges of motion during a violin movement. When it is the case,
+// the original values are preserved in comment down below
+
+
+// The moment of inertia for clavicle and scapula are from Quental (2012) A multibody biomechanical model of the upper limb including the shoulder girdle
+
+segment thorax
+    // translations xyz
+    // rotations xyz
+    mass	20
+    com	 -0.03 -0.32 0
+    inertia
+        1.4745	0.000000	0.000000
+        0.000000	0.7555	0.000000
+        0.000000	0.000000	1.4314
+    meshfile Geometry/thorax.vtp
+endsegment
+
+segment spine
+	parent	thorax
+    meshfile Geometry/hat_spine.vtp
+endsegment
+
+segment clavicle_effector_right
+    parent thorax
+    // rotations xyz  // This correspond to a YXZ sequence
+    // rotations xy
+    ranges
+        -0.1 0.1
+        -0.15 0.3
+    RTinmatrix 1
+    RT
+        0.015299995323 -0.994472543667 -0.103812017405   0.006325
+        0.989298697571  0               0.14541602438    0.00693
+       -0.145099955643 -0.10499695182   0.983909164962   0.025465
+        0               0               0                1
+endsegment
+segment clavicle_right
+    parent clavicle_effector_right
+    RTinmatrix 1
+    RT
+        0.015299995323 0.989298697571 -0.145099955643   0
+       -0.994472543667 0              -0.10499695182    0
+       -0.103812017405 0.14541602438   0.983909164962   0
+        0              0               0                1
+    mass  0.12784
+    com -0.0127205 0.00849541 0.0659846
+    inertia
+            0.00122800 0 0
+            0 0.00109900 0
+            0 0 0.0003900
+    meshfile Geometry/clavicle.vtp
+endsegment
+
+segment scapula_effector_right
+    parent clavicle_right
+    // rotations xyz  // This correspond to a ZYX sequence
+    // rotations xz
+    ranges
+        -0.5  0.1
+        -0.05 0.5
+    RT -0.52 0.52 0 xyz -0.01433 0.02007 0.135535
+endsegment
+segment scapula_right
+    parent scapula_effector_right
+    RT 0.52 -0.52 0 xyz 0 0 0
+    mass 0.94898
+    com -0.072 -0.039 -0.065
+    inertia
+        0.01912900 0 0
+        0 0.03007200 0
+        0 0 0.0112420
+    meshfile Geometry/scapula.vtp
+endsegment
+
+
+segment humerus_right
+    parent scapula_right
+    RT 0 0 0 xyz -0.00955 -0.034 0.009
+	rotations xzy
+	ranges
+	    -pi/2 0.1
+        -pi/4 pi
+        -pi/2 pi/2
+    mass 2.16000
+    com 0 -0.164502 0
+    inertia
+        0.01922569 0 0
+        0 0.00392116 0
+        0 0 0.0204860
+    meshfile Geometry/humerus.vtp
+endsegment
+
+
+segment ulna_effector_right
+    parent humerus_right
+    RTinmatrix 1
+    RT
+        0.998779074059439     0                   0.0494000123579900   0.0061
+       -0.00181025108711977   0.999328355607296   0.0366000091559926  -0.2904
+       -0.0493668331166902   -0.0366447496814640  0.998108249694797   -0.0123
+        0                     0                   0                    1
+	// rotations z
+	ranges
+	    0.05 pi*3/4
+endsegment
+segment ulna_right
+    parent ulna_effector_right
+    RTinmatrix 1
+    RT
+        0.998779074059439  -0.00181025108711977 -0.0493668331166902   0
+        0                   0.999328355607296   -0.0366447496814640   0
+        0.0494000123579900  0.0366000091559926   0.998108249694797    0
+        0                   0                    0                    1
+    mass 0.94883
+    com 0 -0.120525 0
+    inertia
+        0.00527229 0 0
+        0 0.00081371 0
+        0 0 0.0052723
+    meshfile Geometry/ulna.vtp
+endsegment
+
+
+segment radius_effector_right
+    parent ulna_right
+    // rotations y
+	ranges
+	    -pi/2 pi/2
+    RTinmatrix 1
+    RT
+        0.999852739302321   -0.0171609938419917  0                  0.0004
+        0.0170376379745462   0.992665643781517   0.119685582039255 -0.011503
+       -0.00205392353635084 -0.119667957056942   0.992811845946615  0.019999
+        0                    0                   0                  1
+endsegment
+segment radius_right
+    parent radius_effector_right
+    RTinmatrix 1
+    RT
+        0.999852739302321   0.0170376379745462 -0.00205392353635084 0
+       -0.0171609938419917  0.992665643781517  -0.119667957056942   0
+        0                   0.119685582039255   0.992811845946615   0
+        0                   0                   0                   1
+    mass 0.58117
+    com 0 -0.120525 0
+    inertia
+        0.00322935 0 0
+        0 0.00049841 0
+        0 0 0.0032294
+    meshfile Geometry/radius.vtp
+endsegment
+
+
+segment hand_right
+    parent radius_right
+    RT 0 0 0 xyz 0.0171148952815322 -0.230100258785044 0.023770687891017
+    // rotations xz
+	ranges
+	    -1 0.6
+	    -pi/5 pi/12
+    mass 0.4575
+    com 0 -0.068095 0
+    inertia
+        0.000892 0 0
+        0 0.000547 0
+        0 0 0.00134
+endsegment
+
+
+
+
+
+
+
+/*
+musclegroup thorax_to_humerus
+	originParent		thorax
+	insertionParent		humerus_right
+endmusclegroup 	
+
+	muscle	PECM2
+		type 				idealizedActuator
+		musclegroup 		thorax_to_humerus
+		originPosition		0.0248658 -0.0475832 0.0174664
+		insertionPosition	0.016 -0.0354957 0.005
+		optimalLength		0.14
+		maximalForce		699.7
+		tendonSlackLength 	0.0955
+		pennationAngle		0.436332312999
+	endmuscle
+	
+		viapoint via1
+			parent 		thorax
+			muscle 		PECM2
+			musclegroup 	thorax_to_humerus
+			position 		0.0423172 -0.0434712 0.0808125
+		endviapoint
+
+
+	muscle	PECM3
+		type 				idealizedActuator
+		musclegroup 		thorax_to_humerus
+		originPosition		0.0626543 -0.147759 0.0220602
+		insertionPosition	0.016 -0.03 0.005
+		optimalLength		0.1813
+		maximalForce		446.7
+		tendonSlackLength 	0.0988
+		pennationAngle		0.436332312999
+	endmuscle
+	
+		viapoint via1
+			parent 		thorax
+			muscle 		PECM3
+            musclegroup 	thorax_to_humerus
+            position 		0.0432682 -0.093061 0.082833
+		endviapoint
+
+    muscle	LAT
+        // REMOVED WRAPPING
+		type 				idealizedActuator
+		musclegroup 		thorax_to_humerus
+		originPosition		-0.094702 -0.160998 0.000512144
+		insertionPosition	0.00991752 -0.0223337 -0.008822
+		optimalLength		0.2317
+		maximalForce		1129.7
+		tendonSlackLength 	0.077
+		pennationAngle		0.331612557879
+	endmuscle
+
+		viapoint via1
+		    // ADDED TO ACCOUNT FOR THE REMOVED WRAPPING OBJECT
+			parent 		thorax
+			muscle 		LAT
+            musclegroup 	thorax_to_humerus
+            position 		-0.1 -0.08 0.08
+		endviapoint
+
+		viapoint via2
+			parent 		humerus_right
+			muscle 		LAT
+            musclegroup 	thorax_to_humerus
+            position 		0.00202133 -0.0188908 -0.0214651
+		endviapoint
+*/
+
+musclegroup scapula_to_humerus
+	originParent		scapula_right
+	insertionParent		humerus_right
+endmusclegroup
+
+    muscle	DELT2
+		type 				thelen
+		musclegroup 		scapula_to_humerus
+		originPosition		-0.0275294 -0.0032022 0.00142634
+		insertionPosition	0.00455911 -0.103949 0.00775516
+		optimalLength		0.1 // 0.1818
+		maximalForce		1098.4
+		tendonSlackLength 	0.0367
+		pennationAngle		0.261799387799
+		maxshorteningspeed  0.1
+	endmuscle
+
+		viapoint via1
+			parent 		scapula_right
+			muscle 		DELT2
+			musclegroup 	scapula_to_humerus
+			position 		-0.0276421 -0.00483948 0.0183611
+		endviapoint
+		viapoint via2
+			parent 		humerus_right
+			muscle 		DELT2
+			musclegroup 	scapula_to_humerus
+			position 		-0.00350025 -0.0579479 0.0283611
+		endviapoint
+/*
+	muscle	DELT3
+		type 				idealizedActuator
+		musclegroup 		scapula_to_humerus
+		originPosition		-0.0590625 -0.00156871 -0.0384606
+		insertionPosition	-0.00455911 -0.103949 0.00775516
+		optimalLength		0.1228
+		maximalForce		944.7
+		tendonSlackLength 	0.0975
+		pennationAngle		0.314159265359
+	endmuscle
+
+		viapoint via1
+			parent 		scapula_right
+			muscle 		DELT3
+			musclegroup 	scapula_to_humerus
+			position 		-0.0721881 -0.0237201 0.00597728
+		endviapoint
+		viapoint via2
+			parent 		humerus_right
+			muscle 		DELT3
+			musclegroup 	scapula_to_humerus
+			position 		-0.0185845 -0.049702 0.00590064
+		endviapoint
+
+	muscle	INFSP
+	    // WRAPPING REMOVED
+		type 				idealizedActuator
+		musclegroup 		scapula_to_humerus
+		originPosition		-0.087985 -0.0545528 -0.0693532
+		insertionPosition	-0.00509757 0.00804087 0.0263967
+		optimalLength		0.1323
+		maximalForce		864.6
+		tendonSlackLength 	0.0337
+		pennationAngle		0.322885911619
+	endmuscle
+
+		viapoint via1
+			parent 		scapula_right
+			muscle 		INFSP
+			musclegroup 	scapula_to_humerus
+			position 		-0.0426639 -0.0484855 -0.0219049
+		endviapoint
+		viapoint via2
+		    // MANUALLY ADDED TO ACCOUNT FOR THE REMOVED WRAPPING
+			parent 		humerus_right
+			muscle 		INFSP
+			musclegroup 	scapula_to_humerus
+			position 		-0.02 0.01 0.0
+		endviapoint
+
+	muscle	SUPSP
+	    // WRAPPING REMOVED
+		type 				idealizedActuator
+		musclegroup 		scapula_to_humerus
+		originPosition		-0.0670398 -0.0115895 -0.0644974
+		insertionPosition	0.0142549 0.0168443 0.0209438
+		optimalLength		0.1165
+		maximalForce		410.7
+		tendonSlackLength 	0.0248
+		pennationAngle		0.12217304764
+	endmuscle
+
+		viapoint via1
+			parent 		scapula_right
+			muscle 		SUPSP
+			musclegroup 	scapula_to_humerus
+			position 		-0.0561797 -0.00133709 -0.0407038
+		endviapoint
+		viapoint via2
+			parent 		humerus_right
+			muscle 		SUPSP
+			musclegroup 	scapula_to_humerus
+			position 		0.0035658 0.0312313 0.0055175
+		endviapoint
+
+	muscle	SUBSC
+		type 				idealizedActuator
+		musclegroup 		scapula_to_humerus
+		originPosition		-0.072 -0.039 -0.065
+		insertionPosition	0.0199995 -0.00831173 -0.00174873
+		optimalLength		0.1632
+		maximalForce		944.3
+		tendonSlackLength 	0.0075
+		pennationAngle		0.349065850399
+	endmuscle
+
+		viapoint via1
+			parent 		    scapula_right
+			muscle 		    SUBSC
+			musclegroup 	scapula_to_humerus
+			position 		 -0.0391088 -0.032288 -0.0333714
+		endviapoint
+		viapoint via2
+			parent 		    humerus_right
+			muscle 		    SUBSC
+			musclegroup 	scapula_to_humerus
+			position 		 0.00743143 0.0103746 -0.0226855
+		endviapoint
+
+	muscle	TMIN
+		type 				idealizedActuator
+		musclegroup 		scapula_to_humerus
+		originPosition		-0.0820004 -0.0674811 -0.0409306
+		insertionPosition	0.00655633 -0.00365417 0.0216781
+		optimalLength		0.0453
+		maximalForce		605.4
+		tendonSlackLength 	0.1038
+		pennationAngle		0.418879020479
+	endmuscle
+
+		viapoint via1
+			parent 		    scapula_right
+			muscle 		    TMIN
+			musclegroup 	scapula_to_humerus
+			position 		 -0.0750189 -0.0526508 -0.0102678
+		endviapoint
+
+		viapoint via2
+			parent 		    humerus_right
+			muscle 		    TMIN
+			musclegroup 	scapula_to_humerus
+			position 		 -0.00847731 -0.0141768 0.0268849
+		endviapoint
+
+	muscle	TMAJ
+		type 				idealizedActuator
+		musclegroup 		scapula_to_humerus
+		originPosition		-0.104709 -0.107757 -0.0711555
+		insertionPosition	0.003699 -0.045 -0.00676304
+		optimalLength		0.1388
+		maximalForce		234.9
+		tendonSlackLength 	0.0537
+		pennationAngle		0.279252680319
+	endmuscle
+
+		viapoint via1
+			parent 		    scapula_right
+			muscle 		    TMAJ
+			musclegroup 	scapula_to_humerus
+			position 		 -0.0453519 -0.106216 -0.00247153
+		endviapoint
+
+	muscle	CORB
+	    // REMOVED WRAPPING
+		type 				idealizedActuator
+		musclegroup 		scapula_to_humerus
+		originPosition		0.0125 -0.04127 -0.02652
+		insertionPosition	0 -0.128 -0.0116594
+		optimalLength		0.0832
+		maximalForce		306.9
+		tendonSlackLength 	0.0615
+		pennationAngle		0.0
+	endmuscle
+*/
+
+/*
+musclegroup scapula_to_ulna
+	originParent		scapula_right
+	insertionParent		ulna_right
+endmusclegroup 
+
+	muscle	TRIlong
+	    // REMOVED WRAPPING
+		type 				idealizedActuator
+		musclegroup 		scapula_to_ulna
+		originPosition		-0.04565 -0.04073 -0.01377
+		insertionPosition	-0.03  0.01046 -0.00078 // -0.02190  0.01046 -0.00078
+		optimalLength		0.13400
+		maximalForce		798.520
+		tendonSlackLength 	0.14300
+		pennationAngle		0.2094
+	endmuscle
+
+		viapoint via1
+			parent 		humerus_right
+			muscle 		TRIlong
+			musclegroup 	scapula_to_ulna
+			position 		-0.02714 -0.11441 -0.00664
+		endviapoint
+		viapoint via2
+			parent 		humerus_right
+			muscle 		TRIlong
+			musclegroup 	scapula_to_ulna
+			position 		-0.03184 -0.22637 -0.01217
+		endviapoint
+		viapoint via3
+			parent 		humerus_right
+			muscle 		TRIlong
+			musclegroup 	scapula_to_ulna
+			position 		-0.02743 -0.275757 -0.01208 // -0.01743 -0.26757 -0.01208
+		endviapoint
+
+        
+        // wrapping TRI
+        //     // parent humerus_right
+        //     parent ulna_right
+        //     type halfcylinder
+        //     musclegroup scapula_to_ulna
+        //     muscle TRIlong
+        //     // RT -0.14015 -0.00628 -0.155 xyz 0.0028 -0.2919 -0.0119
+        //     RT 0 0 pi/2+pi/4 xyz 0 0 0
+        //     // radius 0.016
+        //     radius 0.018
+        //     length 0.04
+        // endwrapping
+*/        
+
+/*
+musclegroup clavicle_to_humerus
+	originParent		clavicle_right
+	insertionParent		humerus_right
+endmusclegroup
+
+	muscle	PECM1
+		type 				idealizedActuator
+		musclegroup 		clavicle_to_humerus
+		originPosition		0.00110542 0.00608334 0.0513213
+		insertionPosition	0.016 -0.0404957 0.005
+		optimalLength		0.1025
+		maximalForce		983.4
+		tendonSlackLength 	0.048
+		pennationAngle		0.296705972839
+	endmuscle
+
+		viapoint via1
+			  parent 		clavicle_right
+			  muscle 		PECM1
+			  musclegroup 	clavicle_to_humerus
+			  position 		-0.000485828 0.00557039 0.0591605
+		endviapoint
+
+
+	muscle	DELT1
+		type 				idealizedActuator
+		musclegroup 		clavicle_to_humerus
+		originPosition		-0.0241685 0.0192842 0.099015
+		insertionPosition	0.00455911 -0.103949 0.00775516
+		optimalLength		0.1752
+		maximalForce		556.8
+		tendonSlackLength 	0.0313
+		pennationAngle		0.383972435439
+	endmuscle
+
+		viapoint via1
+			  parent 		clavicle_right
+			  muscle 		DELT1
+			  musclegroup 	clavicle_to_humerus
+			  position 		-0.00230674 0.0315051 0.130618
+		endviapoint
+*/
+
+
+/*
+musclegroup scapula_to_radius
+	originParent		scapula_right
+	insertionParent		radius_right
+endmusclegroup 	
+
+	muscle	BIClong
+	    // TWO VIA POINTS WERE REMOVED AND THE WRAPPING
+		type 				idealizedActuator
+		musclegroup 		scapula_to_radius
+		originPosition		-0.03123 -0.02353 -0.01305
+		insertionPosition	-0.00200 -0.03750 -0.00200
+		optimalLength		0.11570
+		maximalForce		624.300
+		tendonSlackLength 	0.27230
+		pennationAngle		0.000
+	endmuscle
+
+		viapoint via1
+			  parent 		scapula_right
+			  muscle 		BIClong
+			  musclegroup 	scapula_to_radius
+			  position 		-0.02094 -0.01309 -0.00461
+		endviapoint
+		viapoint via2
+			  parent 		humerus_right
+			  muscle 		BIClong
+			  musclegroup 	scapula_to_radius
+			  position 		0.02131  0.01793  0.01028
+		endviapoint
+		viapoint via3
+			  parent 		humerus_right
+			  muscle 		BIClong
+			  musclegroup 	scapula_to_radius
+			  position 		0.02378 -0.00511  0.01201
+		endviapoint
+		viapoint via4
+			  parent 		humerus_right
+			  muscle 		BIClong
+			  musclegroup 	scapula_to_radius
+			  position 		0.01345 -0.02827  0.00136
+		endviapoint
+		viapoint via5
+			  parent 		humerus_right
+			  muscle 		BIClong
+			  musclegroup 	scapula_to_radius
+			  position 		0.01068 -0.07736 -0.00165
+		endviapoint
+		viapoint via6
+			  parent 		humerus_right
+			  muscle 		BIClong
+			  musclegroup 	scapula_to_radius
+			  position 		0.01703 -0.12125  0.00024
+		endviapoint
+		viapoint via7
+			  parent 		humerus_right
+			  muscle 		BIClong
+			  musclegroup 	scapula_to_radius
+			  position 		0.02280 -0.17540 -0.00630
+		endviapoint
+
+
+	muscle	BICshort
+	    // TWO VIA POINTS WERE REMOVED AND THE WRAPPING
+		type 				idealizedActuator
+		musclegroup 		scapula_to_radius
+		originPosition		0.01268 -0.03931 -0.02625
+		insertionPosition	0.00200 -0.03750 -0.00200
+		optimalLength		0.13210
+		maximalForce		435.560
+		tendonSlackLength 	0.19230
+		pennationAngle		0.000
+	endmuscle
+
+		viapoint via1
+			  parent 		scapula_right
+			  muscle 		BICshort
+			  musclegroup 	scapula_to_radius
+			  position 		0.00093 -0.06704 -0.01593
+		endviapoint
+		viapoint via2
+			  parent 		humerus_right
+			  muscle 		BICshort
+			  musclegroup 	scapula_to_radius
+			  position 		0.01117 -0.07576 -0.01101
+		endviapoint
+		viapoint via3
+			  parent 		humerus_right
+			  muscle 		BICshort
+			  musclegroup 	scapula_to_radius
+			  position 		0.01703 -0.12125 -0.01079
+		endviapoint
+		viapoint via4
+			  parent 		humerus_right
+			  muscle 		BICshort
+			  musclegroup 	scapula_to_radius
+			  position 		0.02280 -0.17540 -0.00630
+		endviapoint
+*/

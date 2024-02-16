@@ -15,12 +15,13 @@ class Controls(Enum):
 def main():
     # Setup
     tf = 50  # seconds
-    control = Controls.TORQUE
-    show_animate = True
+    control = Controls.EMG
+    show_animate = False
+    show_graphs = True
     graphs = (plot_movement,)  # plot_com
 
     # Aliases
-    model = Model("models/Wu.bioMod")
+    model = Model("models/Wu_Thelen.bioMod")
     n_q = model.n_q
     n_muscles = model.n_muscles
 
@@ -54,11 +55,12 @@ def main():
 
     # Visualize
     if show_animate:
-        animate(q_integrated, model)
+        animate(model, q_integrated)
 
-    for graph in graphs:
-        graph(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
-    show()
+    if show_graphs:
+        for graph in graphs:
+            graph(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
+        show()
 
 
 if __name__ == "__main__":

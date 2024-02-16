@@ -1,0 +1,3 @@
+[submodule "external/bioviz"]
+	path = external/bioviz
+	url = https://github.com/pyomeca/bioviz
