@@ -7,159 +7,200 @@ from matplotlib import pyplot as plt
 from .model import Model
 
 
-def animate(model: Model, q: np.ndarray):
-    viz = bioviz.Viz(
-        loaded_model=model.model,
-        show_local_ref_frame=False,
-        show_segments_center_of_mass=False,
-        show_global_center_of_mass=False,
-        show_gravity_vector=False,
-    )
-    viz.load_movement(q)
-    viz.set_camera_roll(np.pi / 2)
-    viz.exec()
+class Animater:
+    def __init__(self, model: Model, q: np.ndarray):
+        self._viz = bioviz.Viz(
+            loaded_model=model.model,
+            show_local_ref_frame=False,
+            show_segments_center_of_mass=False,
+            show_global_center_of_mass=False,
+            show_gravity_vector=False,
+        )
+        self._viz.load_movement(q)
+        self._viz.set_camera_roll(np.pi / 2)
+
+    def show(self):
+        self._viz.exec()
 
 
-def plot_muscle_force_coefficients(
-    title: str,
-    x: np.ndarray,
-    x_label: str,
-    y_left: list[np.ndarray],
-    y_left_label: list[str],
-    y_left_colors: list[str],
-    y_right: np.ndarray = None,
-    y_right_label: str = None,
-    y_right_color: str = None,
-):
-    plt.figure(title)
-    n_points = x.shape[0]
+class Plotter:
+    class XAxis(Enum):
+        TIME = auto()
+        MUSCLE_PARAMETERS = auto()
+        KINEMATICS = auto()
 
-    for i in range(n_points):
-        for j in range(len(y_left)):
-            label = None
-            if i == n_points - 1:
-                label = y_left_label[j]
-            plt.plot(x[i], y_left[j][:, i], f"{y_left_colors[j]}o", alpha=i / n_points, label=label)
-    plt.legend(loc="upper left")
-    plt.xlabel(x_label)
-    plt.ylabel("Force (normalized)")
+    def __init__(
+        self,
+        model: Model,
+        t: np.ndarray = None,
+        q: np.ndarray = None,
+        qdot: np.ndarray = None,
+        tau: np.ndarray = None,
+        emg: np.ndarray = None,
+        muscle_index: int | range | slice | None = None,
+        dof_index: int | range | slice | None = None,
+    ):
 
-    if y_right is not None:
-        # On the right axis, plot the muscle length
-        plt.twinx()
-        for i in range(n_points):
-            label = None
-            if i == n_points - 1:
-                label = y_right_label
-            plt.plot(x[i], y_right[i], f"{y_right_color}o", alpha=i / n_points, label=label)
-        plt.legend(loc="upper right")
-        plt.ylabel(y_right_label)
+        # Store the data
+        self._model = model
+        self._t = t
+        self._q = q
+        self._qdot = qdot
+        self._tau = tau
+        self._emg = emg
+        self._muscle_index = muscle_index
+        self._dof_index = dof_index
 
+    def plot_muscle_force_coefficients_surface(self, axis_id: int):
+        if self._q is None or self._qdot is None or self._emg is None:
+            raise ValueError("q, qdot and emg must be provided to plot the muscle force coefficients surface")
 
-def plot_muscle_force_coefficients_surface(
-    models: Model | list[Model],
-    q: np.ndarray,
-    qdot: np.ndarray,
-    emg: np.ndarray,
-    muscle_index: int | range | slice | None,
-    dof_index: int | range | slice | None,
-):
-    if not isinstance(models, (list, tuple)):
-        models = [models]
+        # Draw the surface of the force-length-velocity relationship for each model
+        fig = plt.figure("Force-Length-Velocity relationship")
+        length, velocity = self._model.muscles_kinematics(self._q, self._qdot)
 
-    # Draw the surface of the force-length-velocity relationship for each model
-    fig = plt.figure("Force-Length-Velocity relationship")
-    for model in models:
-        length, velocity = model.muscles_kinematics(q, qdot)
-
-        x, y = np.meshgrid(q[dof_index, :], qdot[dof_index, :])
+        x, y = np.meshgrid(self._q[self._dof_index, :], self._qdot[self._dof_index, :])
         z = np.ndarray((velocity.shape[1], length.shape[1]))
 
         for i in range(length.shape[1]):
-            q_rep = np.repeat(q[:, i : i + 1], qdot.shape[1], axis=1)
-            flce, fvce = model.muscle_force_coefficients(emg, q_rep, qdot, muscle_index)
+            q_rep = np.repeat(self._q[:, i : i + 1], self._qdot.shape[1], axis=1)
+            flce, fvce = self._model.muscle_force_coefficients(self._emg, q_rep, self._qdot, self._muscle_index)
             z[:, i] = flce * fvce
 
-        axis_id = 100 + len(models) * 10 + models.index(model) + 1
         ax = fig.add_subplot(axis_id, projection="3d")
         ax.plot_surface(x, y, z, cmap="viridis")
         ax.set_xlabel("Length")
         ax.set_ylabel("Velocity")
         ax.set_zlabel("Force")
-        ax.set_title("Thelen")
+        ax.set_title(self._model.name)
 
+    def plot_muscle_force_surface(self, axis_id: int):
+        if self._q is None or self._qdot is None or self._emg is None:
+            raise ValueError("q, qdot and emg must be provided to plot the muscle force surface")
 
-def plot_movement(
-    t: np.ndarray,
-    model: Model,
-    q: np.ndarray = None,
-    qdot: np.ndarray = None,
-    tau: np.ndarray = None,
-    emg: np.ndarray = None,
-):
-    plt.figure()
-    n_subplots = sum(x is not None for x in [q, qdot, tau, emg])
-    subplot_index = 1
+        # Draw the surface of the force-length-velocity relationship for each model
+        fig = plt.figure("Force-Length-Velocity relationship")
+        length, velocity = self._model.muscles_kinematics(self._q, self._qdot)
 
-    if q is not None:
-        plt.subplot(n_subplots, 1, subplot_index)
-        plt.plot(t, q.T)
-        plt.title("Position")
-        plt.xlabel("Time")
-        plt.ylabel("Q")
-        subplot_index += 1
+        x, y = np.meshgrid(self._q[self._dof_index, :], self._qdot[self._dof_index, :])
+        z = np.ndarray((velocity.shape[1], length.shape[1]))
 
-    if qdot is not None:
-        plt.subplot(n_subplots, 1, subplot_index)
-        plt.plot(t, qdot.T)
-        plt.title("Velocity")
-        plt.xlabel("Time")
-        plt.ylabel("Qdot")
-        subplot_index += 1
+        for i in range(length.shape[1]):
+            q_rep = np.repeat(self._q[:, i : i + 1], self._qdot.shape[1], axis=1)
+            flce, fvce = self._model.muscle_force_coefficients(self._emg, q_rep, self._qdot, self._muscle_index)
+            z[:, i] = flce * fvce
 
-    if tau is not None:
-        plt.subplot(n_subplots, 1, subplot_index)
-        plt.step(t[[0, -1]], tau[np.newaxis, :][[0, 0], :])
-        plt.title("Torque")
-        plt.xlabel("Time")
-        plt.ylabel("Tau")
-        subplot_index += 1
+        ax = fig.add_subplot(axis_id, projection="3d")
+        ax.plot_surface(x, y, z, cmap="viridis")
+        ax.set_xlabel("Length")
+        ax.set_ylabel("Velocity")
+        ax.set_zlabel("Force")
+        ax.set_title(self._model.name)
 
-    if emg is not None:
-        plt.subplot(n_subplots, 1, subplot_index)
-        plt.step(t[[0, -1]], emg[np.newaxis, :][[0, 0], :])
-        plt.title("EMG")
-        plt.xlabel("Time")
-        plt.ylabel("EMG")
+    def plot_movement(self):
+        if self._t is None:
+            raise ValueError("t must be provided to plot the movement")
 
+        plt.figure()
+        n_subplots = sum(x is not None for x in [self._q, self._qdot, self._tau, self._emg])
+        subplot_index = 1
 
-def plot_com(
-    t: np.ndarray,
-    model: Model,
-    q: np.ndarray = None,
-    qdot: np.ndarray = None,
-    tau: np.ndarray = None,
-    emg: np.ndarray = None,
-):
-    plt.figure()
-    n_subplots = sum(x is not None for x in [q, qdot])
-    subplot_index = 1
+        if self._q is not None:
+            plt.subplot(n_subplots, 1, subplot_index)
+            plt.plot(self._t, self._q.T)
+            plt.title("Position")
+            plt.xlabel("Time")
+            plt.ylabel("Q")
+            subplot_index += 1
 
-    if q is not None:
-        plt.subplot(n_subplots, 1, subplot_index)
-        plt.plot(t, model.center_of_mass(q))
-        plt.title("Center of mass")
-        plt.xlabel("Time")
-        plt.ylabel("CoM")
-        subplot_index += 1
+        if self._qdot is not None:
+            plt.subplot(n_subplots, 1, subplot_index)
+            plt.plot(self._t, self._qdot.T)
+            plt.title("Velocity")
+            plt.xlabel("Time")
+            plt.ylabel("Qdot")
+            subplot_index += 1
 
-    if qdot is not None:
-        plt.subplot(2, 1, 2)
-        plt.plot(t, model.center_of_mass_velocity(q, qdot))
-        plt.title("Center of mass velocity")
-        plt.xlabel("Time")
-        plt.ylabel("CoMdot")
+        if self._tau is not None:
+            plt.subplot(n_subplots, 1, subplot_index)
+            plt.step(self._t[[0, -1]], self._tau[np.newaxis, :][[0, 0], :])
+            plt.title("Torque")
+            plt.xlabel("Time")
+            plt.ylabel("Tau")
+            subplot_index += 1
 
+        if self._emg is not None:
+            plt.subplot(n_subplots, 1, subplot_index)
+            plt.step(self._t[[0, -1]], self._emg[np.newaxis, :][[0, 0], :])
+            plt.title("EMG")
+            plt.xlabel("Time")
+            plt.ylabel("EMG")
 
-def show():
-    plt.show()
+    @staticmethod
+    def show():
+        plt.show()
+
+    def plot_muscle_force_coefficients(self, x_axes: list["Plotter.XAxes"], color: str, plot_right_axis: bool = True):
+        title = []
+        title.append("Force-Length relationship (Time)")
+        title.append("Force-Velocity relationship (Time)")
+
+        flce, fvce = self._model.muscle_force_coefficients(
+            self._emg, self._q, self._qdot, muscle_index=self._muscle_index
+        )
+        y_left = []
+        y_left.append(flce)
+        y_left.append(fvce)
+
+        length, velocity = self._model.muscles_kinematics(self._q, self._qdot, self._muscle_index)
+        y_right = []
+        y_right.append(length)
+        y_right.append(velocity)
+
+        y_right_label = []
+        y_right_label.append("Muscle length")
+        y_right_label.append("Muscle velocity")
+        y_right_color = "g"
+        for x_axis in x_axes:
+            x = []
+            x_label = []
+            if x_axis == Plotter.XAxis.TIME:
+                x.append(self._t)
+                x_label.append("Time (s)")
+
+                x.append(self._t)
+                x_label.append("Time (s)")
+
+            elif x_axis == Plotter.XAxis.MUSCLE_PARAMETERS:
+                x.append(length[0, :])
+                x_label.append("Muscle length")
+
+                x.append(velocity[0, :])
+                x_label.append("Muscle velocity")
+
+            elif x_axis == Plotter.XAxis.KINEMATICS:
+                x.append(self._q[self._dof_index, :])
+                x_label.append("q")
+
+                x.append(self._qdot[self._dof_index, :])
+                x_label.append("qdot")
+
+            else:
+                raise NotImplementedError(f"X axis {x_axis} not implemented")
+
+            for j in range(len(y_left)):
+                plt.figure(title[j])
+                for i in range(len(x[j])):
+                    n_points = x[j].shape[0]
+                    plt.plot(x[j], y_left[j].T, f"{color}o", alpha=i / n_points, label=self._model.name)
+
+                plt.legend(loc="upper left")
+                plt.xlabel(x_label[j])
+                plt.ylabel("Force (normalized)")
+
+                if plot_right_axis:
+                    # On the right axis, plot the muscle length
+                    plt.twinx()
+                    plt.plot(x[j], y_right[j].T, f"{y_right_color}o", alpha=i / n_points, label=y_right_label[j])
+                    plt.legend(loc="upper right")
+                    plt.ylabel(y_right_label[j])

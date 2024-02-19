@@ -10,6 +10,10 @@ class Model:
         self.model = biorbd.Model(model_path)
 
     @property
+    def name(self):
+        return self.model.path().absolutePath().to_string().split("/")[-1].split(".bioMod")[0]
+
+    @property
     def n_q(self):
         return self.model.nbQ()
 

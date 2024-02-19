@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 from scipy import integrate
 
-from shoulder import Model, animate, plot_movement, plot_com, show
+from shoulder import Model, Plotter, Animater
 
 
 class Controls(Enum):
@@ -18,7 +18,6 @@ def main():
     control = Controls.EMG
     show_animate = False
     show_graphs = True
-    graphs = (plot_movement,)  # plot_com
 
     # Aliases
     model = Model("models/Wu_Thelen.bioMod")
@@ -55,12 +54,10 @@ def main():
 
     # Visualize
     if show_animate:
-        animate(model, q_integrated)
+        Animater(model, q_integrated).show()
 
     if show_graphs:
-        for graph in graphs:
-            graph(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
-        show()
+        Plotter(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg).show()
 
 
 if __name__ == "__main__":
