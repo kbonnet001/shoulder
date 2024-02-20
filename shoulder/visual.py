@@ -24,10 +24,16 @@ class Animater:
 
 
 class Plotter:
-    class XAxis(Enum):
+    class MuscleCoefficientPlots(Enum):
+        NONE = auto()
         TIME = auto()
         MUSCLE_PARAMETERS = auto()
         KINEMATICS = auto()
+
+    class MuscleSurfacePlots(Enum):
+        NONE = auto()
+        COEFFICIENTS = auto()
+        FORCE = auto()
 
     def __init__(
         self,
@@ -50,6 +56,20 @@ class Plotter:
         self._emg = emg
         self._muscle_index = muscle_index
         self._dof_index = dof_index
+
+    def plot_muscle_surface(self, plots: list["Plotter.MuscleSurfacePlots"], axis_id: int):
+        if isinstance(plots, Plotter.MuscleSurfacePlots):
+            plots = [plots]
+
+        for plot in plots:
+            if plot == Plotter.MuscleSurfacePlots.NONE:
+                continue
+            elif plot == Plotter.MuscleSurfacePlots.COEFFICIENTS:
+                self.plot_muscle_force_coefficients_surface(axis_id)
+            elif plot == Plotter.MuscleSurfacePlots.FORCE:
+                self.plot_muscle_force_surface(axis_id)
+            else:
+                raise NotImplementedError(f"Plot {plot} not implemented")
 
     def plot_muscle_force_coefficients_surface(self, axis_id: int):
         if self._q is None or self._qdot is None or self._emg is None:
@@ -143,13 +163,13 @@ class Plotter:
 
     def plot_muscle_force_coefficients(
         self,
-        x_axes: list["Plotter.XAxes"],
+        plots: list["Plotter.MuscleCoefficientPlots"],
         color: str,
         plot_right_axis: bool = True,
         fig: dict[str, list] = None,
     ):
-        if isinstance(x_axes, Plotter.XAxis):
-            x_axes = [x_axes]
+        if isinstance(plots, Plotter.MuscleCoefficientPlots):
+            plots = [plots]
 
         flpe, flce, fvce = self._model.muscle_force_coefficients(
             self._emg, self._q, self._qdot, muscle_index=self._muscle_index
@@ -172,11 +192,13 @@ class Plotter:
         y_right_label.append("Muscle length")
         y_right_label.append("Muscle velocity")
         y_right_color = "g"
-        for x_axis in x_axes:
+        for x_axis in plots:
             title = []
             x = []
             x_label = []
-            if x_axis == Plotter.XAxis.TIME:
+            if x_axis == Plotter.MuscleCoefficientPlots.NONE:
+                continue
+            if x_axis == Plotter.MuscleCoefficientPlots.TIME:
                 title.append("Passive Force-Length relationship (Time)")
                 title.append("Active Force-Length relationship (Time)")
                 title.append("Active Force-Velocity relationship (Time)")
@@ -190,7 +212,7 @@ class Plotter:
                 x.append(self._t)
                 x_label.append("Time (s)")
 
-            elif x_axis == Plotter.XAxis.MUSCLE_PARAMETERS:
+            elif x_axis == Plotter.MuscleCoefficientPlots.MUSCLE_PARAMETERS:
                 title.append("Passive Force-Length relationship (Muscle parameters)")
                 title.append("Active Force-Length relationship (Muscle parameters)")
                 title.append("Active Force-Velocity relationship (Muscle parameters)")
@@ -204,7 +226,7 @@ class Plotter:
                 x.append(velocity[0, :])
                 x_label.append("Muscle velocity")
 
-            elif x_axis == Plotter.XAxis.KINEMATICS:
+            elif x_axis == Plotter.MuscleCoefficientPlots.KINEMATICS:
                 title.append("Passive Force-Length relationship (Kinematics)")
                 title.append("Active Force-Length relationship (Kinematics)")
                 title.append("Active Force-Velocity relationship (Kinematics)")

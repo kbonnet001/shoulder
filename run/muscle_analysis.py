@@ -25,6 +25,8 @@ def main():
     muscle_index = 0
     show_animate = False
     show_graphs = True
+    coefficients = shoulder.Plotter.MuscleCoefficientPlots.NONE
+    surface = shoulder.Plotter.MuscleSurfacePlots.FORCE
 
     # Create a time vector
     n_points = tf * frequency
@@ -62,13 +64,8 @@ def main():
             plotter = shoulder.Plotter(
                 model=model, t=t, q=q, qdot=qdot, emg=emg, muscle_index=muscle_index, dof_index=dof_index
             )
-
-            fig = plotter.plot_muscle_force_coefficients(
-                x_axes=shoulder.Plotter.XAxis, color=model_colors[i_model], fig=fig
-            )
-
-            plotter.plot_muscle_force_coefficients_surface(axis_id=100 + len(models) * 10 + i_model + 1)
-            plotter.plot_muscle_force_surface(axis_id=100 + len(models) * 10 + i_model + 1)
+            fig = plotter.plot_muscle_force_coefficients(plots=coefficients, color=model_colors[i_model], fig=fig)
+            plotter.plot_muscle_surface(plots=surface, axis_id=100 + len(models) * 10 + i_model + 1)
 
         plotter.show()
 
