@@ -32,7 +32,6 @@ def main():
 
     # Evaluate from the model
     models = [shoulder.Model("models/Wu_Thelen.bioMod"), shoulder.Model("models/Wu_DeGroote.bioMod")]
-    model_names = ["Thelen", "DeGroote"]
     model_colors = ["b", "r"]
     model = models[0]  # Alias for the computation which are not muscle models specific
     q = np.zeros((model.n_q, n_points))
@@ -51,14 +50,6 @@ def main():
     length = length[muscle_index, :]
     velocity = velocity[muscle_index, :]
     emg = np.ones((model.n_muscles, n_points))
-
-    # Compute muscle force coefficients
-    flce = []
-    fvce = []
-    for model in models:
-        flce_model, fvce_model = model.muscle_force_coefficients(emg, q, qdot, muscle_index=muscle_index)
-        flce.append(flce_model)
-        fvce.append(fvce_model)
 
     # Animate
     if show_animate:

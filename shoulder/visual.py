@@ -64,14 +64,14 @@ class Plotter:
 
         for i in range(length.shape[1]):
             q_rep = np.repeat(self._q[:, i : i + 1], self._qdot.shape[1], axis=1)
-            flce, fvce = self._model.muscle_force_coefficients(self._emg, q_rep, self._qdot, self._muscle_index)
+            _, flce, fvce = self._model.muscle_force_coefficients(self._emg, q_rep, self._qdot, self._muscle_index)
             z[:, i] = flce * fvce
 
         ax = fig.add_subplot(axis_id, projection="3d")
         ax.plot_surface(x, y, z, cmap="viridis")
-        ax.set_xlabel("Length (m)")
-        ax.set_ylabel("Velocity (m/s)")
-        ax.set_zlabel("Force (%)")
+        ax.set_xlabel("q")
+        ax.set_ylabel("qdot")
+        ax.set_zlabel("Force (normalized)")
         ax.set_zlim(0, ax.get_zlim()[1])
         ax.set_title(self._model.name)
 
@@ -151,21 +151,24 @@ class Plotter:
         if isinstance(x_axes, Plotter.XAxis):
             x_axes = [x_axes]
 
-        flce, fvce = self._model.muscle_force_coefficients(
+        flpe, flce, fvce = self._model.muscle_force_coefficients(
             self._emg, self._q, self._qdot, muscle_index=self._muscle_index
         )
         y_left = []
+        y_left.append(flpe)
         y_left.append(flce)
         y_left.append(fvce)
 
         length, velocity = self._model.muscles_kinematics(self._q, self._qdot, self._muscle_index)
         y_right = []
         y_right.append(length)
+        y_right.append(length)
         y_right.append(velocity)
 
         if fig is None:
             fig = {}
         y_right_label = []
+        y_right_label.append("Muscle length")
         y_right_label.append("Muscle length")
         y_right_label.append("Muscle velocity")
         y_right_color = "g"
@@ -174,8 +177,12 @@ class Plotter:
             x = []
             x_label = []
             if x_axis == Plotter.XAxis.TIME:
-                title.append("Force-Length relationship (Time)")
-                title.append("Force-Velocity relationship (Time)")
+                title.append("Passive Force-Length relationship (Time)")
+                title.append("Active Force-Length relationship (Time)")
+                title.append("Active Force-Velocity relationship (Time)")
+
+                x.append(self._t)
+                x_label.append("Time (s)")
 
                 x.append(self._t)
                 x_label.append("Time (s)")
@@ -184,8 +191,12 @@ class Plotter:
                 x_label.append("Time (s)")
 
             elif x_axis == Plotter.XAxis.MUSCLE_PARAMETERS:
-                title.append("Force-Length relationship (Muscle)")
-                title.append("Force-Velocity relationship (Muscle)")
+                title.append("Passive Force-Length relationship (Muscle parameters)")
+                title.append("Active Force-Length relationship (Muscle parameters)")
+                title.append("Active Force-Velocity relationship (Muscle parameters)")
+
+                x.append(length[0, :])
+                x_label.append("Muscle length")
 
                 x.append(length[0, :])
                 x_label.append("Muscle length")
@@ -194,8 +205,12 @@ class Plotter:
                 x_label.append("Muscle velocity")
 
             elif x_axis == Plotter.XAxis.KINEMATICS:
-                title.append("Force-Length relationship (Kinematics)")
-                title.append("Force-Velocity relationship (Kinematics)")
+                title.append("Passive Force-Length relationship (Kinematics)")
+                title.append("Active Force-Length relationship (Kinematics)")
+                title.append("Active Force-Velocity relationship (Kinematics)")
+
+                x.append(self._q[self._dof_index, :])
+                x_label.append("q")
 
                 x.append(self._q[self._dof_index, :])
                 x_label.append("q")
@@ -226,12 +241,15 @@ class Plotter:
                 plt.xlabel(x_label[j])
                 plt.ylabel("Force (normalized)")
 
+            for j in range(len(y_right)):
                 if plot_right_axis:
                     # On the right axis, plot the muscle length
-                    if len(fig[title[j]]) < 3:
-                        fig[title[j]].append(plt.twinx())
+                    fig_tp = fig[title[j]]
+                    plt.figure(fig_tp[0])
+                    if len(fig_tp) < 3:
+                        fig_tp.append(plt.twinx())
                     else:
-                        plt.axes(fig[title[j]][2])  # index 0 is fig
+                        plt.axes(fig_tp[2])  # index 0 is fig
 
                     for i in range(len(x[j])):
                         n_points = x[j].shape[0]

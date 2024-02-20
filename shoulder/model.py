@@ -63,6 +63,7 @@ class Model:
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
+        out_flpe = np.ndarray((n_muscles, q.shape[1]))
         out_flce = np.ndarray((n_muscles, q.shape[1]))
         out_fvce = np.ndarray((n_muscles, q.shape[1]))
         for i in range(q.shape[1]):
@@ -74,14 +75,15 @@ class Model:
             for j in range(muscle_index.start, muscle_index.stop):
                 mus = _upcast_muscle(self.model.muscle(j))
                 activation = biorbd.State(emg[j, i], emg[j, i])
+                out_flpe[j, i] = mus.FlPE()
                 out_flce[j, i] = mus.FlCE(activation)
                 if qdot is not None:
                     out_fvce[j, i] = mus.FvCE()
 
         if qdot is None:
-            return out_flce
+            return out_flpe, out_flce
         else:
-            return out_flce, out_fvce
+            return out_flpe, out_flce, out_fvce
 
     def muscle_force(
         self, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, muscle_index: int | range | slice | None = None
