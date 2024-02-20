@@ -72,6 +72,7 @@ class Plotter:
         ax.set_xlabel("Length (m)")
         ax.set_ylabel("Velocity (m/s)")
         ax.set_zlabel("Force (%)")
+        ax.set_zlim(0, ax.get_zlim()[1])
         ax.set_title(self._model.name)
 
     def plot_muscle_force_surface(self, axis_id: int):
@@ -94,6 +95,7 @@ class Plotter:
         ax.set_xlabel("Length (m)")
         ax.set_ylabel("Velocity (m/s)")
         ax.set_zlabel("Force (N)")
+        ax.set_zlim(0, ax.get_zlim()[1])
         ax.set_title(self._model.name)
 
     def plot_movement(self):

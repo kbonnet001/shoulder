@@ -1,14 +1,14 @@
-from enum import Enum, auto
-
 import numpy as np
 import shoulder
 
 """
-Potential bug found in the code
-    - The force-velocity relationship is opposite (concenctric vs eccentric) in the Thelen and DeGroote models
+Notes
+    - Bug: in the force-velocity relationship is opposite (concenctric vs eccentric) in the Thelen and DeGroote models
         - EDIT: This is actually fine as the model is based on + being eccentric instead of concentric
+    - Bug: Thelen does not produce any force in concentric
+    
 
-    - IN BIOVIZ : THE MUSCLE ARE BADLY CAST
+    - bug IN BIOVIZ : THE MUSCLE ARE BADLY CAST
 """
 
 

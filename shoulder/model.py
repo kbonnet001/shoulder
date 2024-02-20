@@ -1,8 +1,5 @@
-from typing import Callable
-
 import biorbd
 import numpy as np
-from scipy import integrate
 
 
 class Model:
