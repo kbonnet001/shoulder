@@ -56,7 +56,7 @@ class Plotter:
             raise ValueError("q, qdot and emg must be provided to plot the muscle force coefficients surface")
 
         # Draw the surface of the force-length-velocity relationship for each model
-        fig = plt.figure("Force-Length-Velocity relationship")
+        fig = plt.figure("Force-Length-Velocity relationship (coefficients)")
         length, velocity = self._model.muscles_kinematics(self._q, self._qdot)
 
         x, y = np.meshgrid(self._q[self._dof_index, :], self._qdot[self._dof_index, :])
@@ -69,9 +69,9 @@ class Plotter:
 
         ax = fig.add_subplot(axis_id, projection="3d")
         ax.plot_surface(x, y, z, cmap="viridis")
-        ax.set_xlabel("Length")
-        ax.set_ylabel("Velocity")
-        ax.set_zlabel("Force")
+        ax.set_xlabel("Length (m)")
+        ax.set_ylabel("Velocity (m/s)")
+        ax.set_zlabel("Force (%)")
         ax.set_title(self._model.name)
 
     def plot_muscle_force_surface(self, axis_id: int):
@@ -79,7 +79,7 @@ class Plotter:
             raise ValueError("q, qdot and emg must be provided to plot the muscle force surface")
 
         # Draw the surface of the force-length-velocity relationship for each model
-        fig = plt.figure("Force-Length-Velocity relationship")
+        fig = plt.figure("Force-Length-Velocity relationship (maximal force)")
         length, velocity = self._model.muscles_kinematics(self._q, self._qdot)
 
         x, y = np.meshgrid(self._q[self._dof_index, :], self._qdot[self._dof_index, :])
@@ -87,14 +87,13 @@ class Plotter:
 
         for i in range(length.shape[1]):
             q_rep = np.repeat(self._q[:, i : i + 1], self._qdot.shape[1], axis=1)
-            flce, fvce = self._model.muscle_force_coefficients(self._emg, q_rep, self._qdot, self._muscle_index)
-            z[:, i] = flce * fvce
+            z[:, i] = self._model.muscle_force(self._emg, q_rep, self._qdot, self._muscle_index)
 
         ax = fig.add_subplot(axis_id, projection="3d")
         ax.plot_surface(x, y, z, cmap="viridis")
-        ax.set_xlabel("Length")
-        ax.set_ylabel("Velocity")
-        ax.set_zlabel("Force")
+        ax.set_xlabel("Length (m)")
+        ax.set_ylabel("Velocity (m/s)")
+        ax.set_zlabel("Force (N)")
         ax.set_title(self._model.name)
 
     def plot_movement(self):
@@ -140,10 +139,15 @@ class Plotter:
     def show():
         plt.show()
 
-    def plot_muscle_force_coefficients(self, x_axes: list["Plotter.XAxes"], color: str, plot_right_axis: bool = True):
-        title = []
-        title.append("Force-Length relationship (Time)")
-        title.append("Force-Velocity relationship (Time)")
+    def plot_muscle_force_coefficients(
+        self,
+        x_axes: list["Plotter.XAxes"],
+        color: str,
+        plot_right_axis: bool = True,
+        fig: dict[str, list] = None,
+    ):
+        if isinstance(x_axes, Plotter.XAxis):
+            x_axes = [x_axes]
 
         flce, fvce = self._model.muscle_force_coefficients(
             self._emg, self._q, self._qdot, muscle_index=self._muscle_index
@@ -157,14 +161,20 @@ class Plotter:
         y_right.append(length)
         y_right.append(velocity)
 
+        if fig is None:
+            fig = {}
         y_right_label = []
         y_right_label.append("Muscle length")
         y_right_label.append("Muscle velocity")
         y_right_color = "g"
         for x_axis in x_axes:
+            title = []
             x = []
             x_label = []
             if x_axis == Plotter.XAxis.TIME:
+                title.append("Force-Length relationship (Time)")
+                title.append("Force-Velocity relationship (Time)")
+
                 x.append(self._t)
                 x_label.append("Time (s)")
 
@@ -172,6 +182,9 @@ class Plotter:
                 x_label.append("Time (s)")
 
             elif x_axis == Plotter.XAxis.MUSCLE_PARAMETERS:
+                title.append("Force-Length relationship (Muscle)")
+                title.append("Force-Velocity relationship (Muscle)")
+
                 x.append(length[0, :])
                 x_label.append("Muscle length")
 
@@ -179,6 +192,9 @@ class Plotter:
                 x_label.append("Muscle velocity")
 
             elif x_axis == Plotter.XAxis.KINEMATICS:
+                title.append("Force-Length relationship (Kinematics)")
+                title.append("Force-Velocity relationship (Kinematics)")
+
                 x.append(self._q[self._dof_index, :])
                 x_label.append("q")
 
@@ -189,10 +205,20 @@ class Plotter:
                 raise NotImplementedError(f"X axis {x_axis} not implemented")
 
             for j in range(len(y_left)):
-                plt.figure(title[j])
+                if title[j] in fig:
+                    plt.figure(fig[title[j]][0])
+                else:
+                    fig[title[j]] = [plt.figure(title[j])]
+
+                if len(fig[title[j]]) < 2:
+                    fig[title[j]].append(plt.gca())
+                else:
+                    plt.axes(fig[title[j]][1])  # index 0 is fig
+
                 for i in range(len(x[j])):
                     n_points = x[j].shape[0]
-                    plt.plot(x[j], y_left[j].T, f"{color}o", alpha=i / n_points, label=self._model.name)
+                    label = self._model.name if i == len(x[j]) - 1 else None
+                    plt.plot(x[j][i], y_left[j][:, i], f"{color}o", alpha=i / n_points, label=label)
 
                 plt.legend(loc="upper left")
                 plt.xlabel(x_label[j])
@@ -200,7 +226,16 @@ class Plotter:
 
                 if plot_right_axis:
                     # On the right axis, plot the muscle length
-                    plt.twinx()
-                    plt.plot(x[j], y_right[j].T, f"{y_right_color}o", alpha=i / n_points, label=y_right_label[j])
+                    if len(fig[title[j]]) < 3:
+                        fig[title[j]].append(plt.twinx())
+                    else:
+                        plt.axes(fig[title[j]][2])  # index 0 is fig
+
+                    for i in range(len(x[j])):
+                        n_points = x[j].shape[0]
+                        label = y_right_label[j] if i == len(x[j]) - 1 else None
+                        plt.plot(x[j][i], y_right[j][:, i], f"{y_right_color}o", alpha=i / n_points, label=label)
+
                     plt.legend(loc="upper right")
                     plt.ylabel(y_right_label[j])
+        return fig

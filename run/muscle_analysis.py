@@ -17,12 +17,6 @@ def ease_in_out(start: float, end: float, n_points: int):
     return start + (end - start) * ((t < 0.5) * (4 * t * t * t) + (t >= 0.5) * (1 - np.power(-2 * t + 2, 3) / 2))
 
 
-class XAxis(Enum):
-    TIME = auto()
-    MUSCLE_PARAMETERS = auto()
-    KINEMATICS = auto()
-
-
 def main():
     # Setup
     tf = 4  # second
@@ -31,7 +25,6 @@ def main():
     muscle_index = 0
     show_animate = False
     show_graphs = True
-    x_axes = [XAxis.TIME, XAxis.MUSCLE_PARAMETERS, XAxis.KINEMATICS]
 
     # Create a time vector
     n_points = tf * frequency
@@ -73,15 +66,18 @@ def main():
 
     # Plot them
     if show_graphs:
+        fig = None
         for i_model, model in enumerate(models):
             plotter = shoulder.Plotter(
                 model=model, t=t, q=q, qdot=qdot, emg=emg, muscle_index=muscle_index, dof_index=dof_index
             )
 
-            plotter.plot_muscle_force_coefficients(x_axes=shoulder.Plotter.XAxis, color=model_colors[i_model])
+            fig = plotter.plot_muscle_force_coefficients(
+                x_axes=shoulder.Plotter.XAxis, color=model_colors[i_model], fig=fig
+            )
 
-        plotter.plot_muscle_force_coefficients_surface(axis_id=100 + len(models) * 10 + i_model + 1)
-        plotter.plot_muscle_force_surface(axis_id=100 + len(models) * 10 + i_model + 1)
+            plotter.plot_muscle_force_coefficients_surface(axis_id=100 + len(models) * 10 + i_model + 1)
+            plotter.plot_muscle_force_surface(axis_id=100 + len(models) * 10 + i_model + 1)
 
         plotter.show()
 
