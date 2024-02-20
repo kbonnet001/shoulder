@@ -16,8 +16,8 @@ def main():
     # Setup
     tf = 50  # seconds
     control = Controls.EMG
-    show_animate = False
-    show_graphs = True
+    show_animate = True
+    show_graphs = False
 
     # Aliases
     model = Model("models/Wu_Thelen.bioMod")
@@ -32,7 +32,7 @@ def main():
     tau = None
     emg = None
     if control == Controls.EMG:
-        emg = np.zeros((n_muscles,))
+        emg = np.ones((n_muscles,))
         func = partial(model.forward_dynamics_muscles, emg=emg)
     elif control == Controls.TORQUE:
         tau = np.zeros((n_q,))
@@ -57,7 +57,9 @@ def main():
         Animater(model, q_integrated).show()
 
     if show_graphs:
-        Plotter(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg).show()
+        plotter = Plotter(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
+        plotter.plot_movement()
+        plotter.show()
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ from .model import Model
 class Animater:
     def __init__(self, model: Model, q: np.ndarray):
         self._viz = bioviz.Viz(
-            loaded_model=model.model,
+            loaded_model=model.biorbd_model,
             show_local_ref_frame=False,
             show_segments_center_of_mass=False,
             show_global_center_of_mass=False,
@@ -112,8 +112,8 @@ class Plotter:
 
         ax = fig.add_subplot(axis_id, projection="3d")
         ax.plot_surface(x, y, z, cmap="viridis")
-        ax.set_xlabel("Length (m)")
-        ax.set_ylabel("Velocity (m/s)")
+        ax.set_xlabel("q")
+        ax.set_ylabel("qdot")
         ax.set_zlabel("Force (N)")
         ax.set_zlim(0, ax.get_zlim()[1])
         ax.set_title(self._model.name)

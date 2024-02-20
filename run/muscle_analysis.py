@@ -25,8 +25,8 @@ def main():
     muscle_index = 0
     show_animate = False
     show_graphs = True
-    coefficients = shoulder.Plotter.MuscleCoefficientPlots.NONE
-    surface = shoulder.Plotter.MuscleSurfacePlots.FORCE
+    coefficients = shoulder.Plotter.MuscleCoefficientPlots
+    surface = shoulder.Plotter.MuscleSurfacePlots
 
     # Create a time vector
     n_points = tf * frequency

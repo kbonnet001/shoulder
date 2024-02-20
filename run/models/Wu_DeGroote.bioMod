@@ -268,7 +268,7 @@ endmusclegroup
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.0275294 -0.0032022 0.00142634
 		insertionPosition	0.00455911 -0.103949 0.00775516
-		optimalLength		0.1 // 0.1818
+		optimalLength		0.1818
 		maximalForce		1098.4
 		tendonSlackLength 	0.0367
 		pennationAngle		0.261799387799
