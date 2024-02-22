@@ -1,8 +1,11 @@
 import biorbd
 import numpy as np
 
+from .model_abstract import ModelAbstract
+from .helpers import parse_muscle_index
 
-class Model:
+
+class ModelBiorbd(ModelAbstract):
     def __init__(self, model_path: str):
         self._model = biorbd.Model(model_path)
 
@@ -22,16 +25,10 @@ class Model:
     def n_muscles(self) -> int:
         return self._model.nbMuscleTotal()
 
-    def center_of_mass(self, q: np.ndarray) -> np.ndarray:
-        return np.array([self._model.CoM(tp).to_array() for tp in q.T])
-
-    def center_of_mass_velocity(self, q: np.ndarray, qdot: np.ndarray) -> np.ndarray:
-        return np.array([self._model.CoMdot(tp, qdot[:, i]).to_array() for i, tp in enumerate(q.T)])
-
     def muscles_kinematics(
         self, q: np.ndarray, qdot: np.ndarray = None, muscle_index: range | slice | int = None
     ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
-        muscle_index = _parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
         lengths = np.ndarray((n_muscles, q.shape[1]))
@@ -59,7 +56,7 @@ class Model:
         qdot: np.ndarray = None,
         muscle_index: int | range | slice | None = None,
     ) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
-        muscle_index = _parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if qdot is not None and len(qdot.shape) == 1:
@@ -92,7 +89,7 @@ class Model:
     def muscle_force(
         self, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, muscle_index: int | range | slice | None = None
     ) -> np.ndarray:
-        muscle_index = _parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if len(qdot.shape) == 1:
@@ -142,14 +139,3 @@ def _upcast_muscle(muscle: biorbd.Muscle) -> biorbd.HillType | biorbd.HillThelen
         return biorbd.HillDeGrooteType(muscle)
     else:
         raise ValueError(f"Muscle type {muscle_type_id} not supported")
-
-
-def _parse_muscle_index(muscle_index: range | slice | int | None, n_muscles: int) -> slice:
-    if muscle_index is None:
-        return slice(0, n_muscles)
-    elif isinstance(muscle_index, int):
-        return slice(muscle_index, muscle_index + 1)
-    elif isinstance(muscle_index, range):
-        return slice(muscle_index.start, muscle_index.stop)
-    else:
-        raise ValueError("muscle_index must be an int, a range or a slice")

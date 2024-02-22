@@ -1,2 +1,2 @@
-from .model import Model
+from .models import ModelBiorbd
 from .visual import Plotter, Animater

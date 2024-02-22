@@ -4,13 +4,19 @@ import bioviz
 import numpy as np
 from matplotlib import pyplot as plt
 
-from .model import Model
+from .models import ModelAbstract
 
 
 class Animater:
-    def __init__(self, model: Model, q: np.ndarray):
+    def __init__(self, model: ModelAbstract, q: np.ndarray):
+        from .models import ModelBiorbd
+
+        if not isinstance(model, ModelBiorbd):
+            raise NotImplementedError("Only BiorbdModel is supported for animation")
+        biorbd_model: ModelBiorbd = model
+
         self._viz = bioviz.Viz(
-            loaded_model=model.biorbd_model,
+            loaded_model=biorbd_model.biorbd_model,
             show_local_ref_frame=False,
             show_segments_center_of_mass=False,
             show_global_center_of_mass=False,
@@ -37,7 +43,7 @@ class Plotter:
 
     def __init__(
         self,
-        model: Model,
+        model: ModelAbstract,
         t: np.ndarray = None,
         q: np.ndarray = None,
         qdot: np.ndarray = None,

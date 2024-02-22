@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 from scipy import integrate
 
-from shoulder import Model, Plotter, Animater
+from shoulder import ModelBiorbd, Plotter, Animater
 
 
 class Controls(Enum):
@@ -20,7 +20,7 @@ def main():
     show_graphs = False
 
     # Aliases
-    model = Model("models/Wu_Thelen.bioMod")
+    model = ModelBiorbd("models/Wu_Thelen.bioMod")
     n_q = model.n_q
     n_muscles = model.n_muscles
 

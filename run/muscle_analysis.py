@@ -33,7 +33,7 @@ def main():
     t = np.linspace(0, tf, n_points)
 
     # Evaluate from the model
-    models = [shoulder.Model("models/Wu_Thelen.bioMod"), shoulder.Model("models/Wu_DeGroote.bioMod")]
+    models = [shoulder.ModelBiorbd("models/Wu_Thelen.bioMod"), shoulder.ModelBiorbd("models/Wu_DeGroote.bioMod")]
     model_colors = ["b", "r"]
     model = models[0]  # Alias for the computation which are not muscle models specific
     q = np.zeros((model.n_q, n_points))
