@@ -1,65 +1,60 @@
-from enum import Enum
-from functools import partial
-
 import numpy as np
-from scipy import integrate
 
-from shoulder import ModelBiorbd, Plotter, Animater
-
-
-class Controls(Enum):
-    EMG = 0
-    TORQUE = 1
+from shoulder import ModelBiorbd, ModelMujoco, Plotter, Animater, ControlsTypes, IntegrationMethods
 
 
 def main():
     # Setup
     tf = 50  # seconds
-    control = Controls.EMG
-    show_animate = True
-    show_graphs = False
+    control_type = ControlsTypes.EMG
+    show_animate = False
+    show_graphs = True
 
     # Aliases
-    model = ModelBiorbd("models/Wu_Thelen.bioMod")
-    n_q = model.n_q
-    n_muscles = model.n_muscles
-
-    # Prepare the states
-    q = np.zeros((n_q,))
-    qdot = np.zeros((n_q,))
-
-    # Prepare controls
-    tau = None
-    emg = None
-    if control == Controls.EMG:
-        emg = np.ones((n_muscles,))
-        func = partial(model.forward_dynamics_muscles, emg=emg)
-    elif control == Controls.TORQUE:
-        tau = np.zeros((n_q,))
-        func = partial(model.forward_dynamics, tau=tau)
-    else:
-        raise NotImplementedError(f"Control {control} not implemented")
-
-    # Integrate
-    t = np.linspace(0, tf, tf * 100)  # 100 Hz
-    integrated = integrate.solve_ivp(
-        fun=func,
-        t_span=(0, tf),
-        y0=np.concatenate((q, qdot)),
-        method="RK45",
-        t_eval=t,
+    models = (
+        (ModelMujoco("models/arm26.xml"), IntegrationMethods.RK4),
+        (ModelBiorbd("models/Wu_Thelen.bioMod"), IntegrationMethods.RK45),
     )
-    q_integrated = integrated.y[: model.n_q, :]
-    qdot_integrated = integrated.y[model.n_q :, :]
 
-    # Visualize
-    if show_animate:
-        Animater(model, q_integrated).show()
+    for model, integration_method in models:
+        n_q = model.n_q
+        n_muscles = model.n_muscles
 
-    if show_graphs:
-        plotter = Plotter(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
-        plotter.plot_movement()
-        plotter.show()
+        # Prepare the states
+        q = np.zeros((n_q,))
+        qdot = np.zeros((n_q,))
+
+        # Prepare controls
+        tau = None
+        emg = None
+        if control_type == ControlsTypes.EMG:
+            controls = np.ones((n_muscles,))
+            emg = controls
+        elif control_type == ControlsTypes.TORQUE:
+            controls = np.zeros((n_q,))
+            tau = controls
+        else:
+            raise NotImplementedError(f"Control {control_type} not implemented")
+
+        # Integrate
+        t = np.linspace(0, tf, tf * 100)  # 100 Hz
+        q_integrated, qdot_integrated = model.integrate(
+            t=t,
+            states=np.concatenate((q, qdot)),
+            controls=controls,
+            controls_type=control_type,
+            integration_method=integration_method,
+        )
+
+        # Visualize
+        if show_animate:
+            Animater(model, q_integrated).show()
+
+        if show_graphs:
+            plotter = Plotter(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
+            plotter.plot_movement()
+
+    plotter.show()
 
 
 if __name__ == "__main__":

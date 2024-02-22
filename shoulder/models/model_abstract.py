@@ -2,6 +2,8 @@ from abc import ABC, abstractproperty, abstractmethod
 
 import numpy as np
 
+from .enums import ControlsTypes, IntegrationMethods
+
 
 class ModelAbstract(ABC):
     @abstractproperty
@@ -31,6 +33,7 @@ class ModelAbstract(ABC):
         is computed. Otherwise, both the muscle length and velocity are returned.
         """
 
+    @abstractmethod
     def muscle_force_coefficients(
         self,
         emg: np.ndarray,
@@ -44,6 +47,7 @@ class ModelAbstract(ABC):
         force-velocity properties are returned.
         """
 
+    @abstractmethod
     def muscle_force(
         self, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, muscle_index: int | range | slice | None = None
     ) -> np.ndarray:
@@ -51,12 +55,16 @@ class ModelAbstract(ABC):
         Compute the muscle forces
         """
 
-    def forward_dynamics_muscles(self, t: float, x: np.ndarray, emg: np.ndarray) -> np.ndarray:
+    @abstractmethod
+    def integrate(
+        self,
+        t_span: tuple[float, float],
+        states: np.ndarray,
+        controls: np.ndarray,
+        t_eval: np.ndarray = None,
+        controls_type: ControlsTypes = ControlsTypes.TORQUE,
+        integration_method: IntegrationMethods = IntegrationMethods.RK45,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
-        Compute the forward dynamics of the model with the muscle activations as controls
-        """
-
-    def forward_dynamics(self, t: float, x: np.ndarray, tau: np.ndarray) -> np.ndarray:
-        """
-        Compute the forward dynamics of the model with the joint torques as controls
+        Integrate the model
         """

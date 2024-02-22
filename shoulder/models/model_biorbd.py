@@ -1,8 +1,13 @@
+from functools import partial
+
 import biorbd
 import numpy as np
+from scipy import integrate
 
-from .model_abstract import ModelAbstract
+
+from .enums import ControlsTypes, IntegrationMethods
 from .helpers import parse_muscle_index
+from .model_abstract import ModelAbstract
 
 
 class ModelBiorbd(ModelAbstract):
@@ -111,16 +116,52 @@ class ModelBiorbd(ModelAbstract):
 
         return out_force
 
-    def forward_dynamics_muscles(self, t: float, x: np.ndarray, emg: np.ndarray) -> np.ndarray:
+    def integrate(
+        self,
+        t: np.ndarray,
+        states: np.ndarray,
+        controls: np.ndarray,
+        controls_type: ControlsTypes = ControlsTypes.TORQUE,
+        integration_method: IntegrationMethods = IntegrationMethods.RK45,
+    ) -> tuple[np.ndarray, np.ndarray]:
+
+        if controls_type == ControlsTypes.EMG:
+            if controls.shape[0] != self.n_muscles:
+                raise ValueError(f"EMG controls should have {self.n_muscles} muscles, but got {controls.shape[0]}")
+            func = partial(self._forward_dynamics_muscles, emg=controls)
+        elif controls_type == ControlsTypes.TORQUE:
+            if controls.shape[0] != self.n_q:
+                raise ValueError(
+                    f"Torque controls should have {self.n_q} generalized coordinates, but got {controls.shape[0]}"
+                )
+            func = partial(self._forward_dynamics, tau=controls)
+        else:
+            raise NotImplementedError(f"Control {controls_type} not implemented")
+
+        if integration_method == IntegrationMethods.RK45:
+            method = "RK45"
+        elif integration_method == IntegrationMethods.RK4:
+            method = "RK4"
+        else:
+            raise NotImplementedError(f"Integration method {integration_method} not implemented")
+
+        t_span = (t[0], t[-1])
+        results = integrate.solve_ivp(fun=func, t_span=t_span, y0=states, method=method, t_eval=t)
+
+        q = results.y[: self.n_q, :]
+        qdot = results.y[self.n_q :, :]
+        return q, qdot
+
+    def _forward_dynamics_muscles(self, t: float, x: np.ndarray, emg: np.ndarray) -> np.ndarray:
         q = x[: self.n_q]
         qdot = x[self.n_q :]
         states = self._model.stateSet()
         for k in range(self._model.nbMuscles()):
             states[k].setActivation(emg[k])
         tau = self._model.muscularJointTorque(states, q, qdot).to_array()
-        return self.forward_dynamics(t, x, tau)
+        return self._forward_dynamics(t, x, tau)
 
-    def forward_dynamics(self, t: float, x: np.ndarray, tau: np.ndarray) -> np.ndarray:
+    def _forward_dynamics(self, t: float, x: np.ndarray, tau: np.ndarray) -> np.ndarray:
         q = x[: self.n_q]
         qdot = x[self.n_q :]
         qddot = self._model.ForwardDynamics(q, qdot, tau).to_array() * 0.0001

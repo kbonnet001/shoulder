@@ -9,3 +9,8 @@ dependencies:
 - numpy
 - scipy
 - matplotlib
+- mujoco-python
+- mediapy
+- ffmpeg-python
+- pip:
+  - myosuite

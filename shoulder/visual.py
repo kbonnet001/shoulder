@@ -1,14 +1,13 @@
-from enum import Enum, auto
-
-import bioviz
 import numpy as np
 from matplotlib import pyplot as plt
 
+from .enums import MuscleCoefficientPlots, MuscleSurfacePlots
 from .models import ModelAbstract
 
 
 class Animater:
     def __init__(self, model: ModelAbstract, q: np.ndarray):
+        import bioviz
         from .models import ModelBiorbd
 
         if not isinstance(model, ModelBiorbd):
@@ -30,16 +29,6 @@ class Animater:
 
 
 class Plotter:
-    class MuscleCoefficientPlots(Enum):
-        NONE = auto()
-        TIME = auto()
-        MUSCLE_PARAMETERS = auto()
-        KINEMATICS = auto()
-
-    class MuscleSurfacePlots(Enum):
-        NONE = auto()
-        COEFFICIENTS = auto()
-        FORCE = auto()
 
     def __init__(
         self,
@@ -63,16 +52,16 @@ class Plotter:
         self._muscle_index = muscle_index
         self._dof_index = dof_index
 
-    def plot_muscle_surface(self, plots: list["Plotter.MuscleSurfacePlots"], axis_id: int):
-        if isinstance(plots, Plotter.MuscleSurfacePlots):
+    def plot_muscle_surface(self, plots: list[MuscleSurfacePlots], axis_id: int):
+        if isinstance(plots, MuscleSurfacePlots):
             plots = [plots]
 
         for plot in plots:
-            if plot == Plotter.MuscleSurfacePlots.NONE:
+            if plot == MuscleSurfacePlots.NONE:
                 continue
-            elif plot == Plotter.MuscleSurfacePlots.COEFFICIENTS:
+            elif plot == MuscleSurfacePlots.COEFFICIENTS:
                 self.plot_muscle_force_coefficients_surface(axis_id)
-            elif plot == Plotter.MuscleSurfacePlots.FORCE:
+            elif plot == MuscleSurfacePlots.FORCE:
                 self.plot_muscle_force_surface(axis_id)
             else:
                 raise NotImplementedError(f"Plot {plot} not implemented")
@@ -169,12 +158,12 @@ class Plotter:
 
     def plot_muscle_force_coefficients(
         self,
-        plots: list["Plotter.MuscleCoefficientPlots"],
+        plots: list[MuscleCoefficientPlots],
         color: str,
         plot_right_axis: bool = True,
         fig: dict[str, list] = None,
     ):
-        if isinstance(plots, Plotter.MuscleCoefficientPlots):
+        if isinstance(plots, MuscleCoefficientPlots):
             plots = [plots]
 
         flpe, flce, fvce = self._model.muscle_force_coefficients(
@@ -202,9 +191,9 @@ class Plotter:
             title = []
             x = []
             x_label = []
-            if x_axis == Plotter.MuscleCoefficientPlots.NONE:
+            if x_axis == MuscleCoefficientPlots.NONE:
                 continue
-            if x_axis == Plotter.MuscleCoefficientPlots.TIME:
+            if x_axis == MuscleCoefficientPlots.TIME:
                 title.append("Passive Force-Length relationship (Time)")
                 title.append("Active Force-Length relationship (Time)")
                 title.append("Active Force-Velocity relationship (Time)")
@@ -218,7 +207,7 @@ class Plotter:
                 x.append(self._t)
                 x_label.append("Time (s)")
 
-            elif x_axis == Plotter.MuscleCoefficientPlots.MUSCLE_PARAMETERS:
+            elif x_axis == MuscleCoefficientPlots.MUSCLE_PARAMETERS:
                 title.append("Passive Force-Length relationship (Muscle parameters)")
                 title.append("Active Force-Length relationship (Muscle parameters)")
                 title.append("Active Force-Velocity relationship (Muscle parameters)")
@@ -232,7 +221,7 @@ class Plotter:
                 x.append(velocity[0, :])
                 x_label.append("Muscle velocity")
 
-            elif x_axis == Plotter.MuscleCoefficientPlots.KINEMATICS:
+            elif x_axis == MuscleCoefficientPlots.KINEMATICS:
                 title.append("Passive Force-Length relationship (Kinematics)")
                 title.append("Active Force-Length relationship (Kinematics)")
                 title.append("Active Force-Velocity relationship (Kinematics)")
