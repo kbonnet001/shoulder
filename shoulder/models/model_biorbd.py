@@ -1,5 +1,6 @@
 from functools import partial
 
+import bioviz
 import biorbd
 import numpy as np
 from scipy import integrate
@@ -166,6 +167,18 @@ class ModelBiorbd(ModelAbstract):
         qdot = x[self.n_q :]
         qddot = self._model.ForwardDynamics(q, qdot, tau).to_array() * 0.0001
         return np.concatenate((qdot, qddot))
+
+    def animate(self, states: list[np.ndarray]) -> None:
+        viz = bioviz.Viz(
+            loaded_model=self._model,
+            show_local_ref_frame=False,
+            show_segments_center_of_mass=False,
+            show_global_center_of_mass=False,
+            show_gravity_vector=False,
+        )
+        viz.load_movement(states[0])
+        viz.set_camera_roll(np.pi / 2)
+        viz.exec()
 
 
 def _upcast_muscle(muscle: biorbd.Muscle) -> biorbd.HillType | biorbd.HillThelenType | biorbd.HillDeGrooteType:

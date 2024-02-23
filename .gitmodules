@@ -1,3 +1,9 @@
 [submodule "external/bioviz"]
 	path = external/bioviz
 	url = https://github.com/pyomeca/bioviz
+[submodule "external/mujoco-python-viewer"]
+	path = external/mujoco-python-viewer
+	url = https://github.com/rohanpsingh/mujoco-python-viewer.git
+[submodule "external/myo_sim"]
+	path = external/myo_sim
+	url = https://github.com/pariterre/myo_sim

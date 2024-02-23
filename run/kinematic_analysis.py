@@ -1,6 +1,6 @@
 import numpy as np
 
-from shoulder import ModelBiorbd, ModelMujoco, Plotter, Animater, ControlsTypes, IntegrationMethods
+from shoulder import ModelBiorbd, ModelMujoco, Plotter, ControlsTypes, IntegrationMethods
 
 
 def main():
@@ -12,7 +12,7 @@ def main():
 
     # Aliases
     models = (
-        (ModelMujoco("models/arm26.xml"), IntegrationMethods.RK4),
+        (ModelMujoco("../external/myo_sim/arm/myoarm.xml"), IntegrationMethods.RK4),
         (ModelBiorbd("models/Wu_Thelen.bioMod"), IntegrationMethods.RK45),
     )
 
@@ -38,7 +38,7 @@ def main():
 
         # Integrate
         t = np.linspace(0, tf, tf * 100)  # 100 Hz
-        q_integrated, qdot_integrated = model.integrate(
+        states = model.integrate(
             t=t,
             states=np.concatenate((q, qdot)),
             controls=controls,
@@ -48,9 +48,11 @@ def main():
 
         # Visualize
         if show_animate:
-            Animater(model, q_integrated).show()
+            model.animate(states)
 
         if show_graphs:
+            q_integrated = states[0]
+            qdot_integrated = states[1]
             plotter = Plotter(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
             plotter.plot_movement()
 

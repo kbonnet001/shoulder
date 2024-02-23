@@ -5,29 +5,6 @@ from .enums import MuscleCoefficientPlots, MuscleSurfacePlots
 from .models import ModelAbstract
 
 
-class Animater:
-    def __init__(self, model: ModelAbstract, q: np.ndarray):
-        import bioviz
-        from .models import ModelBiorbd
-
-        if not isinstance(model, ModelBiorbd):
-            raise NotImplementedError("Only BiorbdModel is supported for animation")
-        biorbd_model: ModelBiorbd = model
-
-        self._viz = bioviz.Viz(
-            loaded_model=biorbd_model.biorbd_model,
-            show_local_ref_frame=False,
-            show_segments_center_of_mass=False,
-            show_global_center_of_mass=False,
-            show_gravity_vector=False,
-        )
-        self._viz.load_movement(q)
-        self._viz.set_camera_roll(np.pi / 2)
-
-    def show(self):
-        self._viz.exec()
-
-
 class Plotter:
 
     def __init__(
@@ -162,9 +139,11 @@ class Plotter:
         color: str,
         plot_right_axis: bool = True,
         fig: dict[str, list] = None,
-    ):
+    ) -> dict[str, list]:
         if isinstance(plots, MuscleCoefficientPlots):
             plots = [plots]
+        if len(plots) == 0 or (len(plots) == 1 and plots[0] == MuscleCoefficientPlots.NONE):
+            return None
 
         flpe, flce, fvce = self._model.muscle_force_coefficients(
             self._emg, self._q, self._qdot, muscle_index=self._muscle_index

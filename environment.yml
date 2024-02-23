@@ -12,5 +12,7 @@ dependencies:
 - mujoco-python
 - mediapy
 - ffmpeg-python
+- pyyaml
+- imageio
 - pip:
   - myosuite

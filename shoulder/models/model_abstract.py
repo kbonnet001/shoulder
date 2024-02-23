@@ -68,3 +68,9 @@ class ModelAbstract(ABC):
         """
         Integrate the model
         """
+
+    @abstractmethod
+    def animate(self, states: list[np.ndarray], *args, **kwargs) -> None:
+        """
+        Animate the model
+        """
