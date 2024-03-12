@@ -56,7 +56,8 @@ def main():
             plotter = Plotter(t=t, model=model, q=q_integrated, qdot=qdot_integrated, tau=tau, emg=emg)
             plotter.plot_movement()
 
-    plotter.show()
+    if show_graphs:
+        plotter.show()
 
 
 if __name__ == "__main__":
