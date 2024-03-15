@@ -20,5 +20,13 @@
             "cwd": "${workspaceFolder}/run",
             "console": "integratedTerminal"
         },
+        {
+            "name": "Resting muscle optimization",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run/optimize_resting.py",
+            "cwd": "${workspaceFolder}/run",
+            "console": "integratedTerminal"
+        },
     ]
 }

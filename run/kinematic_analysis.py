@@ -1,5 +1,4 @@
 import numpy as np
-
 from shoulder import ModelBiorbd, ModelMujoco, Plotter, ControlsTypes, IntegrationMethods
 
 

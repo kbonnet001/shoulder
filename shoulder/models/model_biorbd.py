@@ -2,18 +2,23 @@ from functools import partial
 
 import bioviz
 import biorbd
+import biorbd_casadi
 import numpy as np
 from scipy import integrate
 
 
 from .enums import ControlsTypes, IntegrationMethods
-from .helpers import parse_muscle_index
+from .helpers import Vector, parse_muscle_index, concatenate
 from .model_abstract import ModelAbstract
 
 
 class ModelBiorbd(ModelAbstract):
-    def __init__(self, model_path: str):
-        self._model = biorbd.Model(model_path)
+    def __init__(self, model_path: str, use_casadi: bool = False):
+        self._use_casadi = use_casadi
+        if self._use_casadi:
+            self._model = biorbd_casadi.Model(model_path)
+        else:
+            self._model = biorbd.Model(model_path)
 
     @property
     def biorbd_model(self) -> biorbd.Model:
@@ -32,13 +37,19 @@ class ModelBiorbd(ModelAbstract):
         return self._model.nbMuscleTotal()
 
     def muscles_kinematics(
-        self, q: np.ndarray, qdot: np.ndarray = None, muscle_index: range | slice | int = None
-    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+        self, q: Vector, qdot: Vector = None, muscle_index: range | slice | int = None
+    ) -> Vector | tuple[Vector, Vector]:
+        data_type = type(q)
+        if qdot is not None and not isinstance(qdot, data_type):
+            raise ValueError("q and qdot must have the same type")
+
         muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
-        lengths = np.ndarray((n_muscles, q.shape[1]))
-        velocities = np.ndarray((n_muscles, q.shape[1]))
+        data_type = type(q)
+
+        lengths = data_type((n_muscles, q.shape[1]))
+        velocities = data_type((n_muscles, q.shape[1]))
         for i in range(q.shape[1]):
             if qdot is None:
                 self._model.updateMuscles(q[:, i], True)
@@ -57,11 +68,15 @@ class ModelBiorbd(ModelAbstract):
 
     def muscle_force_coefficients(
         self,
-        emg: np.ndarray,
-        q: np.ndarray,
-        qdot: np.ndarray = None,
+        emg: Vector,
+        q: Vector,
+        qdot: Vector = None,
         muscle_index: int | range | slice | None = None,
-    ) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Vector | tuple[Vector, Vector, Vector]:
+        data_type = type(emg)
+        if not isinstance(q, data_type) or (qdot is not None and not isinstance(qdot, data_type)):
+            raise ValueError("emg, q and qdot must have the same type")
+
         muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
@@ -70,9 +85,9 @@ class ModelBiorbd(ModelAbstract):
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
-        out_flpe = np.ndarray((n_muscles, q.shape[1]))
-        out_flce = np.ndarray((n_muscles, q.shape[1]))
-        out_fvce = np.ndarray((n_muscles, q.shape[1]))
+        out_flpe = data_type((n_muscles, q.shape[1]))
+        out_flce = data_type((n_muscles, q.shape[1]))
+        out_fvce = data_type((n_muscles, q.shape[1]))
         for i in range(q.shape[1]):
             if qdot is None:
                 self._model.updateMuscles(q[:, i], True)
@@ -93,8 +108,12 @@ class ModelBiorbd(ModelAbstract):
             return out_flpe, out_flce, out_fvce
 
     def muscle_force(
-        self, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, muscle_index: int | range | slice | None = None
-    ) -> np.ndarray:
+        self, emg: Vector, q: Vector, qdot: Vector, muscle_index: int | range | slice | None = None
+    ) -> Vector:
+        data_type = type(emg)
+        if not isinstance(q, data_type) or not isinstance(qdot, data_type):
+            raise ValueError("emg, q and qdot must have the same type")
+
         muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
@@ -103,7 +122,7 @@ class ModelBiorbd(ModelAbstract):
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
-        out_force = np.ndarray((n_muscles, q.shape[1]))
+        out_force = data_type((n_muscles, q.shape[1]))
         for i in range(q.shape[1]):
             if qdot is None:
                 self._model.updateMuscles(q[:, i], True)
@@ -119,12 +138,17 @@ class ModelBiorbd(ModelAbstract):
 
     def integrate(
         self,
-        t: np.ndarray,
-        states: np.ndarray,
-        controls: np.ndarray,
+        t: Vector,
+        states: Vector,
+        controls: Vector,
         controls_type: ControlsTypes = ControlsTypes.TORQUE,
         integration_method: IntegrationMethods = IntegrationMethods.RK45,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[Vector, Vector]:
+        data_type = type(states)
+        if not isinstance(controls, data_type):
+            raise ValueError("states and controls must have the same type")
+
+        func = partial(self.forward_dynamics, tau=controls)
 
         if controls_type == ControlsTypes.EMG:
             if controls.shape[0] != self.n_muscles:
@@ -153,22 +177,55 @@ class ModelBiorbd(ModelAbstract):
         qdot = results.y[self.n_q :, :]
         return q, qdot
 
-    def _forward_dynamics_muscles(self, t: float, x: np.ndarray, emg: np.ndarray) -> np.ndarray:
+    def forward_dynamics(
+        self,
+        q: Vector,
+        qdot: Vector,
+        controls: Vector,
+        controls_type: ControlsTypes = ControlsTypes.TORQUE,
+    ) -> tuple[Vector, Vector]:
+        data_type = type(q)
+        if not isinstance(qdot, data_type) or not isinstance(controls, data_type):
+            raise ValueError("q, qdot and controls must have the same type")
+
+        if controls_type == ControlsTypes.EMG:
+            if controls.shape[0] != self.n_muscles:
+                raise ValueError(f"EMG controls should have {self.n_muscles} muscles, but got {controls.shape[0]}")
+            func = partial(self._forward_dynamics_muscles, t=[], emg=controls)
+        elif controls_type == ControlsTypes.TORQUE:
+            if controls.shape[0] != self.n_q:
+                raise ValueError(
+                    f"Torque controls should have {self.n_q} generalized coordinates, but got {controls.shape[0]}"
+                )
+            func = partial(self._forward_dynamics, t=[], tau=controls)
+        else:
+            raise NotImplementedError(f"Control {controls_type} not implemented")
+
+        results = func(x=concatenate(q, qdot))
+        q = results[: self.n_q]
+        qdot = results[self.n_q :]
+        return q, qdot
+
+    def _forward_dynamics_muscles(self, t: float, x: Vector, emg: Vector) -> Vector:
         q = x[: self.n_q]
         qdot = x[self.n_q :]
         states = self._model.stateSet()
         for k in range(self._model.nbMuscles()):
             states[k].setActivation(emg[k])
-        tau = self._model.muscularJointTorque(states, q, qdot).to_array()
+        tau = self._model.muscularJointTorque(states, q, qdot)
+        tau = tau.to_mx() if self._use_casadi else tau.to_array()
+
         return self._forward_dynamics(t, x, tau)
 
-    def _forward_dynamics(self, t: float, x: np.ndarray, tau: np.ndarray) -> np.ndarray:
+    def _forward_dynamics(self, t: float, x: Vector, tau: Vector) -> Vector:
         q = x[: self.n_q]
         qdot = x[self.n_q :]
-        qddot = self._model.ForwardDynamics(q, qdot, tau).to_array() * 0.0001
-        return np.concatenate((qdot, qddot))
+        qddot = self._model.ForwardDynamics(q, qdot, tau)
+        qddot = qddot.to_mx() if self._use_casadi else qddot.to_array()
 
-    def animate(self, states: list[np.ndarray]) -> None:
+        return concatenate(qdot, qddot)
+
+    def animate(self, states: list[Vector]) -> None:
         viz = bioviz.Viz(
             loaded_model=self._model,
             show_local_ref_frame=False,

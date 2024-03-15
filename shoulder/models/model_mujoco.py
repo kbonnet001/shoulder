@@ -2,7 +2,7 @@ import mujoco
 import numpy as np
 
 from .enums import ControlsTypes, IntegrationMethods
-from .helpers import parse_muscle_index
+from .helpers import Vector, parse_muscle_index
 from .model_abstract import ModelAbstract
 
 
@@ -24,8 +24,11 @@ class ModelMujoco(ModelAbstract):
         return self._model.na
 
     def muscles_kinematics(
-        self, q: np.ndarray, qdot: np.ndarray = None, muscle_index: range | slice | int = None
-    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+        self, q: Vector, qdot: Vector = None, muscle_index: range | slice | int = None
+    ) -> Vector | tuple[Vector, Vector]:
+        if not isinstance(q, np.ndarray) or (qdot is not None and not isinstance(qdot, np.ndarray)):
+            raise ValueError("ModelMujoco.muscles_kinematics only supports numpy arrays")
+
         muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
@@ -53,16 +56,19 @@ class ModelMujoco(ModelAbstract):
 
     def muscle_force_coefficients(
         self,
-        emg: np.ndarray,
-        q: np.ndarray,
-        qdot: np.ndarray = None,
+        emg: Vector,
+        q: Vector,
+        qdot: Vector = None,
         muscle_index: int | range | slice | None = None,
-    ) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Vector | tuple[Vector, Vector, Vector]:
         raise ValueError("muscle_force_coefficients is not compatible with Mujoco models")
 
     def muscle_force(
-        self, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, muscle_index: int | range | slice | None = None
-    ) -> np.ndarray:
+        self, emg: Vector, q: Vector, qdot: Vector, muscle_index: int | range | slice | None = None
+    ) -> Vector:
+        if not isinstance(emg, np.ndarray) or not isinstance(q, np.ndarray) or not isinstance(qdot, np.ndarray):
+            raise ValueError("ModelMujoco.muscle_force only supports numpy arrays")
+
         muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
@@ -81,15 +87,16 @@ class ModelMujoco(ModelAbstract):
 
     def integrate(
         self,
-        t: np.ndarray,
-        states: np.ndarray,
-        controls: np.ndarray,
+        t: Vector,
+        states: Vector,
+        controls: Vector,
         controls_type: ControlsTypes = ControlsTypes.TORQUE,
         integration_method: IntegrationMethods = IntegrationMethods.RK4,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[Vector, Vector]:
+        if not isinstance(t, np.ndarray) or not isinstance(states, np.ndarray) or not isinstance(controls, np.ndarray):
+            raise ValueError("ModelMujoco.integrate only supports numpy arrays")
 
         if controls_type == ControlsTypes.EMG:
-            # TODO: Implement EMG control
             pass
         elif controls_type == ControlsTypes.TORQUE:
             raise NotImplementedError("ModelMujoco.integrate TORQUE")
@@ -105,6 +112,8 @@ class ModelMujoco(ModelAbstract):
 
         data = mujoco.MjData(self._model)
         mujoco.mj_resetData(self._model, data)
+        data.qpos = states[: self.n_q]
+        data.qvel = states[self.n_q :]
 
         q = []
         qdot = []
@@ -118,6 +127,33 @@ class ModelMujoco(ModelAbstract):
             qdot.append(np.array(data.qvel))
 
         return np.array(q).T, np.array(qdot).T
+
+    def forward_dynamics(
+        self,
+        q: Vector,
+        qdot: Vector,
+        controls: Vector,
+        controls_type: ControlsTypes = ControlsTypes.TORQUE,
+    ) -> tuple[Vector, Vector]:
+        if not isinstance(q, np.ndarray) or not isinstance(qdot, np.ndarray) or not isinstance(controls, np.ndarray):
+            raise ValueError("ModelMujoco.forward_dynamics only supports numpy arrays")
+
+        if controls_type == ControlsTypes.EMG:
+            pass
+        elif controls_type == ControlsTypes.TORQUE:
+            raise NotImplementedError("ModelMujoco.integrate TORQUE")
+        else:
+            raise NotImplementedError(f"Control {controls_type} not implemented")
+
+        data = mujoco.MjData(self._model)
+        mujoco.mj_resetData(self._model, data)
+        data.qpos = q
+        data.qvel = qdot
+        data.ctrl = controls
+
+        mujoco.mj_step(self._model, data)
+
+        return data.qpos, data.qvel
 
     def animate(self, states: list[np.ndarray], allow_interaction: bool = False) -> None:
         import mujoco_viewer

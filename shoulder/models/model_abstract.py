@@ -1,8 +1,7 @@
 from abc import ABC, abstractproperty, abstractmethod
 
-import numpy as np
-
 from .enums import ControlsTypes, IntegrationMethods
+from .helpers import Vector
 
 
 class ModelAbstract(ABC):
@@ -26,8 +25,8 @@ class ModelAbstract(ABC):
 
     @abstractmethod
     def muscles_kinematics(
-        self, q: np.ndarray, qdot: np.ndarray = None, muscle_index: range | slice | int = None
-    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+        self, q: Vector, qdot: Vector = None, muscle_index: range | slice | int = None
+    ) -> Vector | tuple[Vector, Vector]:
         """
         Compute the muscle kinematics, that is the muscle length and velocity. If qdot is None, only the muscle length
         is computed. Otherwise, both the muscle length and velocity are returned.
@@ -36,11 +35,11 @@ class ModelAbstract(ABC):
     @abstractmethod
     def muscle_force_coefficients(
         self,
-        emg: np.ndarray,
-        q: np.ndarray,
-        qdot: np.ndarray = None,
+        emg: Vector,
+        q: Vector,
+        qdot: Vector = None,
         muscle_index: int | range | slice | None = None,
-    ) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Vector | tuple[Vector, Vector, Vector]:
         """
         Compute the muscle force-length and force-velocity properties. If qdot is None, only the force-length property
         is computed (that is passive and contractive force-length properties). Otherwise, both the force-length and
@@ -49,8 +48,8 @@ class ModelAbstract(ABC):
 
     @abstractmethod
     def muscle_force(
-        self, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, muscle_index: int | range | slice | None = None
-    ) -> np.ndarray:
+        self, emg: Vector, q: Vector, qdot: Vector, muscle_index: int | range | slice | None = None
+    ) -> Vector:
         """
         Compute the muscle forces
         """
@@ -59,18 +58,30 @@ class ModelAbstract(ABC):
     def integrate(
         self,
         t_span: tuple[float, float],
-        states: np.ndarray,
-        controls: np.ndarray,
-        t_eval: np.ndarray = None,
+        states: Vector,
+        controls: Vector,
+        t_eval: Vector = None,
         controls_type: ControlsTypes = ControlsTypes.TORQUE,
         integration_method: IntegrationMethods = IntegrationMethods.RK45,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[Vector, Vector]:
         """
         Integrate the model
         """
 
     @abstractmethod
-    def animate(self, states: list[np.ndarray], *args, **kwargs) -> None:
+    def forward_dynamics(
+        self,
+        q: Vector,
+        qdot: Vector,
+        controls: Vector,
+        controls_type: ControlsTypes = ControlsTypes.TORQUE,
+    ) -> tuple[Vector, Vector]:
+        """
+        Integrate the model forward dynamics
+        """
+
+    @abstractmethod
+    def animate(self, states: list[Vector], *args, **kwargs) -> None:
         """
         Animate the model
         """
