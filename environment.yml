@@ -15,5 +15,6 @@ dependencies:
 - pyyaml
 - imageio
 - casadi
+- ipopt
 - pip:
   - myosuite

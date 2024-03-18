@@ -272,7 +272,6 @@ endmusclegroup
 		maximalForce		1098.4
 		tendonSlackLength 	0.0367
 		pennationAngle		0.261799387799
-		maxshorteningspeed  1
 	endmuscle
 
 		viapoint via1

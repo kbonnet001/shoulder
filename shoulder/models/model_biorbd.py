@@ -1,6 +1,5 @@
 from functools import partial
 
-import bioviz
 import biorbd
 import biorbd_casadi
 import numpy as np
@@ -188,20 +187,20 @@ class ModelBiorbd(ModelAbstract):
         if not isinstance(qdot, data_type) or not isinstance(controls, data_type):
             raise ValueError("q, qdot and controls must have the same type")
 
-        if controls_type == ControlsTypes.EMG:
-            if controls.shape[0] != self.n_muscles:
-                raise ValueError(f"EMG controls should have {self.n_muscles} muscles, but got {controls.shape[0]}")
-            func = partial(self._forward_dynamics_muscles, t=[], emg=controls)
-        elif controls_type == ControlsTypes.TORQUE:
-            if controls.shape[0] != self.n_q:
-                raise ValueError(
-                    f"Torque controls should have {self.n_q} generalized coordinates, but got {controls.shape[0]}"
-                )
-            func = partial(self._forward_dynamics, t=[], tau=controls)
-        else:
-            raise NotImplementedError(f"Control {controls_type} not implemented")
+        # if controls_type == ControlsTypes.EMG:
+        #     if controls.shape[0] != self.n_muscles:
+        #         raise ValueError(f"EMG controls should have {self.n_muscles} muscles, but got {controls.shape[0]}")
+        #     func = partial(self._forward_dynamics_muscles, t=[], emg=controls)
+        # elif controls_type == ControlsTypes.TORQUE:
+        #     if controls.shape[0] != self.n_q:
+        #         raise ValueError(
+        #             f"Torque controls should have {self.n_q} generalized coordinates, but got {controls.shape[0]}"
+        #         )
+        #     func = partial(self._forward_dynamics, t=[], tau=controls)
+        # else:
+        #     raise NotImplementedError(f"Control {controls_type} not implemented")
 
-        results = func(x=concatenate(q, qdot))
+        results = self._forward_dynamics(x=concatenate(q, qdot), t=[], tau=controls)
         q = results[: self.n_q]
         qdot = results[self.n_q :]
         return q, qdot
@@ -210,8 +209,8 @@ class ModelBiorbd(ModelAbstract):
         q = x[: self.n_q]
         qdot = x[self.n_q :]
         states = self._model.stateSet()
-        for k in range(self._model.nbMuscles()):
-            states[k].setActivation(emg[k])
+        # for k in range(self._model.nbMuscles()):
+        #     states[k].setActivation(emg[k])
         tau = self._model.muscularJointTorque(states, q, qdot)
         tau = tau.to_mx() if self._use_casadi else tau.to_array()
 
@@ -226,6 +225,8 @@ class ModelBiorbd(ModelAbstract):
         return concatenate(qdot, qddot)
 
     def animate(self, states: list[Vector]) -> None:
+        import bioviz
+
         viz = bioviz.Viz(
             loaded_model=self._model,
             show_local_ref_frame=False,
