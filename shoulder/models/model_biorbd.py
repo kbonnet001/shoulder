@@ -187,20 +187,20 @@ class ModelBiorbd(ModelAbstract):
         if not isinstance(qdot, data_type) or not isinstance(controls, data_type):
             raise ValueError("q, qdot and controls must have the same type")
 
-        # if controls_type == ControlsTypes.EMG:
-        #     if controls.shape[0] != self.n_muscles:
-        #         raise ValueError(f"EMG controls should have {self.n_muscles} muscles, but got {controls.shape[0]}")
-        #     func = partial(self._forward_dynamics_muscles, t=[], emg=controls)
-        # elif controls_type == ControlsTypes.TORQUE:
-        #     if controls.shape[0] != self.n_q:
-        #         raise ValueError(
-        #             f"Torque controls should have {self.n_q} generalized coordinates, but got {controls.shape[0]}"
-        #         )
-        #     func = partial(self._forward_dynamics, t=[], tau=controls)
-        # else:
-        #     raise NotImplementedError(f"Control {controls_type} not implemented")
+        if controls_type == ControlsTypes.EMG:
+            if controls.shape[0] != self.n_muscles:
+                raise ValueError(f"EMG controls should have {self.n_muscles} muscles, but got {controls.shape[0]}")
+            func = partial(self._forward_dynamics_muscles, t=[], emg=controls)
+        elif controls_type == ControlsTypes.TORQUE:
+            if controls.shape[0] != self.n_q:
+                raise ValueError(
+                    f"Torque controls should have {self.n_q} generalized coordinates, but got {controls.shape[0]}"
+                )
+            func = partial(self._forward_dynamics, t=[], tau=controls)
+        else:
+            raise NotImplementedError(f"Control {controls_type} not implemented")
 
-        results = self._forward_dynamics(x=concatenate(q, qdot), t=[], tau=controls)
+        results = func(x=concatenate(q, qdot))
         q = results[: self.n_q]
         qdot = results[self.n_q :]
         return q, qdot

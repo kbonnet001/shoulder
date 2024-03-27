@@ -20,29 +20,22 @@ def compute_qdot(x: casadi.MX | casadi.SX, model: ModelBiorbd, q: np.ndarray, qd
     optimal_lengths_mx = casadi.MX.sym("optimalLength", n_muscles, 1)
     q_mx = casadi.MX.sym("q", n_q, 1)
     qdot_mx = casadi.MX.sym("qdot", n_q, 1)
-    emg_mx = casadi.MX.sym("emg", n_q, 1)
-    # for i in range(n_muscles):
-    #     model._model.muscle(i).characteristics().setOptimalLength(optimal_lengths_mx[i])  # TODO: Add interface for this
-    # xdot = model.forward_dynamics(q=q_mx, qdot=qdot_mx, controls=emg_mx, controls_type=ControlsTypes.EMG)
-
-    q_mx = casadi.MX.sym("q", n_q, 1)
-    qdot_mx = casadi.MX.sym("qdot", n_q, 1)
-    emg_mx = casadi.MX.sym("emg", n_q, 1)
-    # TODO Running this line twice does not return the same result...
-    xdot = model._model.ForwardDynamics(q_mx, qdot_mx, emg_mx).to_mx()
+    emg_mx = casadi.MX.sym("emg", n_muscles, 1)
+    for i in range(n_muscles):
+        model._model.muscle(i).characteristics().setOptimalLength(optimal_lengths_mx[i])  # TODO: Add interface for this
+    xdot = model.forward_dynamics(q=q_mx, qdot=qdot_mx, controls=emg_mx, controls_type=ControlsTypes.EMG)
 
     # Convert the outputs to the type corresponding to the x vector and collapsing the graph at q, qdot and emg
-    # xdot = casadi.Function(
-    #     "xdot",
-    #     [q_mx, qdot_mx, emg_mx, optimal_lengths_mx],
-    #     xdot,
-    #     ["q_in", "qdot_in", "emg_in", "optimal_length_in"],
-    #     ["q", "qdot"],
-    # )
-    # qdot = xdot(q_in=q, qdot_in=qdot, emg_in=emg, optimal_length_in=x)["qdot"]
+    xdot = casadi.Function(
+        "xdot",
+        [q_mx, qdot_mx, emg_mx, optimal_lengths_mx],
+        xdot,
+        ["q_in", "qdot_in", "emg_in", "optimal_length_in"],
+        ["q", "qdot"],
+    )
+    qdot = xdot(q_in=q, qdot_in=qdot, emg_in=emg, optimal_length_in=x)["qdot"]
 
-    # Return qdot
-    return xdot
+    return qdot
 
 
 def main():
@@ -56,7 +49,7 @@ def main():
         n_muscles = model.n_muscles
         q = cx.zeros(n_q, 1)
         qdot = cx.zeros(n_q, 1)
-        emg = cx.ones(n_q, 1) * 0.0
+        emg = cx.ones(n_muscles, 1) * 0.0
 
         # Prepare the decision variables
         x = cx.sym("optimalLengths", n_muscles, 1)
@@ -70,8 +63,6 @@ def main():
 
         # Compute the cost functions
         obj = casadi.sum1(compute_qdot(x, model, q, qdot, emg) ** 2)
-
-        casadi.Function("tata", [x], [compute_qdot(x, model, q, qdot, emg)])
 
         # Compute some non-linear constraints
         g = cx()
