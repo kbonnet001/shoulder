@@ -3,6 +3,7 @@ from casadi import SX, MX, DM, vertcat
 
 
 type Vector = np.ndarray | SX | MX | DM
+type Scalar = float | int | SX | MX | DM
 
 
 def parse_muscle_index(muscle_index: range | slice | int | None, n_muscles: int) -> slice:

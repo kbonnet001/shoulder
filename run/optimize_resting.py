@@ -9,7 +9,7 @@ from shoulder import ModelBiorbd, ControlsTypes
 def inject_optimal_lengths(model: ModelBiorbd, x: casadi.MX | casadi.SX):
     n_muscles = model.n_muscles
     for i in range(n_muscles):
-        model._model.muscle(i).characteristics().setOptimalLength(x[i])  # TODO: Add interface for this
+        model.set_muscle_parameters(index=i, optimal_length=x[i])
 
 
 def compute_qdot(x: casadi.MX | casadi.SX, model: ModelBiorbd, q: np.ndarray, qdot: np.ndarray, emg: np.ndarray):
@@ -22,7 +22,7 @@ def compute_qdot(x: casadi.MX | casadi.SX, model: ModelBiorbd, q: np.ndarray, qd
     qdot_mx = casadi.MX.sym("qdot", n_q, 1)
     emg_mx = casadi.MX.sym("emg", n_muscles, 1)
     for i in range(n_muscles):
-        model._model.muscle(i).characteristics().setOptimalLength(optimal_lengths_mx[i])  # TODO: Add interface for this
+        model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_mx[i])
     xdot = model.forward_dynamics(q=q_mx, qdot=qdot_mx, controls=emg_mx, controls_type=ControlsTypes.EMG)
 
     # Convert the outputs to the type corresponding to the x vector and collapsing the graph at q, qdot and emg

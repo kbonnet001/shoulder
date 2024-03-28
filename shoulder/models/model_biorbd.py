@@ -7,7 +7,7 @@ from scipy import integrate
 
 
 from .enums import ControlsTypes, IntegrationMethods
-from .helpers import Vector, parse_muscle_index, concatenate
+from .helpers import Vector, Scalar, parse_muscle_index, concatenate
 from .model_abstract import ModelAbstract
 
 
@@ -134,6 +134,9 @@ class ModelBiorbd(ModelAbstract):
                 out_force[j, i] = mus.force(activation)
 
         return out_force
+
+    def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
+        self._model.muscle(index).characteristics().setOptimalLength(optimal_length)
 
     def integrate(
         self,

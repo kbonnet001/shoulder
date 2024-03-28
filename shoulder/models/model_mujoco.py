@@ -2,7 +2,7 @@ import mujoco
 import numpy as np
 
 from .enums import ControlsTypes, IntegrationMethods
-from .helpers import Vector, parse_muscle_index
+from .helpers import Vector, Scalar, parse_muscle_index
 from .model_abstract import ModelAbstract
 
 
@@ -84,6 +84,9 @@ class ModelMujoco(ModelAbstract):
             force[:, i] = np.abs(data.actuator_force[muscle_index])  # TODO: check why absolute
 
         return force
+
+    def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
+        raise NotImplementedError("ModelMujoco.set_muscle_parameters is not implemented yet")
 
     def integrate(
         self,

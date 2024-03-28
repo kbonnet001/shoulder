@@ -1,7 +1,7 @@
 from abc import ABC, abstractproperty, abstractmethod
 
 from .enums import ControlsTypes, IntegrationMethods
-from .helpers import Vector
+from .helpers import Vector, Scalar
 
 
 class ModelAbstract(ABC):
@@ -52,6 +52,19 @@ class ModelAbstract(ABC):
     ) -> Vector:
         """
         Compute the muscle forces
+        """
+
+    @abstractmethod
+    def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
+        """
+        Set the muscle parameters
+
+        Parameters
+        ----------
+        index: int
+            The muscle index
+        optimal_length: Scalar
+            The optimal length
         """
 
     @abstractmethod
