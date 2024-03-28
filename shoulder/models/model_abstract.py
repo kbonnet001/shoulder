@@ -1,6 +1,6 @@
 from abc import ABC, abstractproperty, abstractmethod
 
-from .enums import ControlsTypes, IntegrationMethods
+from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
 from .helpers import Vector, Scalar
 
 
@@ -65,6 +65,24 @@ class ModelAbstract(ABC):
             The muscle index
         optimal_length: Scalar
             The optimal length
+        """
+
+    @abstractmethod
+    def get_muscle_parameter(self, index: int, parameter_to_get: MuscleParameter) -> Scalar:
+        """
+        Get the muscle parameters
+
+        Parameters
+        ----------
+        index: int
+            The muscle index
+        parameter_to_get: MuscleParameter
+            The parameter to get
+
+        Returns
+        -------
+        Scalar
+            The muscle parameter requested
         """
 
     @abstractmethod

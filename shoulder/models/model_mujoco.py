@@ -1,7 +1,7 @@
 import mujoco
 import numpy as np
 
-from .enums import ControlsTypes, IntegrationMethods
+from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
 from .helpers import Vector, Scalar, parse_muscle_index
 from .model_abstract import ModelAbstract
 
@@ -87,6 +87,9 @@ class ModelMujoco(ModelAbstract):
 
     def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
         raise NotImplementedError("ModelMujoco.set_muscle_parameters is not implemented yet")
+
+    def get_muscle_parameter(self, index: int, parameter_to_get: MuscleParameter) -> Scalar:
+        raise NotImplementedError("ModelMujoco.get_muscle_parameter is not implemented yet")
 
     def integrate(
         self,

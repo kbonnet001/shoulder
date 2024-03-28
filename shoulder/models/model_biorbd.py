@@ -6,7 +6,7 @@ import numpy as np
 from scipy import integrate
 
 
-from .enums import ControlsTypes, IntegrationMethods
+from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
 from .helpers import Vector, Scalar, parse_muscle_index, concatenate
 from .model_abstract import ModelAbstract
 
@@ -112,6 +112,8 @@ class ModelBiorbd(ModelAbstract):
         data_type = type(emg)
         if not isinstance(q, data_type) or not isinstance(qdot, data_type):
             raise ValueError("emg, q and qdot must have the same type")
+        if len(emg.shape) == 1:
+            emg = emg[:, np.newaxis]
 
         muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
@@ -137,6 +139,12 @@ class ModelBiorbd(ModelAbstract):
 
     def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
         self._model.muscle(index).characteristics().setOptimalLength(optimal_length)
+
+    def get_muscle_parameter(self, index: int, parameter_to_get: MuscleParameter) -> Scalar:
+        if parameter_to_get == MuscleParameter.OPTIMAL_LENGTH:
+            return self._model.muscle(index).characteristics().optimalLength().to_mx()
+        else:
+            raise NotImplementedError(f"Parameter {parameter_to_get} not implemented")
 
     def integrate(
         self,

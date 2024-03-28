@@ -9,3 +9,7 @@ class ControlsTypes(Enum):
 class IntegrationMethods(Enum):
     RK4 = "RK4"
     RK45 = "RK45"
+
+
+class MuscleParameter(Enum):
+    OPTIMAL_LENGTH = "optimal_length"
