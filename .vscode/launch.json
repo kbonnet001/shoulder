@@ -28,13 +28,5 @@
             "cwd": "${workspaceFolder}/run",
             "console": "integratedTerminal"
         },
-        {
-            "name": "Bug",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/run/bug.py",
-            "cwd": "${workspaceFolder}/run",
-            "console": "integratedTerminal"
-        },
     ]
 }
