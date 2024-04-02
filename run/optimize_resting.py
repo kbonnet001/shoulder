@@ -47,6 +47,22 @@ def find_minimal_optimal_lengths(model: ModelBiorbd, q: np.array, qdot: np.array
     x = np.ones(n_muscles) * 0.0001
 
     # For each muscle, test if the muscle is producing passive forces
+    optimal_lengths_mx = casadi.MX.sym("optimal_lengths", n_muscles, 1)
+    emg_mx = casadi.MX.sym("emg", *emg.shape)
+    q_mx = casadi.MX.sym("q", *q.shape)
+    qdot_mx = casadi.MX.sym("qdot", *qdot.shape)
+
+    for i in range(n_muscles):
+        model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_mx[i])
+
+    muscle_forces = casadi.Function(
+        "muscle_forces",
+        [optimal_lengths_mx, emg_mx, q_mx, qdot_mx],
+        [model.muscle_force(emg_mx, q_mx, qdot_mx)],
+        ["optimal_lengths", "emg", "q", "qdot"],
+        ["forces"],
+    ).expand()
+
     for i in range(n_muscles):
         max_so_far = None
         min_so_far = 0
@@ -56,25 +72,27 @@ def find_minimal_optimal_lengths(model: ModelBiorbd, q: np.array, qdot: np.array
             model.set_muscle_parameters(index=i, optimal_length=float(x[i]))
 
             # Get the muscle force
-            force = model.muscle_force(emg, q, qdot, i)
+            force = muscle_forces(x, emg, q, qdot)
 
             # If the muscle is producing passive forces, optimize the optimal length
             if force > 0 and force < threshold:
                 break
             elif force > 0:
-                max_so_far = x[i]
-                x[i] = (x[i] + min_so_far) / 2
-            else:
                 min_so_far = x[i]
                 if max_so_far is not None:
                     x[i] = (x[i] + max_so_far) / 2
                 else:
                     x[i] *= 2
+            else:
+                max_so_far = x[i]
+                x[i] = (x[i] + min_so_far) / 2
 
     return x
 
 
-def optimize_optimal_lengths(cx, model: ModelBiorbd, q: np.array, qdot: np.array, emg: np.array) -> np.array:
+def optimize_optimal_lengths(
+    cx, model: ModelBiorbd, x0: np.ndarray, q: np.ndarray, qdot: np.ndarray, emg: np.ndarray
+) -> np.ndarray:
     """
     Find values for the optimal lenths that do not produce any muscle force
     """
@@ -86,9 +104,8 @@ def optimize_optimal_lengths(cx, model: ModelBiorbd, q: np.array, qdot: np.array
     x = cx.sym("optimal_lengths", n_muscles, 1)
 
     # Get initial guesses and bounds based on the model
-    x0 = np.array([float(model.get_muscle_parameter(i, MuscleParameter.OPTIMAL_LENGTH)) for i in range(n_muscles)])
-    lbx = x0 * 0.8
-    ubx = x0 * 1.2
+    lbx = x0 * 0.95
+    ubx = x0 * 1.25
 
     # Compute the cost functions
     obj = casadi.sum1(compute_qdot(x, model, q, qdot, emg) ** 2)
@@ -120,7 +137,7 @@ def main():
         # Find the minimal optimal lengths
         optimal_lengths = find_minimal_optimal_lengths(model, q, qdot)
 
-        optimal_lengths = optimize_optimal_lengths(cx, model, q, qdot, emg)
+        optimal_lengths = optimize_optimal_lengths(cx, model, optimal_lengths, q, qdot, emg)
 
         # Print the results
         print(f"The optimal lengths are: {optimal_lengths}")

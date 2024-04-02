@@ -2,6 +2,7 @@ from functools import partial
 
 import biorbd
 import biorbd_casadi
+import casadi
 import numpy as np
 from scipy import integrate
 
@@ -14,13 +15,11 @@ from .model_abstract import ModelAbstract
 class ModelBiorbd(ModelAbstract):
     def __init__(self, model_path: str, use_casadi: bool = False):
         self._use_casadi = use_casadi
-        if self._use_casadi:
-            self._model = biorbd_casadi.Model(model_path)
-        else:
-            self._model = biorbd.Model(model_path)
+        self.brbd = biorbd_casadi if self._use_casadi else biorbd
+        self._model = self.brbd.Model(model_path)
 
     @property
-    def biorbd_model(self) -> biorbd.Model:
+    def biorbd_model(self) -> biorbd.Model | biorbd_casadi.Model:
         return self._model
 
     @property
@@ -94,8 +93,8 @@ class ModelBiorbd(ModelAbstract):
                 self._model.updateMuscles(q[:, i], qdot[:, i], True)
 
             for j in range(muscle_index.start, muscle_index.stop):
-                mus = _upcast_muscle(self._model.muscle(j))
-                activation = biorbd.State(emg[j, i], emg[j, i])
+                mus = self._upcast_muscle(self._model.muscle(j))
+                activation = self.brbd.State(emg[j, i], emg[j, i])
                 out_flpe[j, i] = mus.FlPE()
                 out_flce[j, i] = mus.FlCE(activation)
                 if qdot is not None:
@@ -122,18 +121,28 @@ class ModelBiorbd(ModelAbstract):
             qdot = qdot[:, np.newaxis]
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
+        muscle_index = list(range(*muscle_index.indices(n_muscles)))
 
-        out_force = data_type((n_muscles, q.shape[1]))
+        if data_type == casadi.MX or data_type == casadi.SX:
+            out_force = data_type(n_muscles, q.shape[1])
+        else:
+            out_force = data_type((n_muscles, q.shape[1]))
+
         for i in range(q.shape[1]):
             if qdot is None:
                 self._model.updateMuscles(q[:, i], True)
             else:
                 self._model.updateMuscles(q[:, i], qdot[:, i], True)
 
-            for j in range(muscle_index.start, muscle_index.stop):
-                mus = _upcast_muscle(self._model.muscle(j))
-                activation = biorbd.State(emg[j, i], emg[j, i])
-                out_force[j, i] = mus.force(activation)
+            for j in range(n_muscles):
+                mus = self._upcast_muscle(self._model.muscle(muscle_index[j]))
+                activation = self.brbd.State(emg[j, i], emg[j, i])
+                force_tp = mus.force(activation)
+                if self._use_casadi:
+                    force_tp = force_tp.to_mx()
+                    if data_type == np.ndarray:
+                        force_tp = casadi.Function("force", [], [force_tp], [], ["force"])()["force"]
+                out_force[j, i] = force_tp
 
         return out_force
 
@@ -249,16 +258,24 @@ class ModelBiorbd(ModelAbstract):
         viz.set_camera_roll(np.pi / 2)
         viz.exec()
 
-
-def _upcast_muscle(muscle: biorbd.Muscle) -> biorbd.HillType | biorbd.HillThelenType | biorbd.HillDeGrooteType:
-    muscle_type_id = muscle.type()
-    if muscle_type_id == biorbd.IDEALIZED_ACTUATOR:
-        return biorbd.IdealizedActuator(muscle)
-    elif muscle_type_id == biorbd.HILL:
-        return biorbd.HillType(muscle)
-    elif muscle_type_id == biorbd.HILL_THELEN:
-        return biorbd.HillThelenType(muscle)
-    elif muscle_type_id == biorbd.HILL_DE_GROOTE:
-        return biorbd.HillDeGrooteType(muscle)
-    else:
-        raise ValueError(f"Muscle type {muscle_type_id} not supported")
+    def _upcast_muscle(
+        self, muscle: biorbd.Muscle | biorbd_casadi.Muscle
+    ) -> (
+        biorbd.HillType
+        | biorbd_casadi.HillType
+        | biorbd.HillThelenType
+        | biorbd_casadi.HillThelenType
+        | biorbd.HillDeGrooteType
+        | biorbd_casadi.HillDeGrooteType
+    ):
+        muscle_type_id = muscle.type()
+        if muscle_type_id == self.brbd.IDEALIZED_ACTUATOR:
+            return self.brbd.IdealizedActuator(muscle)
+        elif muscle_type_id == self.brbd.HILL:
+            return self.brbd.HillType(muscle)
+        elif muscle_type_id == self.brbd.HILL_THELEN:
+            return self.brbd.HillThelenType(muscle)
+        elif muscle_type_id == self.brbd.HILL_DE_GROOTE:
+            return self.brbd.HillDeGrooteType(muscle)
+        else:
+            raise ValueError(f"Muscle type {muscle_type_id} not supported")
