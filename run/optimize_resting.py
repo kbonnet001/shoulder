@@ -72,7 +72,7 @@ def find_minimal_optimal_lengths(model: ModelBiorbd, q: np.array, qdot: np.array
             model.set_muscle_parameters(index=i, optimal_length=float(x[i]))
 
             # Get the muscle force
-            force = muscle_forces(x, emg, q, qdot)
+            force = muscle_forces(x, emg, q, qdot)[i]
 
             # If the muscle is producing passive forces, optimize the optimal length
             if force > 0 and force < threshold:
