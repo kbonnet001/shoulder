@@ -146,8 +146,14 @@ class ModelBiorbd(ModelAbstract):
 
         return out_force
 
-    def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
-        self._model.muscle(index).characteristics().setOptimalLength(optimal_length)
+    def set_muscle_parameters(
+        self, index: int, optimal_length: Scalar = None, tendon_slack_length: Scalar = None
+    ) -> None:
+        if optimal_length is not None:
+            self._model.muscle(index).characteristics().setOptimalLength(optimal_length)
+
+        if tendon_slack_length is not None:
+            self._model.muscle(index).characteristics().setTendonSlackLength(tendon_slack_length)
 
     def get_muscle_parameter(self, index: int, parameter_to_get: MuscleParameter) -> Scalar:
         if parameter_to_get == MuscleParameter.OPTIMAL_LENGTH:

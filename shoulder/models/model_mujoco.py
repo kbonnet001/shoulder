@@ -85,7 +85,9 @@ class ModelMujoco(ModelAbstract):
 
         return force
 
-    def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
+    def set_muscle_parameters(
+        self, index: int, optimal_length: Scalar = None, tendon_slack_length: Scalar = None
+    ) -> None:
         raise NotImplementedError("ModelMujoco.set_muscle_parameters is not implemented yet")
 
     def get_muscle_parameter(self, index: int, parameter_to_get: MuscleParameter) -> Scalar:

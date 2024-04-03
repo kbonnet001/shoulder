@@ -55,7 +55,9 @@ class ModelAbstract(ABC):
         """
 
     @abstractmethod
-    def set_muscle_parameters(self, index: int, optimal_length: Scalar) -> None:
+    def set_muscle_parameters(
+        self, index: int, optimal_length: Scalar = None, tendon_slack_length: Scalar = None
+    ) -> None:
         """
         Set the muscle parameters
 
@@ -65,6 +67,8 @@ class ModelAbstract(ABC):
             The muscle index
         optimal_length: Scalar
             The optimal length
+        tendon_slack_length: Scalar
+            The tendon slack length
         """
 
     @abstractmethod
