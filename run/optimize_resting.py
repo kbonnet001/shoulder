@@ -26,24 +26,23 @@ def compute_qdot(x: casadi.MX | casadi.SX, model: ModelBiorbd, q: np.ndarray, qd
         [q_mx, qdot_mx, emg_mx, tendon_slack_lengths_mx],
         xdot,
         ["q_in", "qdot_in", "emg_in", "tendon_slack_lengths_in"],
-        ["q", "qdot"],
+        ["qdot", "qddot"],
     )
-    qdot = xdot(q_in=q, qdot_in=qdot, emg_in=emg, tendon_slack_lengths_in=x)["qdot"]
+    qddot = xdot(q_in=q, qdot_in=qdot, emg_in=emg, tendon_slack_lengths_in=x)["qddot"]
 
-    return qdot
+    return qddot
 
 
 # TODO: Add optimization of the optimal lengths based on strongest position of the muscles (via q at qdot=0)
 
 
-def find_minimal_tendon_slack_lengths(model: ModelBiorbd, q: np.array, qdot: np.array) -> np.array:
+def find_minimal_tendon_slack_lengths(model: ModelBiorbd, emg: np.ndarray, q: np.array, qdot: np.array) -> np.array:
     """
     Find values for the tendon slack lengths where the muscle starts to produce passive muscle forces
     """
 
     # Declare some aliases
     n_muscles = model.n_muscles
-    emg = np.zeros(model.n_muscles)
     threshold = 1e-8
 
     # Get initial guesses from the model
@@ -69,7 +68,7 @@ def find_minimal_tendon_slack_lengths(model: ModelBiorbd, q: np.array, qdot: np.
     # TODO: Add target force to the optimization problem
     for i in range(n_muscles):
         max_so_far = None
-        min_so_far = 0
+        min_so_far = None
 
         while True:
             # Update the muscle parameters
@@ -95,7 +94,7 @@ def find_minimal_tendon_slack_lengths(model: ModelBiorbd, q: np.array, qdot: np.
 
 
 def optimize_tendon_slack_lengths(
-    cx, model: ModelBiorbd, x0: np.ndarray, q: np.ndarray, qdot: np.ndarray, emg: np.ndarray
+    cx, model: ModelBiorbd, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray
 ) -> np.ndarray:
     """
     Find values for the tendon slack lengths that do not produce any muscle force
@@ -108,8 +107,11 @@ def optimize_tendon_slack_lengths(
     x = cx.sym("tendon_slack_lengths", n_muscles, 1)
 
     # Get initial guesses and bounds based on the model
-    lbx = x0 * 0.95
-    ubx = x0 * 1.25
+    lbx = find_minimal_tendon_slack_lengths(model, emg, q, qdot)
+    ubx = lbx * 1.25
+
+    # Set arbitrary initial guess
+    x0 = np.mean([lbx, ubx], axis=0)
 
     # Compute the cost functions
     obj = casadi.sum1(compute_qdot(x, model, q, qdot, emg) ** 2)
@@ -138,12 +140,7 @@ def main():
         qdot = np.zeros(n_q)
         emg = np.zeros(n_muscles)
 
-        # Find the minimal tendon slack lengths
-        minimal_tendon_slack_lengths = find_minimal_tendon_slack_lengths(model, q, qdot)
-
-        opimized_tendon_slack_lengths = optimize_tendon_slack_lengths(
-            cx, model, minimal_tendon_slack_lengths, q, qdot, emg
-        )
+        opimized_tendon_slack_lengths = optimize_tendon_slack_lengths(cx, model, emg, q, qdot)
 
         # Print the results
         print(f"The optimal tendon slack lengths are: {opimized_tendon_slack_lengths}")
