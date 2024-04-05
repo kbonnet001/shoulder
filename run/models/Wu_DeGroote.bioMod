@@ -91,11 +91,11 @@ endsegment
 segment humerus_right
     parent scapula_right
     RT 0 0 0 xyz -0.00955 -0.034 0.009
-	rotations xzy
+	rotations yxy
 	ranges
-	    -pi/2 0.1
-        -pi/4 pi
-        -pi/2 pi/2
+        -pi/3 3*pi/4
+	    -1.9*pi/2 0.1
+        -0.05 pi/2
     mass 2.16000
     com 0 -0.164502 0
     inertia
