@@ -34,6 +34,22 @@ class ModelBiorbd(ModelAbstract):
     def n_muscles(self) -> int:
         return self._model.nbMuscleTotal()
 
+    @property
+    def muscle_names(self) -> list[str]:
+        return [name.to_string() for name in self._model.muscleNames()]
+
+    @property
+    def relaxed_poses(self) -> map:
+        return {
+            "DELT2": np.array([0, 0.01, 0]),
+        }
+
+    @property
+    def strongest_poses(self) -> map:
+        return {
+            "DELT2": np.array([0, np.pi / 2, 0]),
+        }
+
     def muscles_kinematics(
         self, q: Vector, qdot: Vector = None, muscle_index: range | slice | int = None
     ) -> Vector | tuple[Vector, Vector]:
@@ -42,6 +58,10 @@ class ModelBiorbd(ModelAbstract):
             raise ValueError("q and qdot must have the same type")
 
         muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
+        if len(q.shape) == 1:
+            q = q[:, np.newaxis]
+        if qdot is not None and len(qdot.shape) == 1:
+            qdot = qdot[:, np.newaxis]
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
         data_type = type(q)
@@ -55,9 +75,20 @@ class ModelBiorbd(ModelAbstract):
                 self._model.updateMuscles(q[:, i], qdot[:, i], True)
 
             for j in range(self._model.nbMuscleTotal()):
-                lengths[j, i] = self._model.muscle(j).length(self._model, q[:, i], False)
+                length_tp = self._model.muscle(j).length(self._model, q[:, i], False)
+                if self._use_casadi:
+                    length_tp = length_tp.to_mx()
+                    if data_type == np.ndarray:
+                        length_tp = casadi.Function("length", [], [length_tp], [], ["length"])()["length"]
+                lengths[j, i] = length_tp
+
                 if qdot is not None:
-                    velocities[j, i] = self._model.muscle(j).velocity(self._model, q[:, i], qdot[:, i], False)
+                    velocity_tp = self._model.muscle(j).velocity(self._model, q[:, i], qdot[:, i], False)
+                    if self._use_casadi:
+                        velocity_tp = velocity_tp.to_mx()
+                        if data_type == np.ndarray:
+                            velocity_tp = casadi.Function("velocity", [], [velocity_tp], [], ["velocity"])()["velocity"]
+                    velocities[j, i] = velocity_tp
 
         if qdot is None:
             return lengths
@@ -95,10 +126,28 @@ class ModelBiorbd(ModelAbstract):
             for j in range(muscle_index.start, muscle_index.stop):
                 mus = self._upcast_muscle(self._model.muscle(j))
                 activation = self.brbd.State(emg[j, i], emg[j, i])
-                out_flpe[j, i] = mus.FlPE()
-                out_flce[j, i] = mus.FlCE(activation)
+
+                flpe_tp = mus.FlPE()
+                if self._use_casadi:
+                    flpe_tp = flpe_tp.to_mx()
+                    if data_type == np.ndarray:
+                        flpe_tp = casadi.Function("flpe", [], [flpe_tp], [], ["flpe"])()["flpe"]
+                out_flpe[j, i] = flpe_tp
+
+                flce_tp = mus.FlCE(activation)
+                if self._use_casadi:
+                    flce_tp = flce_tp.to_mx()
+                    if data_type == np.ndarray:
+                        flce_tp = casadi.Function("flce", [], [flce_tp], [], ["flce"])()["flce"]
+                out_flce[j, i] = flce_tp
+
                 if qdot is not None:
-                    out_fvce[j, i] = mus.FvCE()
+                    flve_tp = mus.FvCE()
+                    if self._use_casadi:
+                        flve_tp = flve_tp.to_mx()
+                        if data_type == np.ndarray:
+                            flve_tp = casadi.Function("flve", [], [flve_tp], [], ["flve"])()["flve"]
+                    out_fvce[j, i] = flve_tp
 
         if qdot is None:
             return out_flpe, out_flce
@@ -106,7 +155,12 @@ class ModelBiorbd(ModelAbstract):
             return out_flpe, out_flce, out_fvce
 
     def muscle_force(
-        self, emg: Vector, q: Vector, qdot: Vector, muscle_index: int | range | slice | None = None
+        self,
+        emg: Vector,
+        q: Vector,
+        qdot: Vector,
+        muscle_index: int | range | slice | None = None,
+        from_active_force_only: bool = False,
     ) -> Vector:
         data_type = type(emg)
         if not isinstance(q, data_type) or not isinstance(qdot, data_type):
@@ -158,6 +212,8 @@ class ModelBiorbd(ModelAbstract):
     def get_muscle_parameter(self, index: int, parameter_to_get: MuscleParameter) -> Scalar:
         if parameter_to_get == MuscleParameter.OPTIMAL_LENGTH:
             return self._model.muscle(index).characteristics().optimalLength().to_mx()
+        elif parameter_to_get == MuscleParameter.TENDON_SLACK_LENGTH:
+            return self._model.muscle(index).characteristics().tendonSlackLength().to_mx()
         else:
             raise NotImplementedError(f"Parameter {parameter_to_get} not implemented")
 
@@ -188,15 +244,8 @@ class ModelBiorbd(ModelAbstract):
         else:
             raise NotImplementedError(f"Control {controls_type} not implemented")
 
-        if integration_method == IntegrationMethods.RK45:
-            method = "RK45"
-        elif integration_method == IntegrationMethods.RK4:
-            method = "RK4"
-        else:
-            raise NotImplementedError(f"Integration method {integration_method} not implemented")
-
         t_span = (t[0], t[-1])
-        results = integrate.solve_ivp(fun=func, t_span=t_span, y0=states, method=method, t_eval=t)
+        results = integrate.solve_ivp(fun=func, t_span=t_span, y0=states, method=integration_method.value, t_eval=t)
 
         q = results.y[: self.n_q, :]
         qdot = results.y[self.n_q :, :]
@@ -235,8 +284,9 @@ class ModelBiorbd(ModelAbstract):
         q = x[: self.n_q]
         qdot = x[self.n_q :]
         states = self._model.stateSet()
-        # for k in range(self._model.nbMuscles()):
-        #     states[k].setActivation(emg[k])
+        for k in range(self._model.nbMuscles()):
+            states[k].setExcitation(emg[k])
+            states[k].setActivation(emg[k])
         tau = self._model.muscularJointTorque(states, q, qdot)
         tau = tau.to_mx() if self._use_casadi else tau.to_array()
 

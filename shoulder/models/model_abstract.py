@@ -1,26 +1,61 @@
-from abc import ABC, abstractproperty, abstractmethod
+from abc import ABC, abstractmethod
+
+import numpy as np
 
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
 from .helpers import Vector, Scalar
 
 
 class ModelAbstract(ABC):
-    @abstractproperty
+    @property
+    @property
     def name(self) -> str:
         """
         The name of the model
         """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def n_q(self) -> int:
         """
         The number of generalized coordinates
         """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def n_muscles(self) -> int:
         """
         The number of muscles
+        """
+
+    @property
+    def muscle_names(self) -> list[str]:
+        """
+        The muscle names
+        """
+
+    @property
+    @abstractmethod
+    def relaxed_poses(self) -> map:
+        """
+        Get the relaxed poses (the pose where the muscle is expected to start producing passive force) for each muscle
+
+        Returns
+        -------
+        map[str, np.ndarray]
+            The relaxed poses for each muscle, the key is the muscle name and the value is the joint angles vector
+        """
+
+    @property
+    @abstractmethod
+    def strongest_poses(self) -> map:
+        """
+        Get the strongest poses for each muscle
+
+        Returns
+        -------
+        map[str, np.ndarray]
+            The strongest poses for each muscle, the key is the muscle name and the value is the joint angles vector
         """
 
     @abstractmethod

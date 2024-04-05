@@ -1,39 +1,76 @@
 import casadi
 import numpy as np
-from shoulder import ModelBiorbd, ControlsTypes, MuscleParameter
+from shoulder import ModelBiorbd, ControlsTypes, MuscleParameter, OptimizationHelpers
 
 
 # Add muscletendon equilibrium constraint
 # Multivariate normal => center + noise , returns covariance matrix
 
 
-def compute_qdot(x: casadi.MX | casadi.SX, model: ModelBiorbd, q: np.ndarray, qdot: np.ndarray, emg: np.ndarray):
+def find_optimal_length_assuming_no_tendon(model: ModelBiorbd) -> np.array:
+    """
+    Find values for the optimal muscle lengths where each muscle produces maximal force at their respective strongest
+    pose. We could use IPOPT for that, but since the initial guess is so poor, sometimes we get to 0N force, which
+    confuses the optimizer. This function uses a custom gradient descent algorithm that is more robust to this
+    kind of problem.
+
+    The method resets the model to its original state after the optimization
+
+    Parameters
+    ----------
+    model: ModelBiorbd
+        The model to use
+
+    Returns
+    -------
+    np.array
+        The optimized optimal muscle lengths
+    """
+
+    # Declare some aliases
     n_q = model.n_q
     n_muscles = model.n_muscles
+    optimal_lengths_bak = [model.get_muscle_parameter(i, MuscleParameter.OPTIMAL_LENGTH) for i in range(n_muscles)]
 
-    # Compute the dynamics using the MX as biorbd is MX based
-    tendon_slack_lengths_mx = casadi.MX.sym("tendon_slack_lengths", n_muscles, 1)
-    q_mx = casadi.MX.sym("q_mx", n_q, 1)
-    qdot_mx = casadi.MX.sym("qdot_mx", n_q, 1)
-    emg_mx = casadi.MX.sym("emg_mx", n_muscles, 1)
+    # Declare the decision and fixed variables
+    optimal_lengths_mx = casadi.MX.sym("optimal_lengths", n_muscles, 1)
+    emg_mx = casadi.MX.ones(n_muscles, 1)
+    q_mx = casadi.MX.sym("q", n_q, 1)
+    qdot_mx = casadi.MX.zeros(n_q, 1)
+
+    # Compute the cost function jacobian
     for i in range(n_muscles):
-        model.set_muscle_parameters(index=i, tendon_slack_length=tendon_slack_lengths_mx[i])
-    xdot = model.forward_dynamics(q=q_mx, qdot=qdot_mx, controls=emg_mx, controls_type=ControlsTypes.EMG)
+        model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_mx[i])
+    muscle_forces_coefficients_jacobian = casadi.Function(
+        "jacobian",
+        [optimal_lengths_mx, q_mx],
+        [casadi.jacobian(model.muscle_force_coefficients(emg_mx, q_mx, qdot_mx)[1], optimal_lengths_mx)],
+        ["optimal_lengths", "q"],
+        ["jacobian"],
+    ).expand()
 
-    # Convert the outputs to the type corresponding to the x vector and collapsing the graph at q, qdot and emg
-    xdot = casadi.Function(
-        "xdot",
-        [q_mx, qdot_mx, emg_mx, tendon_slack_lengths_mx],
-        xdot,
-        ["q_in", "qdot_in", "emg_in", "tendon_slack_lengths_in"],
-        ["qdot", "qddot"],
-    )
-    qddot = xdot(q_in=q, qdot_in=qdot, emg_in=emg, tendon_slack_lengths_in=x)["qddot"]
+    # Optimize for each muscle
+    x = np.ndarray(n_muscles) * np.nan
+    for i in range(n_muscles):
+        # Evaluate the jacobian at q
+        q = model.strongest_poses[model.muscle_names[i]]
+        jaco = casadi.Function(
+            "jacobian_at_q",
+            [optimal_lengths_mx],
+            [muscle_forces_coefficients_jacobian(optimal_lengths=optimal_lengths_mx, q=q)["jacobian"][i]],
+            ["optimal_lengths"],
+            ["jacobian_at_q"],
+        ).expand()
 
-    return qddot
+        # Optimize for the current muscle
+        flce_initial_guess = model.muscles_kinematics(q)[i, 0] / 2
+        x[i] = OptimizationHelpers.simple_gradient_descent(x0=flce_initial_guess, cost_function_jacobian=jaco)
 
+    # Set back the original optimal lengths
+    for i in range(n_muscles):
+        model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_bak[i])
 
-# TODO: Add optimization of the optimal lengths based on strongest position of the muscles (via q at qdot=0)
+    return x
 
 
 def find_minimal_tendon_slack_lengths(model: ModelBiorbd, emg: np.ndarray, q: np.array, qdot: np.array) -> np.array:
@@ -42,53 +79,46 @@ def find_minimal_tendon_slack_lengths(model: ModelBiorbd, emg: np.ndarray, q: np
     """
 
     # Declare some aliases
+    target = 0.02
+    n_q = model.n_q
     n_muscles = model.n_muscles
-    threshold = 1e-8
+    tendon_slack_lengths_bak = [
+        model.get_muscle_parameter(i, MuscleParameter.TENDON_SLACK_LENGTH) for i in range(n_muscles)
+    ]
 
-    # Get initial guesses from the model
-    x = np.ones(n_muscles) * 0.0001
-
-    # For each muscle, test if the muscle is producing passive forces
+    # Declare the decision and fixed variables
     tendon_slack_lengths_mx = casadi.MX.sym("tendon_slack_lengths", n_muscles, 1)
-    emg_mx = casadi.MX.sym("emg", *emg.shape)
-    q_mx = casadi.MX.sym("q", *q.shape)
-    qdot_mx = casadi.MX.sym("qdot", *qdot.shape)
+    emg_mx = casadi.MX.zeros(n_muscles, 1)
+    q_mx = casadi.MX.sym("q", n_q, 1)
+    qdot_mx = casadi.MX.zeros(n_q, 1)
 
     for i in range(n_muscles):
         model.set_muscle_parameters(index=i, tendon_slack_length=tendon_slack_lengths_mx[i])
 
     muscle_forces = casadi.Function(
         "muscle_forces",
-        [tendon_slack_lengths_mx, emg_mx, q_mx, qdot_mx],
+        [tendon_slack_lengths_mx, q_mx],
         [model.muscle_force(emg_mx, q_mx, qdot_mx)],
-        ["tendon_slack_lengths", "emg", "q", "qdot"],
+        ["tendon_slack_lengths", "q"],
         ["forces"],
     ).expand()
 
-    # TODO: Add target force to the optimization problem
+    x = np.ones(n_muscles) * 0.0001
     for i in range(n_muscles):
-        max_so_far = None
-        min_so_far = None
+        # Evaluate the muscle force at q
+        q = model.relaxed_poses[model.muscle_names[i]]
+        force = casadi.Function(
+            "force_at_q",
+            [tendon_slack_lengths_mx],
+            [muscle_forces(tendon_slack_lengths=tendon_slack_lengths_mx, q=q)["forces"][i] - target],
+            ["tendon_slack_lengths"],
+            ["force_at_q"],
+        ).expand()
+        x[i] = OptimizationHelpers.squeezing_optimization(lbx=0, ubx=1, cost_function=force)
 
-        while True:
-            # Update the muscle parameters
-            model.set_muscle_parameters(index=i, tendon_slack_length=float(x[i]))
-
-            # Get the muscle force
-            force = muscle_forces(x, emg, q, qdot)[i]
-
-            # If the muscle is producing passive forces, optimize the tendon slack length
-            if force > 0 and force < threshold:
-                break
-            elif force > 0:
-                min_so_far = x[i]
-                if max_so_far is not None:
-                    x[i] = (x[i] + max_so_far) / 2
-                else:
-                    x[i] *= 2
-            else:
-                max_so_far = x[i]
-                x[i] = (x[i] + min_so_far) / 2
+    # Set back the original tendon slack lengths
+    for i in range(n_muscles):
+        model.set_muscle_parameters(index=i, tendon_slack_length=tendon_slack_lengths_bak[i])
 
     return x
 
@@ -104,25 +134,54 @@ def optimize_tendon_slack_lengths(
     n_muscles = model.n_muscles
 
     # Prepare the decision variables
-    x = cx.sym("tendon_slack_lengths", n_muscles, 1)
+
+    # Find and set  initial guess for the optimal muscle lengths that is highest at the strongest pose
+    optimal_lengths_cx = cx.sym("optimal_lengths", n_muscles, 1)
+    optimal_lengths_mx = casadi.MX.sym("optimal_lengths_mx", n_muscles, 1)
+    optimal_lengths_x0 = find_optimal_length_assuming_no_tendon(model)
+    optimal_lengths_lb = optimal_lengths_x0 * 0.5
+    optimal_lengths_ub = optimal_lengths_x0 * 1.5
+
+    # Set the model to the optimal muscle lengths initial guess
+    for i in range(n_muscles):
+        model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_x0[i])
 
     # Get initial guesses and bounds based on the model
-    lbx = find_minimal_tendon_slack_lengths(model, emg, q, qdot)
-    ubx = lbx * 1.25
+    tendon_slack_lengths_cx = cx.sym("tendon_slack_lengths", n_muscles, 1)
+    tendon_slack_lengths_mx = casadi.MX.sym("tendon_slack_lengths_mx", n_muscles, 1)
+    tendon_slack_lengths_x0 = find_minimal_tendon_slack_lengths(model, emg, q, qdot)
+    tendon_slack_lengths_lb = tendon_slack_lengths_x0 * 0.9
+    tendon_slack_lengths_ub = tendon_slack_lengths_lb * 1.1
 
     # Set arbitrary initial guess
-    x0 = np.mean([lbx, ubx], axis=0)
+    x = casadi.vertcat(optimal_lengths_cx, tendon_slack_lengths_cx)
+    x_mx = casadi.vertcat(optimal_lengths_mx, tendon_slack_lengths_mx)
+    lbx = casadi.vertcat(optimal_lengths_lb, tendon_slack_lengths_lb)
+    ubx = casadi.vertcat(optimal_lengths_ub, tendon_slack_lengths_ub)
+    x0 = casadi.vertcat((optimal_lengths_x0, tendon_slack_lengths_x0))
 
     # Compute the cost functions
-    obj = casadi.sum1(compute_qdot(x, model, q, qdot, emg) ** 2)
+    f_mx = []
+    for i in range(n_muscles):
+        model.set_muscle_parameters(
+            index=i, optimal_length=optimal_lengths_mx[i], tendon_slack_length=tendon_slack_lengths_mx[i]
+        )
+    f_mx.append(
+        model.forward_dynamics(
+            q=casadi.MX(q), qdot=casadi.MX(qdot), controls=casadi.MX(emg), controls_type=ControlsTypes.EMG
+        )[1]
+        ** 2
+    )
 
     # Compute some non-linear constraints
-    g = cx()
+    g_mx = []
     lbg = np.array([])
     ubg = np.array([])
 
     # Solve the program
-    solver = casadi.nlpsol("solver", "ipopt", {"x": x, "f": obj, "g": g})
+    f = casadi.Function("f", [x_mx], [casadi.sum1(casadi.vertcat(*f_mx))]).expand()(x)
+    g = casadi.Function("g", [x_mx], [casadi.vertcat(*g_mx)]).expand()(x)
+    solver = casadi.nlpsol("solver", "ipopt", {"x": x, "f": f, "g": g})
     sol = solver(x0=x0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
 
     return sol["x"]
@@ -136,9 +195,9 @@ def main():
     for model in models:
         n_q = model.n_q
         n_muscles = model.n_muscles
-        q = np.zeros(n_q)
+        q = np.ones(n_q) * 0.001
         qdot = np.zeros(n_q)
-        emg = np.zeros(n_muscles)
+        emg = np.ones(n_muscles) * 0.01
 
         opimized_tendon_slack_lengths = optimize_tendon_slack_lengths(cx, model, emg, q, qdot)
 

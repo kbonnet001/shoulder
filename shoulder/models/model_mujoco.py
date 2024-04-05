@@ -23,6 +23,18 @@ class ModelMujoco(ModelAbstract):
     def n_muscles(self) -> int:
         return self._model.na
 
+    @property
+    def muscle_names(self) -> list[str]:
+        raise NotImplementedError("ModelMujoco.muscle_names is not implemented yet")
+
+    @property
+    def relaxed_poses(self) -> map:
+        raise NotImplementedError("ModelMujoco.relaxed_poses is not implemented yet")
+
+    @property
+    def strongest_poses(self, muscle_index: int | range | slice | None = None) -> map:
+        raise NotImplementedError("ModelMujoco.strongest_poses is not implemented yet")
+
     def muscles_kinematics(
         self, q: Vector, qdot: Vector = None, muscle_index: range | slice | int = None
     ) -> Vector | tuple[Vector, Vector]:

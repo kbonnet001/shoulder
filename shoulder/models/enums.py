@@ -13,3 +13,4 @@ class IntegrationMethods(Enum):
 
 class MuscleParameter(Enum):
     OPTIMAL_LENGTH = "optimal_length"
+    TENDON_SLACK_LENGTH = "tendon_slack_length"
