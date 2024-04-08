@@ -41,12 +41,14 @@ class ModelBiorbd(ModelAbstract):
     @property
     def relaxed_poses(self) -> map:
         return {
+            "DELT1": np.array([0, 0.01, 0]),
             "DELT2": np.array([0, 0.01, 0]),
         }
 
     @property
     def strongest_poses(self) -> map:
         return {
+            "DELT1": np.array([0, np.pi / 2, 0]),
             "DELT2": np.array([0, np.pi / 2, 0]),
         }
 
