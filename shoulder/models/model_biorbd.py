@@ -8,7 +8,8 @@ from scipy import integrate
 
 
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
-from .helpers import Vector, Scalar, parse_muscle_index, concatenate
+from ..helpers import Vector, Scalar, concatenate
+from .helpers import MuscleHelpers
 from .model_abstract import ModelAbstract
 
 
@@ -59,7 +60,7 @@ class ModelBiorbd(ModelAbstract):
         if qdot is not None and not isinstance(qdot, data_type):
             raise ValueError("q and qdot must have the same type")
 
-        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if qdot is not None and len(qdot.shape) == 1:
@@ -108,7 +109,7 @@ class ModelBiorbd(ModelAbstract):
         if not isinstance(q, data_type) or (qdot is not None and not isinstance(qdot, data_type)):
             raise ValueError("emg, q and qdot must have the same type")
 
-        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if qdot is not None and len(qdot.shape) == 1:
@@ -170,7 +171,7 @@ class ModelBiorbd(ModelAbstract):
         if len(emg.shape) == 1:
             emg = emg[:, np.newaxis]
 
-        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if len(qdot.shape) == 1:

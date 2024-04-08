@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 
-import numpy as np
-
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
-from .helpers import Vector, Scalar
+from ..helpers import Vector, Scalar
 
 
 class ModelAbstract(ABC):

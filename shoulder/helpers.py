@@ -1,6 +1,19 @@
 from typing import Callable
 
+import casadi
 import numpy as np
+
+type Vector = np.ndarray | casadi.SX | casadi.MX | casadi.DM
+type Scalar = float | int | casadi.SX | casadi.MX | casadi.DM
+
+
+def concatenate(*args: Vector) -> Vector:
+    if isinstance(args[0], (casadi.SX, casadi.MX, casadi.DM)):
+        return casadi.vertcat(*args)
+    elif isinstance(args[0], np.ndarray):
+        return np.concatenate(args, axis=0)
+    else:
+        raise ValueError("Unsupported type for concatenation")
 
 
 class OptimizationHelpers:

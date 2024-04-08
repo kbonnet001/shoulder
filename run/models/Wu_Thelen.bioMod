@@ -494,12 +494,12 @@ endmusclegroup
         // endwrapping
 */        
 
-/*
 musclegroup clavicle_to_humerus
 	originParent		clavicle_right
 	insertionParent		humerus_right
 endmusclegroup
 
+/*
 	muscle	PECM1
 		type 				idealizedActuator
 		musclegroup 		clavicle_to_humerus
@@ -517,10 +517,10 @@ endmusclegroup
 			  musclegroup 	clavicle_to_humerus
 			  position 		-0.000485828 0.00557039 0.0591605
 		endviapoint
-
+*/
 
 	muscle	DELT1
-		type 				idealizedActuator
+		type 				thelen
 		musclegroup 		clavicle_to_humerus
 		originPosition		-0.0241685 0.0192842 0.099015
 		insertionPosition	0.00455911 -0.103949 0.00775516
@@ -536,7 +536,7 @@ endmusclegroup
 			  musclegroup 	clavicle_to_humerus
 			  position 		-0.00230674 0.0315051 0.130618
 		endviapoint
-*/
+
 
 
 /*

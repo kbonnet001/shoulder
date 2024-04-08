@@ -1,6 +1,6 @@
 from .enums import MuscleCoefficientPlots, MuscleSurfacePlots
 from .helpers import OptimizationHelpers
-from .models import ModelBiorbd, ControlsTypes, IntegrationMethods, MuscleParameter
+from .models import ModelBiorbd, ControlsTypes, IntegrationMethods, MuscleParameter, MuscleHelpers
 
 try:
     from .models import ModelMujoco

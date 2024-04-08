@@ -2,7 +2,8 @@ import mujoco
 import numpy as np
 
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
-from .helpers import Vector, Scalar, parse_muscle_index
+from .helpers import MuscleHelpers
+from ..helpers import Vector, Scalar
 from .model_abstract import ModelAbstract
 
 
@@ -41,7 +42,7 @@ class ModelMujoco(ModelAbstract):
         if not isinstance(q, np.ndarray) or (qdot is not None and not isinstance(qdot, np.ndarray)):
             raise ValueError("ModelMujoco.muscles_kinematics only supports numpy arrays")
 
-        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
         data = mujoco.MjData(self._model)
@@ -81,7 +82,7 @@ class ModelMujoco(ModelAbstract):
         if not isinstance(emg, np.ndarray) or not isinstance(q, np.ndarray) or not isinstance(qdot, np.ndarray):
             raise ValueError("ModelMujoco.muscle_force only supports numpy arrays")
 
-        muscle_index = parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
         data = mujoco.MjData(self._model)
