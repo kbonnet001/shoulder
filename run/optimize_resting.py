@@ -1,3 +1,5 @@
+import time
+
 import casadi
 import numpy as np
 from shoulder import ModelBiorbd, ControlsTypes, MuscleHelpers
@@ -21,10 +23,12 @@ class Results:
         return s
 
 
-def optimize_muscle_parameters(cx, model: ModelBiorbd, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray) -> Results:
+def optimize_muscle_parameters(cx, model: ModelBiorbd, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, expand: bool = True) -> Results:
     """
     Find values for the tendon slack lengths that do not produce any muscle force
     """
+    start = time.time()
+    print(f"Optimizing muscle parameters for model {model.name}...")
 
     # Declare some aliases
     n_muscles = model.n_muscles
@@ -37,15 +41,17 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, emg: np.ndarray, q: np.nd
 
     # Find the initial guess for the tendon slack length by first finding a somewhat okay optimal length found by
     # maximizing force at the strongest pose, using the predefined tendon slack length
-    optimal_lengths_at_strongest = MuscleHelpers.find_optimal_length_assuming_strongest_pose(model)
+    print("Pre-optimizing the tendon slack lengths...")
+    optimal_lengths_at_strongest = MuscleHelpers.find_optimal_length_assuming_strongest_pose(model, expand=expand)
     for i in range(n_muscles):
         model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_at_strongest[i])
-    tendon_slack_lengths_x0 = MuscleHelpers.find_minimal_tendon_slack_lengths(model, emg, q, qdot)
+    tendon_slack_lengths_x0 = MuscleHelpers.find_minimal_tendon_slack_lengths(model, emg, q, qdot, expand=expand)
 
-    # Now reoptimize the optimal lengths assuming the tendon slack lengths are the ones found
+    # Now reoptimize the optimal lengths assuming the tendon slack lengths are the ones found")
+    print("Pre-optimizing the optimal lengths...")
     for i in range(n_muscles):
         model.set_muscle_parameters(index=i, tendon_slack_length=tendon_slack_lengths_x0[i])
-    optimal_lengths_x0 = MuscleHelpers.find_optimal_length_assuming_strongest_pose(model)
+    optimal_lengths_x0 = MuscleHelpers.find_optimal_length_assuming_strongest_pose(model, expand=expand)
 
     # Declare the bounds of the optimization problem
     optimal_lengths_lb = optimal_lengths_x0 * 0.5
@@ -67,6 +73,7 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, emg: np.ndarray, q: np.nd
         )
 
     # Declare the cost functions
+    print("Declaring the cost functions...")
     f_mx = []
     f_mx.append(
         model.forward_dynamics(
@@ -75,21 +82,30 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, emg: np.ndarray, q: np.nd
         ** 2
     )
 
+    f = casadi.Function("f", [x_mx], [casadi.sum1(casadi.vertcat(*f_mx))])
+    if expand:
+        f = f.expand()
+    f = f(x)
+
     # Declare the constraints
+    print("Declaring the constraints...")
     g_mx = []
     lbg = np.array([])
     ubg = np.array([])
 
-    # Solve the program
-    f = casadi.Function("f", [x_mx], [casadi.sum1(casadi.vertcat(*f_mx))]).expand()(x)
-    g = casadi.Function("g", [x_mx], [casadi.vertcat(*g_mx)]).expand()(x)
+    g = casadi.Function("g", [x_mx], [casadi.vertcat(*g_mx)])
+    if expand:
+        g = g.expand()
+    g = g(x)
+
+    # Solve the optimization problem
+    print("Solving the optimization problem...")
     solver = casadi.nlpsol("solver", "ipopt", {"x": x, "f": f, "g": g})
     sol = solver(x0=x0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
+    print(f"Optimization done in {time.time() - start:.2f} s")
 
     # Parse the results
-    optimal_lengths = sol["x"][:n_muscles]
-    tendon_slack_lengths = sol["x"][n_muscles:]
-    return Results(model=model, optimal_lengths=optimal_lengths, tendon_slack_lengths=tendon_slack_lengths)
+    return Results(model=model, optimal_lengths=sol["x"][:n_muscles], tendon_slack_lengths=sol["x"][n_muscles:])
 
 
 def main():
@@ -109,7 +125,7 @@ def main():
         emg = np.ones(n_muscles) * 0.01
 
         # Optimize
-        results.append(optimize_muscle_parameters(cx, model, emg, q, qdot))
+        results.append(optimize_muscle_parameters(cx, model, emg, q, qdot, expand=True))
 
     for result in results:
         print(result)

@@ -19,7 +19,7 @@ class MuscleHelpers:
             raise ValueError("muscle_index must be an int, a range or a slice")
 
     @staticmethod
-    def find_optimal_length_assuming_strongest_pose(model: ModelAbstract) -> np.array:
+    def find_optimal_length_assuming_strongest_pose(model: ModelAbstract, expand: bool = True) -> np.array:
         """
         Find values for the optimal muscle lengths where each muscle produces maximal force at their respective strongest
         pose. We could use IPOPT for that, but since the initial guess is so poor, sometimes we get to 0N force, which
@@ -32,6 +32,8 @@ class MuscleHelpers:
         ----------
         model: ModelAbstract
             The model to use
+        expand: bool
+            If the casadi functions should be expanded before the optimization
 
         Returns
         -------
@@ -59,7 +61,9 @@ class MuscleHelpers:
             [casadi.jacobian(model.muscle_force_coefficients(emg_mx, q_mx, qdot_mx)[1], optimal_lengths_mx)],
             ["optimal_lengths", "q"],
             ["jacobian"],
-        ).expand()
+        )
+        if expand:
+            muscle_forces_coefficients_jacobian = muscle_forces_coefficients_jacobian.expand()
 
         # Optimize for each muscle
         x = np.ndarray(n_muscles) * np.nan
@@ -72,7 +76,9 @@ class MuscleHelpers:
                 [muscle_forces_coefficients_jacobian(optimal_lengths=optimal_lengths_mx, q=q)["jacobian"][i, i]],
                 ["optimal_lengths"],
                 ["jacobian_at_q"],
-            ).expand()
+            )
+            if expand:
+                jaco = jaco.expand()
 
             # Optimize for the current muscle
             flce_initial_guess = model.muscles_kinematics(q)[i, 0] / 2
@@ -86,7 +92,7 @@ class MuscleHelpers:
 
     @staticmethod
     def find_minimal_tendon_slack_lengths(
-        model: ModelAbstract, emg: np.ndarray, q: np.array, qdot: np.array
+        model: ModelAbstract, emg: np.ndarray, q: np.array, qdot: np.array, expand: bool = True
     ) -> np.array:
         """
         Find values for the tendon slack lengths where the muscle starts to produce passive muscle forces
@@ -115,7 +121,9 @@ class MuscleHelpers:
             [model.muscle_force(emg_mx, q_mx, qdot_mx)],
             ["tendon_slack_lengths", "q"],
             ["forces"],
-        ).expand()
+        )
+        if expand:
+            muscle_forces = muscle_forces.expand()
 
         x = np.ones(n_muscles) * 0.0001
         for i in range(n_muscles):
@@ -127,7 +135,9 @@ class MuscleHelpers:
                 [muscle_forces(tendon_slack_lengths=tendon_slack_lengths_mx, q=q)["forces"][i] - target],
                 ["tendon_slack_lengths"],
                 ["force_at_q"],
-            ).expand()
+            )
+            if expand:
+                force = force.expand()
             x[i] = OptimizationHelpers.squeezing_optimization(lbx=0, ubx=1, cost_function=force)
 
         # Set back the original tendon slack lengths

@@ -114,7 +114,7 @@ segment ulna_effector_right
        -0.00181025108711977   0.999328355607296   0.0366000091559926  -0.2904
        -0.0493668331166902   -0.0366447496814640  0.998108249694797   -0.0123
         0                     0                   0                    1
-	// rotations z
+	rotations z
 	ranges
 	    0.05 pi*3/4
 endsegment
@@ -442,7 +442,7 @@ endmusclegroup
 	endmuscle
 */
 
-/*
+
 musclegroup scapula_to_ulna
 	originParent		scapula_right
 	insertionParent		ulna_right
@@ -450,7 +450,7 @@ endmusclegroup
 
 	muscle	TRIlong
 	    // REMOVED WRAPPING
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_ulna
 		originPosition		-0.04565 -0.04073 -0.01377
 		insertionPosition	-0.03  0.01046 -0.00078 // -0.02190  0.01046 -0.00078
@@ -492,7 +492,6 @@ endmusclegroup
         //     radius 0.018
         //     length 0.04
         // endwrapping
-*/        
 
 
 musclegroup clavicle_to_humerus
