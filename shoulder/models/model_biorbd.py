@@ -8,7 +8,7 @@ from scipy import integrate
 
 
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
-from ..helpers import Vector, Scalar, concatenate
+from ..helpers import Vector, Scalar, VectorHelpers
 from .helpers import MuscleHelpers
 from .model_abstract import ModelAbstract
 
@@ -44,6 +44,7 @@ class ModelBiorbd(ModelAbstract):
         return {
             "DELT1": np.array([0, 0.01, 0]),
             "DELT2": np.array([0, 0.01, 0]),
+            "DELT3": np.array([0, 0.01, 0]),
         }
 
     @property
@@ -51,6 +52,7 @@ class ModelBiorbd(ModelAbstract):
         return {
             "DELT1": np.array([0, np.pi / 2, 0]),
             "DELT2": np.array([0, np.pi / 2, 0]),
+            "DELT3": np.array([0, np.pi / 2, 0]),
         }
 
     def muscles_kinematics(
@@ -69,8 +71,8 @@ class ModelBiorbd(ModelAbstract):
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
         data_type = type(q)
 
-        lengths = data_type((n_muscles, q.shape[1]))
-        velocities = data_type((n_muscles, q.shape[1]))
+        lengths = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
+        velocities = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
         for i in range(q.shape[1]):
             if qdot is None:
                 self._model.updateMuscles(q[:, i], True)
@@ -117,9 +119,9 @@ class ModelBiorbd(ModelAbstract):
 
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
 
-        out_flpe = data_type((n_muscles, q.shape[1]))
-        out_flce = data_type((n_muscles, q.shape[1]))
-        out_fvce = data_type((n_muscles, q.shape[1]))
+        out_flpe = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
+        out_flce = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
+        out_fvce = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
         for i in range(q.shape[1]):
             if qdot is None:
                 self._model.updateMuscles(q[:, i], True)
@@ -180,11 +182,7 @@ class ModelBiorbd(ModelAbstract):
         n_muscles = len(range(muscle_index.start, muscle_index.stop))
         muscle_index = list(range(*muscle_index.indices(n_muscles)))
 
-        if data_type == casadi.MX or data_type == casadi.SX:
-            out_force = data_type(n_muscles, q.shape[1])
-        else:
-            out_force = data_type((n_muscles, q.shape[1]))
-
+        out_force = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
         for i in range(q.shape[1]):
             if qdot is None:
                 self._model.updateMuscles(q[:, i], True)
@@ -278,7 +276,7 @@ class ModelBiorbd(ModelAbstract):
         else:
             raise NotImplementedError(f"Control {controls_type} not implemented")
 
-        results = func(x=concatenate(q, qdot))
+        results = func(x=VectorHelpers.concatenate(q, qdot))
         q = results[: self.n_q]
         qdot = results[self.n_q :]
         return q, qdot
@@ -301,7 +299,7 @@ class ModelBiorbd(ModelAbstract):
         qddot = self._model.ForwardDynamics(q, qdot, tau)
         qddot = qddot.to_mx() if self._use_casadi else qddot.to_array()
 
-        return concatenate(qdot, qddot)
+        return VectorHelpers.concatenate(qdot, qddot)
 
     def animate(self, states: list[Vector]) -> None:
         import bioviz

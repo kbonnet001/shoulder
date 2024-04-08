@@ -286,9 +286,9 @@ endmusclegroup
 			musclegroup 	scapula_to_humerus
 			position 		-0.00350025 -0.0579479 0.0283611
 		endviapoint
-/*
+
 	muscle	DELT3
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.0590625 -0.00156871 -0.0384606
 		insertionPosition	-0.00455911 -0.103949 0.00775516
@@ -310,7 +310,7 @@ endmusclegroup
 			musclegroup 	scapula_to_humerus
 			position 		-0.0185845 -0.049702 0.00590064
 		endviapoint
-
+/*
 	muscle	INFSP
 	    // WRAPPING REMOVED
 		type 				idealizedActuator

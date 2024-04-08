@@ -7,13 +7,22 @@ type Vector = np.ndarray | casadi.SX | casadi.MX | casadi.DM
 type Scalar = float | int | casadi.SX | casadi.MX | casadi.DM
 
 
-def concatenate(*args: Vector) -> Vector:
-    if isinstance(args[0], (casadi.SX, casadi.MX, casadi.DM)):
-        return casadi.vertcat(*args)
-    elif isinstance(args[0], np.ndarray):
-        return np.concatenate(args, axis=0)
-    else:
-        raise ValueError("Unsupported type for concatenation")
+class VectorHelpers:
+    def concatenate(*args: Vector) -> Vector:
+        if isinstance(args[0], (casadi.SX, casadi.MX, casadi.DM)):
+            return casadi.vertcat(*args)
+        elif isinstance(args[0], np.ndarray):
+            return np.concatenate(args, axis=0)
+        else:
+            raise ValueError("Unsupported type for concatenation")
+
+    def initialize(requested_type: type, n_rows: int, n_cols: int) -> Vector:
+        if requested_type in (casadi.SX, casadi.MX, casadi.DM):
+            return requested_type(n_rows, n_cols)
+        elif requested_type == np.ndarray:
+            return requested_type((n_rows, n_cols))
+        else:
+            raise ValueError("Unsupported type for initialization")
 
 
 class OptimizationHelpers:
