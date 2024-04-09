@@ -162,12 +162,7 @@ class ModelBiorbd(ModelAbstract):
             return out_flpe, out_flce, out_fvce
 
     def muscle_force(
-        self,
-        emg: Vector,
-        q: Vector,
-        qdot: Vector,
-        muscle_index: int | range | slice | None = None,
-        from_active_force_only: bool = False,
+        self, emg: Vector, q: Vector, qdot: Vector, muscle_index: int | range | slice | None = None
     ) -> Vector:
         data_type = type(emg)
         if not isinstance(q, data_type) or not isinstance(qdot, data_type):
@@ -214,9 +209,15 @@ class ModelBiorbd(ModelAbstract):
 
     def get_muscle_parameter(self, index: int, parameter_to_get: MuscleParameter) -> Scalar:
         if parameter_to_get == MuscleParameter.OPTIMAL_LENGTH:
-            return self._model.muscle(index).characteristics().optimalLength().to_mx()
+            if self._use_casadi:
+                return self._model.muscle(index).characteristics().optimalLength().to_mx()
+            else:
+                return self._model.muscle(index).characteristics().optimalLength()
         elif parameter_to_get == MuscleParameter.TENDON_SLACK_LENGTH:
-            return self._model.muscle(index).characteristics().tendonSlackLength().to_mx()
+            if self._use_casadi:
+                return self._model.muscle(index).characteristics().tendonSlackLength().to_mx()
+            else:
+                return self._model.muscle(index).characteristics().tendonSlackLength()
         else:
             raise NotImplementedError(f"Parameter {parameter_to_get} not implemented")
 

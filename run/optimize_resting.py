@@ -8,6 +8,7 @@ from shoulder import ModelBiorbd, ControlsTypes, MuscleHelpers
 # Add muscletendon equilibrium constraint
 # Multivariate normal => center + noise , returns covariance matrix
 
+
 class Results:
     def __init__(self, model: ModelBiorbd, optimal_lengths: np.ndarray, tendon_slack_lengths: np.ndarray):
         self.model = model
@@ -18,12 +19,14 @@ class Results:
         s = f"Model: {self.model.name}\n"
         for i in range(self.model.n_muscles):
             s += f"  {self.model.muscle_names[i]}:\n"
-            s += f"    {"Optimal length:":<20}{float(self.optimal_lengths[i]):>6,.3f}\n"
-            s += f"    {"Tendon slack length:":<20}{float(self.tendon_slack_lengths[i]):>6,.3f}\n"
+            s += f"    {'Optimal length:':<20}{float(self.optimal_lengths[i]):>6,.3f}\n"
+            s += f"    {'Tendon slack length:':<20}{float(self.tendon_slack_lengths[i]):>6,.3f}\n"
         return s
 
 
-def optimize_muscle_parameters(cx, model: ModelBiorbd, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, expand: bool = True) -> Results:
+def optimize_muscle_parameters(
+    cx, model: ModelBiorbd, emg: np.ndarray, q: np.ndarray, qdot: np.ndarray, expand: bool = True
+) -> Results:
     """
     Find values for the tendon slack lengths that do not produce any muscle force
     """
