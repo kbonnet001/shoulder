@@ -60,7 +60,7 @@ def optimize_muscle_parameters(
     optimal_lengths_lb = optimal_lengths_x0 * 0.5
     optimal_lengths_ub = optimal_lengths_x0 * 1.5
     tendon_slack_lengths_lb = tendon_slack_lengths_x0 * 0.9
-    tendon_slack_lengths_ub = tendon_slack_lengths_lb * 1.1
+    tendon_slack_lengths_ub = tendon_slack_lengths_lb * 1.3
 
     # Merge the decision variables to a single vector
     x = casadi.vertcat(optimal_lengths_cx, tendon_slack_lengths_cx)

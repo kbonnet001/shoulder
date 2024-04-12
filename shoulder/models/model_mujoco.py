@@ -21,6 +21,10 @@ class ModelMujoco(ModelAbstract):
         return self._model.nq
 
     @property
+    def q_ranges(self) -> np.ndarray:
+        raise NotImplementedError("ModelMujoco.q_ranges is not implemented yet")
+
+    @property
     def n_muscles(self) -> int:
         return self._model.na
 
@@ -29,11 +33,7 @@ class ModelMujoco(ModelAbstract):
         raise NotImplementedError("ModelMujoco.muscle_names is not implemented yet")
 
     @property
-    def relaxed_poses(self) -> map:
-        raise NotImplementedError("ModelMujoco.relaxed_poses is not implemented yet")
-
-    @property
-    def strongest_poses(self, muscle_index: int | range | slice | None = None) -> map:
+    def strongest_poses(self, muscle_index: int | range | slice | None = None) -> dict[str, np.ndarray]:
         raise NotImplementedError("ModelMujoco.strongest_poses is not implemented yet")
 
     def muscles_kinematics(

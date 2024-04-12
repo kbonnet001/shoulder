@@ -32,6 +32,14 @@ class ModelBiorbd(ModelAbstract):
         return self._model.nbQ()
 
     @property
+    def q_ranges(self) -> np.ndarray:
+        q_ranges = []
+        for segment in self._model.segments():
+            for range in segment.QRanges():
+                q_ranges.append([range.min(), range.max()])
+        return np.array(q_ranges)
+
+    @property
     def n_muscles(self) -> int:
         return self._model.nbMuscleTotal()
 
@@ -40,21 +48,19 @@ class ModelBiorbd(ModelAbstract):
         return [name.to_string() for name in self._model.muscleNames()]
 
     @property
-    def relaxed_poses(self) -> map:
+    def strongest_poses(self) -> dict[str, np.ndarray]:
         return {
-            "DELT1": np.array([0, 0.01, 0, 0]),
-            "DELT2": np.array([0, 0.01, 0, 0]),
-            "DELT3": np.array([0, 0.01, 0, 0]),
-            "TRIlong": np.array([0, 0.01, 0, 0]),
-        }
-
-    @property
-    def strongest_poses(self) -> map:
-        return {
-            "DELT1": np.array([0, np.pi / 2, 0, 0]),
-            "DELT2": np.array([0, np.pi / 2, 0, 0]),
-            "DELT3": np.array([0, np.pi / 2, 0, 0]),
-            "TRIlong": np.array([0, 0.01, 0, np.pi / 2]),
+            "DELT1": np.array([0, -np.pi / 2, 0, 0]),
+            "DELT2": np.array([0, -np.pi / 2, 0, 0]),
+            "DELT3": np.array([0, -np.pi / 2, 0, 0]),
+            "TRIlong": np.array([0, -0.01, 0, np.pi / 2]),
+            "INFSP": np.array([0, -0.01, 0, 0]),
+            "SUPSP": np.array([0, -0.01, 0, 0]),
+            "SUBSC": np.array([0, -0.01, 0, 0]),
+            "TMIN": np.array([0, -0.01, 0, 0]),
+            "TMAJ": np.array([0, -0.01, 0, 0]),
+            "CORB": np.array([0, -0.01, 0, 0]),
+            "PECM1": np.array([0, -np.pi / 2, 0, 0]),
         }
 
     def muscles_kinematics(
@@ -81,13 +87,13 @@ class ModelBiorbd(ModelAbstract):
             else:
                 self._model.updateMuscles(q[:, i], qdot[:, i], True)
 
-            for j in range(self._model.nbMuscleTotal()):
+            for j in range(muscle_index.start, muscle_index.stop):
                 length_tp = self._model.muscle(j).length(self._model, q[:, i], False)
                 if self._use_casadi:
                     length_tp = length_tp.to_mx()
                     if data_type == np.ndarray:
                         length_tp = casadi.Function("length", [], [length_tp], [], ["length"])()["length"]
-                lengths[j, i] = length_tp
+                lengths[j - muscle_index.start, i] = length_tp
 
                 if qdot is not None:
                     velocity_tp = self._model.muscle(j).velocity(self._model, q[:, i], qdot[:, i], False)
@@ -95,7 +101,7 @@ class ModelBiorbd(ModelAbstract):
                         velocity_tp = velocity_tp.to_mx()
                         if data_type == np.ndarray:
                             velocity_tp = casadi.Function("velocity", [], [velocity_tp], [], ["velocity"])()["velocity"]
-                    velocities[j, i] = velocity_tp
+                    velocities[j - muscle_index.start, i] = velocity_tp
 
         if qdot is None:
             return lengths

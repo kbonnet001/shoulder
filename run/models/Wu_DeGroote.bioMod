@@ -94,7 +94,7 @@ segment humerus_right
 	rotations yxy
 	ranges
         -pi/3 3*pi/4
-	    -1.9*pi/2 0.1
+	    -1.9*pi/2 -0.01
         -0.05 pi/2
     mass 2.16000
     com 0 -0.164502 0
@@ -310,10 +310,10 @@ endmusclegroup
 			musclegroup 	scapula_to_humerus
 			position 		-0.0185845 -0.049702 0.00590064
 		endviapoint
-/*
+
 	muscle	INFSP
 	    // WRAPPING REMOVED
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.087985 -0.0545528 -0.0693532
 		insertionPosition	-0.00509757 0.00804087 0.0263967
@@ -339,7 +339,7 @@ endmusclegroup
 
 	muscle	SUPSP
 	    // WRAPPING REMOVED
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.0670398 -0.0115895 -0.0644974
 		insertionPosition	0.0142549 0.0168443 0.0209438
@@ -363,7 +363,7 @@ endmusclegroup
 		endviapoint
 
 	muscle	SUBSC
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.072 -0.039 -0.065
 		insertionPosition	0.0199995 -0.00831173 -0.00174873
@@ -387,7 +387,7 @@ endmusclegroup
 		endviapoint
 
 	muscle	TMIN
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.0820004 -0.0674811 -0.0409306
 		insertionPosition	0.00655633 -0.00365417 0.0216781
@@ -412,7 +412,7 @@ endmusclegroup
 		endviapoint
 
 	muscle	TMAJ
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		-0.104709 -0.107757 -0.0711555
 		insertionPosition	0.003699 -0.045 -0.00676304
@@ -431,7 +431,7 @@ endmusclegroup
 
 	muscle	CORB
 	    // REMOVED WRAPPING
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_humerus
 		originPosition		0.0125 -0.04127 -0.02652
 		insertionPosition	0 -0.128 -0.0116594
@@ -440,7 +440,7 @@ endmusclegroup
 		tendonSlackLength 	0.0615
 		pennationAngle		0.0
 	endmuscle
-*/
+
 
 
 musclegroup scapula_to_ulna
@@ -498,9 +498,9 @@ musclegroup clavicle_to_humerus
 	originParent		clavicle_right
 	insertionParent		humerus_right
 endmusclegroup
-/*
+
 	muscle	PECM1
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		clavicle_to_humerus
 		originPosition		0.00110542 0.00608334 0.0513213
 		insertionPosition	0.016 -0.0404957 0.005
@@ -516,7 +516,7 @@ endmusclegroup
 			  musclegroup 	clavicle_to_humerus
 			  position 		-0.000485828 0.00557039 0.0591605
 		endviapoint
-*/
+
 
 	muscle	DELT1
 		type 				degroote

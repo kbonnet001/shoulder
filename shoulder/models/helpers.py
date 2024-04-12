@@ -19,6 +19,64 @@ class MuscleHelpers:
             raise ValueError("muscle_index must be an int, a range or a slice")
 
     @staticmethod
+    def find_relaxed_poses(model: ModelAbstract, expand: bool = True) -> dict[str, np.array]:
+        """
+        Find the relaxed pose for each muscle that minimizes their respective muscle length
+
+        Parameters
+        ----------
+        model: ModelAbstract
+            The model to use
+        muscle_index: int
+            The muscle index to optimize
+        expand: bool
+            If the casadi functions should be expanded before the optimization
+
+        Returns
+        -------
+            The relaxed pose for each muscle
+        """
+        # Declare some aliases
+        n_q = model.n_q
+
+        # Declare the decision variables
+        q_mx = casadi.MX.sym("q", n_q, 1)
+        x_mx = casadi.vertcat(q_mx)
+
+        muscle_lengths_function = model.muscles_kinematics(q_mx)
+        out = {}
+        for i in range(model.n_muscles):
+            # Declare the cost function
+            f = casadi.Function("f", [q_mx], [muscle_lengths_function[i, 0]])
+            if expand:
+                f = f.expand()
+            f = f(x_mx)
+
+            # Declare the constraints
+            g_mx = []
+            lbg = np.array([])
+            ubg = np.array([])
+
+            g = casadi.Function("g", [x_mx], [casadi.vertcat(*g_mx)])
+            if expand:
+                g = g.expand()
+            g = g(x_mx)
+
+            # Declare the bounds of the optimization problem
+            lbx = model.q_ranges[:, 0]
+            ubx = model.q_ranges[:, 1]
+            x0 = (lbx + ubx) / 2
+
+            # Solve the optimization problem
+            solver = casadi.nlpsol("solver", "ipopt", {"x": x_mx, "f": f, "g": g}, {"ipopt.print_level": 0})
+            sol = solver(x0=x0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
+
+            # Parse the results
+            out[model.muscle_names[i]] = sol["x"]
+
+        return out
+
+    @staticmethod
     def find_optimal_length_assuming_strongest_pose(model: ModelAbstract, expand: bool = True) -> np.array:
         """
         Find values for the optimal muscle lengths where each muscle produces maximal force at their respective strongest
@@ -102,6 +160,11 @@ class MuscleHelpers:
         target = 0.02
         n_q = model.n_q
         n_muscles = model.n_muscles
+
+        # Get the relaxed poses
+        relaxed_poses = MuscleHelpers.find_relaxed_poses(model=model, expand=expand)
+
+        # Save the original tendon slack lengths
         tendon_slack_lengths_bak = [
             model.get_muscle_parameter(i, MuscleParameter.TENDON_SLACK_LENGTH) for i in range(n_muscles)
         ]
@@ -127,8 +190,8 @@ class MuscleHelpers:
 
         x = np.ones(n_muscles) * 0.0001
         for i in range(n_muscles):
-            # Evaluate the muscle force at q
-            q = model.relaxed_poses[model.muscle_names[i]]
+            # Evaluate the muscle force at relaxed pose
+            q = relaxed_poses[model.muscle_names[i]]
             force = casadi.Function(
                 "force_at_q",
                 [tendon_slack_lengths_mx],
@@ -139,6 +202,8 @@ class MuscleHelpers:
             if expand:
                 force = force.expand()
             x[i] = OptimizationHelpers.squeezing_optimization(lbx=0, ubx=1, cost_function=force)
+            if x[i] < 0.001:
+                x[i] = 0.001
 
         # Set back the original tendon slack lengths
         for i in range(n_muscles):

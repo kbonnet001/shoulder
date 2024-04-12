@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
 from ..helpers import Vector, Scalar
 
@@ -20,6 +22,12 @@ class ModelAbstract(ABC):
         """
 
     @property
+    def q_ranges(self) -> np.ndarray:
+        """
+        The joint ranges in n_q x 2 matrix (min, max)
+        """
+
+    @property
     @abstractmethod
     def n_muscles(self) -> int:
         """
@@ -34,25 +42,13 @@ class ModelAbstract(ABC):
 
     @property
     @abstractmethod
-    def relaxed_poses(self) -> map:
-        """
-        Get the relaxed poses (the pose where the muscle is expected to start producing passive force) for each muscle
-
-        Returns
-        -------
-        map[str, np.ndarray]
-            The relaxed poses for each muscle, the key is the muscle name and the value is the joint angles vector
-        """
-
-    @property
-    @abstractmethod
-    def strongest_poses(self) -> map:
+    def strongest_poses(self) -> dict[str, np.ndarray]:
         """
         Get the strongest poses for each muscle
 
         Returns
         -------
-        map[str, np.ndarray]
+        dict[str, np.ndarray]
             The strongest poses for each muscle, the key is the muscle name and the value is the joint angles vector
         """
 

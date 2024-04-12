@@ -101,7 +101,7 @@ class OptimizationHelpers:
             value = cost_function(x)
 
             # If the value is within the threshold, we are done
-            if -threshold / 2 < value < threshold / 2:
+            if -threshold / 2 < value < threshold / 2 or min_so_far == max_so_far:
                 return x
 
             if value > 0:
