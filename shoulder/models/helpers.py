@@ -106,6 +106,7 @@ class MuscleHelpers:
 
         # Declare the decision and fixed variables
         optimal_lengths_mx = casadi.MX.sym("optimal_lengths", n_muscles, 1)
+        optimal_lengths = casadi.SX.sym("optimal_lengths", n_muscles, 1)
         emg_mx = casadi.MX.ones(n_muscles, 1)
         q_mx = casadi.MX.sym("q", n_q, 1)
         qdot_mx = casadi.MX.zeros(n_q, 1)
@@ -113,40 +114,34 @@ class MuscleHelpers:
         # Compute the cost function jacobian
         for i in range(n_muscles):
             model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_mx[i])
-        muscle_forces_coefficients_jacobian = casadi.Function(
-            "jacobian",
+
+        flce = casadi.Function(
+            "flce",
             [optimal_lengths_mx, q_mx],
-            [casadi.jacobian(model.muscle_force_coefficients(emg_mx, q_mx, qdot_mx)[1], optimal_lengths_mx)],
+            [model.muscle_force_coefficients(emg_mx, q_mx, qdot_mx)[1]],
             ["optimal_lengths", "q"],
-            ["jacobian"],
+            ["flce"],
         )
         if expand:
-            muscle_forces_coefficients_jacobian = muscle_forces_coefficients_jacobian.expand()
+            flce = flce.expand()
 
         # Optimize for each muscle
-        x = np.ndarray(n_muscles) * np.nan
+        x = []
         for i in range(n_muscles):
-            # Evaluate the jacobian at q
             q = model.strongest_poses[model.muscle_names[i]]
-            jaco = casadi.Function(
-                "jacobian_at_q",
-                [optimal_lengths_mx],
-                [muscle_forces_coefficients_jacobian(optimal_lengths=optimal_lengths_mx, q=q)["jacobian"][i, i]],
-                ["optimal_lengths"],
-                ["jacobian_at_q"],
-            )
+            f = casadi.Function("cost", [optimal_lengths[i]], [-flce(optimal_lengths, q)[i, 0]])  # Maximize force
             if expand:
-                jaco = jaco.expand()
+                f = f.expand()
 
             # Optimize for the current muscle
-            flce_initial_guess = model.muscles_kinematics(q)[i, 0] / 2
-            x[i] = OptimizationHelpers.simple_gradient_descent(x0=flce_initial_guess, cost_function_jacobian=jaco)
+            x0 = float(model.muscles_kinematics(q, muscle_index=i))
+            x.append(OptimizationHelpers.clipped_gradient_descent(f=f, x0=x0))
 
         # Set back the original optimal lengths
         for i in range(n_muscles):
             model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_bak[i])
 
-        return x
+        return np.array(x).squeeze()
 
     @staticmethod
     def find_minimal_tendon_slack_lengths(

@@ -58,9 +58,9 @@ def optimize_muscle_parameters(
 
     # Declare the bounds of the optimization problem
     optimal_lengths_lb = optimal_lengths_x0 * 0.5
-    optimal_lengths_ub = optimal_lengths_x0 * 1.5
-    tendon_slack_lengths_lb = tendon_slack_lengths_x0 * 0.9
-    tendon_slack_lengths_ub = tendon_slack_lengths_lb * 1.3
+    optimal_lengths_ub = optimal_lengths_x0 * 2.0
+    tendon_slack_lengths_lb = tendon_slack_lengths_x0 * 0.5
+    tendon_slack_lengths_ub = tendon_slack_lengths_lb * 2.0
 
     # Merge the decision variables to a single vector
     x = casadi.vertcat(optimal_lengths_cx, tendon_slack_lengths_cx)
@@ -107,7 +107,7 @@ def optimize_muscle_parameters(
         "solver",
         "ipopt",
         {"x": x, "f": f, "g": g},
-        {"ipopt.max_iter": 1000, "ipopt.hessian_approximation": "limited-memory"},
+        {"ipopt.max_iter": 10000, "ipopt.hessian_approximation": "limited-memory"},
     )
     sol = solver(x0=x0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
     print(f"Optimization done in {time.time() - start:.2f} s")
