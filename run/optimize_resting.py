@@ -103,7 +103,12 @@ def optimize_muscle_parameters(
 
     # Solve the optimization problem
     print("Solving the optimization problem...")
-    solver = casadi.nlpsol("solver", "ipopt", {"x": x, "f": f, "g": g})
+    solver = casadi.nlpsol(
+        "solver",
+        "ipopt",
+        {"x": x, "f": f, "g": g},
+        {"ipopt.max_iter": 1000, "ipopt.hessian_approximation": "limited-memory"},
+    )
     sol = solver(x0=x0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
     print(f"Optimization done in {time.time() - start:.2f} s")
 

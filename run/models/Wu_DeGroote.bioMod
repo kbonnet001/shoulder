@@ -187,14 +187,14 @@ endsegment
 
 
 
-/*
+
 musclegroup thorax_to_humerus
 	originParent		thorax
 	insertionParent		humerus_right
 endmusclegroup 	
 
 	muscle	PECM2
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		thorax_to_humerus
 		originPosition		0.0248658 -0.0475832 0.0174664
 		insertionPosition	0.016 -0.0354957 0.005
@@ -213,7 +213,7 @@ endmusclegroup
 
 
 	muscle	PECM3
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		thorax_to_humerus
 		originPosition		0.0626543 -0.147759 0.0220602
 		insertionPosition	0.016 -0.03 0.005
@@ -232,7 +232,7 @@ endmusclegroup
 
     muscle	LAT
         // REMOVED WRAPPING
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		thorax_to_humerus
 		originPosition		-0.094702 -0.160998 0.000512144
 		insertionPosition	0.00991752 -0.0223337 -0.008822
@@ -256,7 +256,7 @@ endmusclegroup
             musclegroup 	thorax_to_humerus
             position 		0.00202133 -0.0188908 -0.0214651
 		endviapoint
-*/
+
 
 musclegroup scapula_to_humerus
 	originParent		scapula_right
@@ -538,7 +538,7 @@ endmusclegroup
 
 
 
-/*
+
 musclegroup scapula_to_radius
 	originParent		scapula_right
 	insertionParent		radius_right
@@ -546,7 +546,7 @@ endmusclegroup
 
 	muscle	BIClong
 	    // TWO VIA POINTS WERE REMOVED AND THE WRAPPING
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_radius
 		originPosition		-0.03123 -0.02353 -0.01305
 		insertionPosition	-0.00200 -0.03750 -0.00200
@@ -602,7 +602,7 @@ endmusclegroup
 
 	muscle	BICshort
 	    // TWO VIA POINTS WERE REMOVED AND THE WRAPPING
-		type 				idealizedActuator
+		type 				degroote
 		musclegroup 		scapula_to_radius
 		originPosition		0.01268 -0.03931 -0.02625
 		insertionPosition	0.00200 -0.03750 -0.00200
@@ -636,4 +636,3 @@ endmusclegroup
 			  musclegroup 	scapula_to_radius
 			  position 		0.02280 -0.17540 -0.00630
 		endviapoint
-*/

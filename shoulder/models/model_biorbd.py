@@ -61,6 +61,11 @@ class ModelBiorbd(ModelAbstract):
             "TMAJ": np.array([0, -0.01, 0, 0]),
             "CORB": np.array([0, -0.01, 0, 0]),
             "PECM1": np.array([0, -np.pi / 2, 0, 0]),
+            "PECM2": np.array([0, -np.pi / 2, 0, 0]),
+            "PECM3": np.array([0, -np.pi / 2, 0, 0]),
+            "LAT": np.array([0, -np.pi / 2, 0, 0]),
+            "BIClong": np.array([0, -0.01, 0, np.pi / 2]),
+            "BICshort": np.array([0, -0.01, 0, np.pi / 2]),
         }
 
     def muscles_kinematics(
