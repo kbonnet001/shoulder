@@ -7,11 +7,48 @@ from shoulder import ModelBiorbd, ControlsTypes, MuscleHelpers
 
 # Add muscletendon equilibrium constraint
 # Multivariate normal => center + noise , returns covariance matrix
+# TODO The tendon slack length should be opimized at optimal length instead of shortest length?
+# OR
+# TODO use tendon force if flpe == 0?
 
 
 class Results:
-    def __init__(self, model: ModelBiorbd, optimal_lengths: np.ndarray, tendon_slack_lengths: np.ndarray):
+    class Values:
+        def __init__(self, values: np.ndarray, lb: np.ndarray, ub: np.ndarray):
+            if len(values.shape) > 1:
+                if values.shape[1] != 1:
+                    raise ValueError("Values must be a column vector")
+                values = values[:, 0]
+            if len(lb.shape) > 1:
+                if lb.shape[1] != 1:
+                    raise ValueError("Lower bounds must be a column vector")
+                lb = lb[:, 0]
+            if len(ub.shape) > 1:
+                if ub.shape[1] != 1:
+                    raise ValueError("Upper bounds must be a column vector")
+                ub = ub[:, 0]
+
+            self.values = values
+            self.lb = lb
+            self.ub = ub
+
+        def __getitem__(self, item: int) -> float:
+            return Results.Values(np.array([self.values[item]]), np.array([self.lb[item]]), np.array([self.ub[item]]))
+
+        def __str__(self) -> str:
+            s = ""
+            for i in range(len(self.values)):
+                s += f"{self.values[i]:.3f} ({self.lb[i]:.3f} - {self.ub[i]:.3f})"
+            return s
+
+    def __init__(
+        self,
+        model: ModelBiorbd,
+        optimal_lengths: Values,
+        tendon_slack_lengths: Values,
+    ):
         self.model = model
+
         self.optimal_lengths = optimal_lengths
         self.tendon_slack_lengths = tendon_slack_lengths
 
@@ -19,8 +56,8 @@ class Results:
         s = f"Model: {self.model.name}\n"
         for i in range(self.model.n_muscles):
             s += f"  {self.model.muscle_names[i]}:\n"
-            s += f"    {'Optimal length:':<20}{float(self.optimal_lengths[i]):>6,.3f}\n"
-            s += f"    {'Tendon slack length:':<20}{float(self.tendon_slack_lengths[i]):>6,.3f}\n"
+            s += f"    {'Optimal length:':<30}{self.optimal_lengths[i]}\n"
+            s += f"    {'Tendon slack length:':<30}{self.tendon_slack_lengths[i]}\n"
         return s
 
 
@@ -113,7 +150,15 @@ def optimize_muscle_parameters(
     print(f"Optimization done in {time.time() - start:.2f} s")
 
     # Parse the results
-    return Results(model=model, optimal_lengths=sol["x"][:n_muscles], tendon_slack_lengths=sol["x"][n_muscles:])
+    return Results(
+        model=model,
+        optimal_lengths=Results.Values(
+            np.array(sol["x"][:n_muscles]), np.array(optimal_lengths_lb), np.array(optimal_lengths_ub)
+        ),
+        tendon_slack_lengths=Results.Values(
+            np.array(sol["x"][n_muscles:]), np.array(tendon_slack_lengths_lb), np.array(tendon_slack_lengths_ub)
+        ),
+    )
 
 
 def main():
@@ -121,7 +166,7 @@ def main():
     cx = casadi.SX
     models = (
         ModelBiorbd("models/Wu_DeGroote.bioMod", use_casadi=True),
-        ModelBiorbd("models/Wu_Thelen.bioMod", use_casadi=True),
+        # ModelBiorbd("models/Wu_Thelen.bioMod", use_casadi=True),
     )
 
     results = []
