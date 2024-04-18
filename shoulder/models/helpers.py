@@ -196,7 +196,7 @@ class MuscleHelpers:
             if expand:
                 cost = cost.expand()
 
-            x[i] = OptimizationHelpers.squeezing_optimization(lbx=0, ubx=1, cost_function=cost)
+            x[i] = OptimizationHelpers.bisection_zero_finder(lbx=0, ubx=1, cost_function=cost)
             if x[i] < 0.001:
                 x[i] = 0.001
 

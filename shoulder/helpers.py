@@ -123,10 +123,9 @@ class OptimizationHelpers:
         return x
 
     @staticmethod
-    def squeezing_optimization(lbx: float, ubx: float, cost_function: Callable, threshold: float = 1e-8):
+    def bisection_zero_finder(lbx: float, ubx: float, cost_function: Callable, threshold: float = 1e-8):
         """
-        Squeezing optimization algorithm, this algorithm is used to find the optimal value of a that only has a single
-        optimal point, but is not diffentiable.
+        Bisection algorithm to find the zero of a function
 
         Parameters
         ----------
