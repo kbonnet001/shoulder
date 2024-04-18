@@ -141,7 +141,7 @@ class MuscleHelpers:
         for i in range(n_muscles):
             model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_bak[i])
 
-        return np.array(x).squeeze()
+        return np.array(x).reshape(-1)
 
     @staticmethod
     def find_minimal_tendon_slack_lengths(
@@ -152,7 +152,7 @@ class MuscleHelpers:
         """
 
         # Declare some aliases
-        target = 0.02
+        target = 0.002  # Target a passive force of almost 0.2% of the maximal force
         n_q = model.n_q
         n_muscles = model.n_muscles
 
@@ -168,35 +168,35 @@ class MuscleHelpers:
         tendon_slack_lengths_mx = casadi.MX.sym("tendon_slack_lengths", n_muscles, 1)
         emg_mx = casadi.MX.zeros(n_muscles, 1)
         q_mx = casadi.MX.sym("q", n_q, 1)
-        qdot_mx = casadi.MX.zeros(n_q, 1)
 
         for i in range(n_muscles):
             model.set_muscle_parameters(index=i, tendon_slack_length=tendon_slack_lengths_mx[i])
 
-        muscle_forces = casadi.Function(
-            "muscle_forces",
+        flpe = casadi.Function(
+            "flpe",
             [tendon_slack_lengths_mx, q_mx],
-            [model.muscle_force(emg_mx, q_mx, qdot_mx)],
+            [model.muscle_force_coefficients(emg_mx, q_mx)[0]],  # TODO use tendon force? if 0.00?
             ["tendon_slack_lengths", "q"],
-            ["forces"],
+            ["flpe"],
         )
         if expand:
-            muscle_forces = muscle_forces.expand()
+            flpe = flpe.expand()
 
         x = np.ones(n_muscles) * 0.0001
         for i in range(n_muscles):
             # Evaluate the muscle force at relaxed pose
             q = relaxed_poses[model.muscle_names[i]]
-            force = casadi.Function(
+            cost = casadi.Function(
                 "force_at_q",
                 [tendon_slack_lengths_mx],
-                [muscle_forces(tendon_slack_lengths=tendon_slack_lengths_mx, q=q)["forces"][i] - target],
+                [flpe(tendon_slack_lengths=tendon_slack_lengths_mx, q=q)["flpe"][i] - target],
                 ["tendon_slack_lengths"],
-                ["force_at_q"],
+                ["cost"],
             )
             if expand:
-                force = force.expand()
-            x[i] = OptimizationHelpers.squeezing_optimization(lbx=0, ubx=1, cost_function=force)
+                cost = cost.expand()
+
+            x[i] = OptimizationHelpers.squeezing_optimization(lbx=0, ubx=1, cost_function=cost)
             if x[i] < 0.001:
                 x[i] = 0.001
 

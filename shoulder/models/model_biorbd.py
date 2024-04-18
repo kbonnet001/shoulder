@@ -50,17 +50,17 @@ class ModelBiorbd(ModelAbstract):
     @property
     def strongest_poses(self) -> dict[str, np.ndarray]:
         return {
-            "DELT1": np.array([0, -np.pi / 2, 0, 0]),
+            "DELT1": np.array([0, -np.pi / 2, 0, 0]),  # [2.02282, -2.68809, 0.778794, 1.2031]
             "DELT2": np.array([0, -np.pi / 2, 0, 0]),
             "DELT3": np.array([0, -np.pi / 2, 0, 0]),
             "TRIlong": np.array([0, -0.01, 0, np.pi / 2]),
             "INFSP": np.array([0, -0.01, 0, 0]),
-            "SUPSP": np.array([0, -0.01, 0, 0]),
-            "SUBSC": np.array([0, -0.01, 0, 0]),
+            "SUPSP": np.array([0, -0.01, 0, 0]),  # [0.94661, -1.00282, 1.56935, 1.2031]
+            "SUBSC": np.array([0, -0.01, 0, 0]),  # [0.944205, -0.40017, -0.0495518, 1.2031]
             "TMIN": np.array([0, -0.01, 0, 0]),
             "TMAJ": np.array([0, -0.01, 0, 0]),
             "CORB": np.array([0, -0.01, 0, 0]),
-            "PECM1": np.array([0, -np.pi / 2, 0, 0]),
+            "PECM1": np.array([0, -np.pi / 2, 0, 0]),  # [2.35619, -1.92047, 0.302886, 1.2031]
             "PECM2": np.array([0, -np.pi / 2, 0, 0]),
             "PECM3": np.array([0, -np.pi / 2, 0, 0]),
             "LAT": np.array([0, -np.pi / 2, 0, 0]),
