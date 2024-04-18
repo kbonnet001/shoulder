@@ -6,10 +6,12 @@ from shoulder import ModelBiorbd, ControlsTypes, MuscleHelpers
 
 
 # Add muscletendon equilibrium constraint
-# Multivariate normal => center + noise , returns covariance matrix
+# Multivariate normal => center + noise , returns covariance matrix (Robust optimization)
 # TODO The tendon slack length should be opimized at optimal length instead of shortest length?
 # OR
 # TODO use tendon force if flpe == 0?
+# TODO Does the model target the same pose as the astronaut?
+# TODO Do not use the predefined muscle values from the original model
 
 
 class Results:
