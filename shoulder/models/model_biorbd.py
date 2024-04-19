@@ -48,6 +48,10 @@ class ModelBiorbd(ModelAbstract):
         return [name.to_string() for name in self._model.muscleNames()]
 
     @property
+    def relaxed_pose(self) -> np.ndarray:
+        return np.array([0, -0.01, 0, 0])
+
+    @property
     def strongest_poses(self) -> dict[str, np.ndarray]:
         return {
             "DELT1": np.array([0, -np.pi / 2, 0, 0]),  # [2.02282, -2.68809, 0.778794, 1.2031]
@@ -76,12 +80,14 @@ class ModelBiorbd(ModelAbstract):
             raise ValueError("q and qdot must have the same type")
 
         muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = list(range(*muscle_index.indices(self.n_muscles)))
+
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if qdot is not None and len(qdot.shape) == 1:
             qdot = qdot[:, np.newaxis]
 
-        n_muscles = len(range(muscle_index.start, muscle_index.stop))
+        n_muscles = len(muscle_index)
         data_type = type(q)
 
         lengths = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
@@ -92,21 +98,22 @@ class ModelBiorbd(ModelAbstract):
             else:
                 self._model.updateMuscles(q[:, i], qdot[:, i], True)
 
-            for j in range(muscle_index.start, muscle_index.stop):
-                length_tp = self._model.muscle(j).length(self._model, q[:, i], False)
+            for j in range(n_muscles):
+                mus = self._upcast_muscle(self._model.muscle(muscle_index[j]))
+                length_tp = mus.length(self._model, q[:, i], False)
                 if self._use_casadi:
                     length_tp = length_tp.to_mx()
                     if data_type == np.ndarray:
                         length_tp = casadi.Function("length", [], [length_tp], [], ["length"])()["length"]
-                lengths[j - muscle_index.start, i] = length_tp
+                lengths[j, i] = length_tp
 
                 if qdot is not None:
-                    velocity_tp = self._model.muscle(j).velocity(self._model, q[:, i], qdot[:, i], False)
+                    velocity_tp = mus.velocity(self._model, q[:, i], qdot[:, i], False)
                     if self._use_casadi:
                         velocity_tp = velocity_tp.to_mx()
                         if data_type == np.ndarray:
                             velocity_tp = casadi.Function("velocity", [], [velocity_tp], [], ["velocity"])()["velocity"]
-                    velocities[j - muscle_index.start, i] = velocity_tp
+                    velocities[j, i] = velocity_tp
 
         if qdot is None:
             return lengths
@@ -125,12 +132,14 @@ class ModelBiorbd(ModelAbstract):
             raise ValueError("emg, q and qdot must have the same type")
 
         muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = list(range(*muscle_index.indices(self.n_muscles)))
+
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if qdot is not None and len(qdot.shape) == 1:
             qdot = qdot[:, np.newaxis]
 
-        n_muscles = len(range(muscle_index.start, muscle_index.stop))
+        n_muscles = len(muscle_index)
 
         out_flpe = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
         out_flce = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
@@ -141,8 +150,8 @@ class ModelBiorbd(ModelAbstract):
             else:
                 self._model.updateMuscles(q[:, i], qdot[:, i], True)
 
-            for j in range(muscle_index.start, muscle_index.stop):
-                mus = self._upcast_muscle(self._model.muscle(j))
+            for j in range(n_muscles):
+                mus = self._upcast_muscle(self._model.muscle(muscle_index[j]))
                 activation = self.brbd.State(emg[j, i], emg[j, i])
 
                 flpe_tp = mus.FlPE()
@@ -182,13 +191,14 @@ class ModelBiorbd(ModelAbstract):
             emg = emg[:, np.newaxis]
 
         muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = list(range(*muscle_index.indices(self.n_muscles)))
+
         if len(q.shape) == 1:
             q = q[:, np.newaxis]
         if len(qdot.shape) == 1:
             qdot = qdot[:, np.newaxis]
 
-        n_muscles = len(range(muscle_index.start, muscle_index.stop))
-        muscle_index = list(range(*muscle_index.indices(n_muscles)))
+        n_muscles = len(muscle_index)
 
         out_force = VectorHelpers.initialize(data_type, n_muscles, q.shape[1])
         for i in range(q.shape[1]):

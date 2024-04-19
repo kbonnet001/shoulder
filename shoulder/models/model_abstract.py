@@ -42,6 +42,13 @@ class ModelAbstract(ABC):
 
     @property
     @abstractmethod
+    def relaxed_pose(self) -> np.ndarray:
+        """
+        The relaxed pose
+        """
+
+    @property
+    @abstractmethod
     def strongest_poses(self) -> dict[str, np.ndarray]:
         """
         Get the strongest poses for each muscle
