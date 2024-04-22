@@ -79,7 +79,7 @@ class ModelBiorbd(ModelAbstract):
         if qdot is not None and not isinstance(qdot, data_type):
             raise ValueError("q and qdot must have the same type")
 
-        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = VectorHelpers.index_to_slice(muscle_index, self.n_muscles)
         muscle_index = list(range(*muscle_index.indices(self.n_muscles)))
 
         if len(q.shape) == 1:
@@ -131,7 +131,7 @@ class ModelBiorbd(ModelAbstract):
         if not isinstance(q, data_type) or (qdot is not None and not isinstance(qdot, data_type)):
             raise ValueError("emg, q and qdot must have the same type")
 
-        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = VectorHelpers.index_to_slice(muscle_index, self.n_muscles)
         muscle_index = list(range(*muscle_index.indices(self.n_muscles)))
 
         if len(q.shape) == 1:
@@ -190,7 +190,7 @@ class ModelBiorbd(ModelAbstract):
         if len(emg.shape) == 1:
             emg = emg[:, np.newaxis]
 
-        muscle_index = MuscleHelpers.parse_muscle_index(muscle_index, self.n_muscles)
+        muscle_index = VectorHelpers.index_to_slice(muscle_index, self.n_muscles)
         muscle_index = list(range(*muscle_index.indices(self.n_muscles)))
 
         if len(q.shape) == 1:
@@ -239,6 +239,11 @@ class ModelBiorbd(ModelAbstract):
                 return self._model.muscle(index).characteristics().tendonSlackLength().to_mx()
             else:
                 return self._model.muscle(index).characteristics().tendonSlackLength()
+        elif parameter_to_get == MuscleParameter.PENNATION_ANGLE:
+            if self._use_casadi:
+                return self._model.muscle(index).characteristics().pennationAngle().to_mx()
+            else:
+                return self._model.muscle(index).characteristics().pennationAngle()
         else:
             raise NotImplementedError(f"Parameter {parameter_to_get} not implemented")
 

@@ -8,27 +8,14 @@ from ..helpers import OptimizationHelpers
 
 class MuscleHelpers:
     @staticmethod
-    def parse_muscle_index(muscle_index: range | slice | int | None, n_muscles: int) -> slice:
-        if muscle_index is None:
-            return slice(0, n_muscles)
-        elif isinstance(muscle_index, int):
-            return slice(muscle_index, muscle_index + 1)
-        elif isinstance(muscle_index, range):
-            return slice(muscle_index.start, muscle_index.stop)
-        else:
-            raise ValueError("muscle_index must be an int, a range or a slice")
-
-    @staticmethod
-    def find_relaxed_poses(model: ModelAbstract, expand: bool = True) -> dict[str, np.array]:
+    def find_shortest_muscle_length_poses(model: ModelAbstract, expand: bool = True) -> dict[str, np.array]:
         """
-        Find the relaxed pose for each muscle that minimizes their respective muscle length
+        Find the pose that minimizes the muscle length for each muscle
 
         Parameters
         ----------
         model: ModelAbstract
             The model to use
-        muscle_index: int
-            The muscle index to optimize
         expand: bool
             If the casadi functions should be expanded before the optimization
 
@@ -146,18 +133,34 @@ class MuscleHelpers:
         return np.array(x).reshape(-1)
 
     @staticmethod
-    def find_minimal_tendon_slack_lengths(model: ModelAbstract, expand: bool = True) -> np.array:
+    def find_minimal_tendon_slack_lengths(
+        model: ModelAbstract, all_poses: dict[str, casadi.DM], expand: bool = True
+    ) -> np.array:
         """
-        Find values for the tendon slack lengths where the muscle starts to produce passive muscle forces (i.e. optimal pose)
+        Find values for the tendon slack lengths assuming all_poses is the pose where each muscles start producing force,
+        which is the optimal pose.
+
+        The method resets the model to its original state after the optimization
+
+        Parameters
+        ----------
+        model: ModelAbstract
+            The model to use
+        all_poses: dict[str, casadi.DM]
+            The poses to use for the optimization
+        expand: bool
+            If the casadi functions should be expanded before the optimization
+
+        Returns
+        -------
+        np.array
+            The optimized tendon slack lengths
         """
 
         # Declare some aliases
         target = 0.01  # Target a passive force of almost 0.2% of the maximal force
         n_q = model.n_q
         n_muscles = model.n_muscles
-
-        # Get the relaxed poses
-        optimal_poses = model.strongest_poses
 
         # Save the original tendon slack lengths
         tendon_slack_lengths_bak = [
@@ -185,7 +188,7 @@ class MuscleHelpers:
         x = np.ones(n_muscles) * 0.0001
         for i in range(n_muscles):
             # Evaluate the muscle force at relaxed pose
-            q = optimal_poses[model.muscle_names[i]]
+            q = all_poses[model.muscle_names[i]]
             cost = casadi.Function(
                 "force_at_q",
                 [tendon_slack_lengths_mx],

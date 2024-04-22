@@ -8,6 +8,33 @@ type Scalar = float | int | casadi.SX | casadi.MX | casadi.DM
 
 
 class VectorHelpers:
+    @staticmethod
+    def index_to_slice(indices: range | slice | int | None, n_elements: int) -> slice:
+        """
+        Parse the indices to a slice
+
+        Parameters
+        ----------
+        indices: range | slice | int | None
+            The indices to parse
+        n_elements: int
+            The number of elements
+
+        Returns
+        -------
+        slice
+            The indices as a slice
+        """
+
+        if indices is None:
+            return slice(0, n_elements)
+        elif isinstance(indices, int):
+            return slice(indices, indices + 1)
+        elif isinstance(indices, range):
+            return slice(indices.start, indices.stop)
+        else:
+            raise ValueError("indices must be an int, a range or a slice")
+
     def concatenate(*args: Vector) -> Vector:
         if isinstance(args[0], (casadi.SX, casadi.MX, casadi.DM)):
             return casadi.vertcat(*args)

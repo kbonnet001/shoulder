@@ -16,7 +16,7 @@ from shoulder import ModelBiorbd, ControlsTypes, MuscleHelpers, MuscleParameter
 
 class Results:
     class Values:
-        def __init__(self, values: np.ndarray, reference: np.ndarray, lb: np.ndarray, ub: np.ndarray):
+        def __init__(self, values: np.ndarray, reference: np.ndarray, x0: np.ndarray, lb: np.ndarray, ub: np.ndarray):
             if len(values.shape) > 1:
                 if values.shape[1] != 1:
                     raise ValueError("Values must be a column vector")
@@ -25,6 +25,10 @@ class Results:
                 if reference.shape[1] != 1:
                     raise ValueError("Reference must be a column vector")
                 reference = reference[:, 0]
+            if len(x0.shape) > 1:
+                if x0.shape[1] != 1:
+                    raise ValueError("Initial guess must be a column vector")
+                x0 = x0[:, 0]
             if len(lb.shape) > 1:
                 if lb.shape[1] != 1:
                     raise ValueError("Lower bounds must be a column vector")
@@ -34,8 +38,9 @@ class Results:
                     raise ValueError("Upper bounds must be a column vector")
                 ub = ub[:, 0]
 
-            self.values = values 
+            self.values = values
             self.reference = reference
+            self.x0 = x0
             self.lb = lb
             self.ub = ub
 
@@ -43,6 +48,7 @@ class Results:
             return Results.Values(
                 np.array([self.values[item]]),
                 np.array([self.reference[item]]),
+                np.array([self.x0[item]]),
                 np.array([self.lb[item]]),
                 np.array([self.ub[item]]),
             )
@@ -51,8 +57,10 @@ class Results:
             s = ""
             for i in range(len(self.values)):
                 diff = self.values[i] - self.reference[i]
-                s += f"{self.lb[i]:>4.1f} <= {self.values[i]:>4.1f} ({self.reference[i]:>4.1f}) <= {self.ub[i]:>4.1f} " \
-                    f"({"+" if diff > 0 else "-"} {np.abs(diff):>4.1f})"
+                s += (
+                    f"{self.lb[i]:>4.1f} <= {self.values[i]:>4.1f} ({self.x0[i]:>4.1f}) <= {self.ub[i]:>4.1f} "
+                    f"/ {self.reference[i]:>4.1f} ({'+' if diff > 0 else '-'} {np.abs(diff):>4.1f})"
+                )
             return s
 
     def __init__(
@@ -75,9 +83,27 @@ class Results:
         return s
 
 
-def optimize_muscle_parameters(cx, model: ModelBiorbd, expand: bool = True) -> Results:
+def optimize_muscle_parameters(
+    cx, model: ModelBiorbd, use_predefined_muscle_ratio_values, expand: bool = True
+) -> Results:
     """
     Find values for the tendon slack lengths that do not produce any muscle force
+
+    Parameters
+    ----------
+    cx: casadi.SX
+        The casadi symbol
+    model: ModelBiorbd
+        The model to optimize
+    use_predefined_muscle_ratio_values: bool
+        If True, the muscle parameters use predefined values to compute their initial guess
+    expand: bool
+        If True, the casadi functions are expanded
+
+    Returns
+    -------
+    Results
+        The results of the optimization
     """
     start = time.time()
     print(f"Optimizing muscle parameters for model {model.name}...")
@@ -85,15 +111,28 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, expand: bool = True) -> R
     # Declare some aliases
     n_muscles = model.n_muscles
 
-    # Erase the predefined muscle parameters
+    # Backup the predefined muscle parameters
     reference_optimal_lengths = [
         float(model.get_muscle_parameter(i, MuscleParameter.OPTIMAL_LENGTH)) for i in range(n_muscles)
     ]
     reference_tendon_slack_lengths = [
         float(model.get_muscle_parameter(i, MuscleParameter.TENDON_SLACK_LENGTH)) for i in range(n_muscles)
     ]
+
+    # Set the model to an initial guess based on the geometric properties of the muscles
     for i in range(n_muscles):
-        model.set_muscle_parameters(index=i, tendon_slack_length=0.0, optimal_length=0.0)
+        q = model.strongest_poses[model.muscle_names[i]]
+        pennation_angle = model.get_muscle_parameter(i, MuscleParameter.PENNATION_ANGLE)
+        muscle_tendon_length = model.muscles_kinematics(q, muscle_index=i) * np.cos(pennation_angle)
+
+        if use_predefined_muscle_ratio_values:
+            muscle_to_tendon_length_ratio = reference_tendon_slack_lengths[i] / reference_optimal_lengths[i]
+        else:
+            muscle_to_tendon_length_ratio = 0.4
+
+        tendon_length = muscle_tendon_length * muscle_to_tendon_length_ratio
+        fiber_length = (muscle_tendon_length - tendon_length) / np.cos(pennation_angle)
+        model.set_muscle_parameters(index=i, tendon_slack_length=tendon_length, optimal_length=fiber_length)
 
     # Prepare the decision variables
     optimal_lengths_cx = cx.sym("optimal_lengths", n_muscles, 1)
@@ -107,9 +146,10 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, expand: bool = True) -> R
     strongest_poses = model.strongest_poses
     optimal_lengths_at_strongest = MuscleHelpers.find_optimal_length(model, all_poses=strongest_poses, expand=expand)
     for i in range(n_muscles):
-        # This value assumes a tendon slack length of 0.0, so take a fraction of it as the initial guess
-        model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_at_strongest[i] * 0.5)
-    tendon_slack_lengths_x0 = MuscleHelpers.find_minimal_tendon_slack_lengths(model, expand=expand)
+        model.set_muscle_parameters(index=i, optimal_length=optimal_lengths_at_strongest[i])
+    tendon_slack_lengths_x0 = MuscleHelpers.find_minimal_tendon_slack_lengths(
+        model, all_poses=strongest_poses, expand=expand
+    )
 
     # Now reoptimize the optimal lengths assuming the tendon slack lengths are the ones found")
     print("Pre-optimizing the optimal lengths...")
@@ -150,24 +190,24 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, expand: bool = True) -> R
     qddot = model.forward_dynamics(q=q, qdot=qdot, controls=emg, controls_type=ControlsTypes.EMG)[1]
     f_mx.append(qddot**2)
 
-    emg = casadi.MX.ones(n_muscles,1)
+    emg = casadi.MX.ones(n_muscles, 1)
     qdot = casadi.MX.zeros(model.n_q, 1)
     for i in range(n_muscles):
         q_optimal = casadi.MX(strongest_poses[model.muscle_names[i]])
         flpe, flce = model.muscle_force_coefficients(emg, q_optimal, muscle_index=i)
         force = model.muscle_force(emg, q_optimal, qdot, muscle_index=i)
-        
-        # # Forces should be maximized at the optimal pose
-        f_mx.append(-(force ** 2))
+
+        # Forces should be maximized at the optimal pose
+        f_mx.append(1000 * -(force**2))
 
         # Forces should be maximized at the optimal pose
         g_mx.append(flce)
         lbg.append(0.95)
-        ubg.append(1.0)
+        ubg.append(1.00)
 
         # Passive force should be almost zero at the optimal pose
         g_mx.append(flpe)
-        lbg.append(0.000)  # Similar to 0 by design of the muscle
+        lbg.append(0.000)
         ubg.append(0.001)
 
     # Converting to casadi functions
@@ -218,12 +258,14 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, expand: bool = True) -> R
         optimal_lengths=Results.Values(
             values=np.array(sol["x"][:n_muscles]) * 100,
             reference=np.array(reference_optimal_lengths) * 100,
+            x0=np.array(optimal_lengths_x0) * 100,
             lb=np.array(optimal_lengths_lb) * 100,
             ub=np.array(optimal_lengths_ub) * 100,
         ),
         tendon_slack_lengths=Results.Values(
             values=np.array(sol["x"][n_muscles:]) * 100,
             reference=np.array(reference_tendon_slack_lengths) * 100,
+            x0=np.array(tendon_slack_lengths_x0) * 100,
             lb=np.array(tendon_slack_lengths_lb) * 100,
             ub=np.array(tendon_slack_lengths_ub) * 100,
         ),
@@ -233,6 +275,7 @@ def optimize_muscle_parameters(cx, model: ModelBiorbd, expand: bool = True) -> R
 def main():
     # Aliases
     cx = casadi.SX
+    use_predefined_muscle_ratio_values = True
     models = (
         ModelBiorbd("models/Wu_DeGroote.bioMod", use_casadi=True),
         # ModelBiorbd("models/Wu_Thelen.bioMod", use_casadi=True),
@@ -241,7 +284,7 @@ def main():
     results = []
     for model in models:
         # Optimize
-        results.append(optimize_muscle_parameters(cx, model, expand=True))
+        results.append(optimize_muscle_parameters(cx, model, use_predefined_muscle_ratio_values, expand=True))
 
     for result in results:
         print(result)
