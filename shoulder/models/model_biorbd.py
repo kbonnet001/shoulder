@@ -9,7 +9,6 @@ from scipy import integrate
 
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
 from ..helpers import Vector, Scalar, VectorHelpers
-from .helpers import MuscleHelpers
 from .model_abstract import ModelAbstract
 
 
@@ -60,7 +59,7 @@ class ModelBiorbd(ModelAbstract):
             "TRIlong": np.array([0, -0.01, 0, np.pi / 2]),
             "INFSP": np.array([0, -0.01, 0, 0]),
             "SUPSP": np.array([0, -0.01, 0, 0]),  # [0.94661, -1.00282, 1.56935, 1.2031]
-            "SUBSC": np.array([0, -0.01, 0, 0]),  # [0.944205, -0.40017, -0.0495518, 1.2031]
+            "SUBSC": np.array([1, -0.5, 0, 0]),  # [0.944205, -0.40017, -0.0495518, 1.2031]
             "TMIN": np.array([0, -0.01, 0, 0]),
             "TMAJ": np.array([0, -0.01, 0, 0]),
             "CORB": np.array([0, -0.01, 0, 0]),

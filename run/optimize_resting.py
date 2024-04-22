@@ -11,7 +11,6 @@ from shoulder import ModelBiorbd, ControlsTypes, MuscleHelpers, MuscleParameter
 # OR
 # TODO use tendon force if flpe == 0?
 # TODO Does the model target the same pose as the astronaut?
-# TODO Do not use the predefined muscle values from the original model
 
 
 class Results:
@@ -150,6 +149,8 @@ def optimize_muscle_parameters(
     tendon_slack_lengths_x0 = MuscleHelpers.find_minimal_tendon_slack_lengths(
         model, all_poses=strongest_poses, expand=expand
     )
+    # Ensure the tendon slack lengths are not too small (minimum initial guess 5mm)
+    tendon_slack_lengths_x0[tendon_slack_lengths_x0 < 0.005] = 0.005
 
     # Now reoptimize the optimal lengths assuming the tendon slack lengths are the ones found")
     print("Pre-optimizing the optimal lengths...")

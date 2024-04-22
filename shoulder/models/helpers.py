@@ -200,8 +200,6 @@ class MuscleHelpers:
                 cost = cost.expand()
 
             x[i] = OptimizationHelpers.bisection_zero_finder(lbx=0, ubx=1, cost_function=cost)
-            if x[i] < 0.001:
-                x[i] = 0.001
 
         # Set back the original tendon slack lengths
         for i in range(n_muscles):
