@@ -47,6 +47,26 @@ class ModelAbstract(ABC):
         The relaxed pose
         """
 
+    @abstractmethod
+    def ranged_relaxed_poses(self, limit: float, n_elements: int) -> np.ndarray:
+        """
+        All te poses that are within the relaxed pose ranges. Rows are the generalized coordinates, cols are each pose.
+        The more a pose appears in the list, the more weight it has in the optimization problem. The first is the relaxed
+        pose itself
+
+        Parameters
+        ----------
+        limit: float
+            The limit to push the relaxed pose to each side
+        n_elements: int
+            The number of elements to generate
+
+        Returns
+        -------
+        np.ndarray
+            The relaxed poses, the rows are the generalized coordinates, the columns are the poses
+        """
+
     @property
     @abstractmethod
     def strongest_poses(self) -> dict[str, np.ndarray]:

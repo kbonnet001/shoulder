@@ -50,6 +50,16 @@ class ModelBiorbd(ModelAbstract):
     def relaxed_pose(self) -> np.ndarray:
         return np.array([0, -0.01, 0, 0])
 
+    def ranged_relaxed_poses(self, limit: float, n_elements: int) -> np.ndarray:
+        if n_elements == 1:
+            return self.relaxed_pose[np.newaxis, :].T
+
+        poses = []
+        for plane_of_elevation in np.random.normal(0, limit, n_elements):
+            for elevation in np.random.normal(0, limit, n_elements):
+                poses.append(self.relaxed_pose + np.array([plane_of_elevation, np.abs(elevation), 0, 0]))
+        return np.concatenate((self.relaxed_pose[np.newaxis, :], poses[:-1])).T
+
     @property
     def strongest_poses(self) -> dict[str, np.ndarray]:
         return {
@@ -243,6 +253,11 @@ class ModelBiorbd(ModelAbstract):
                 return self._model.muscle(index).characteristics().pennationAngle().to_mx()
             else:
                 return self._model.muscle(index).characteristics().pennationAngle()
+        elif parameter_to_get == MuscleParameter.MAXIMAL_FORCE:
+            if self._use_casadi:
+                return self._model.muscle(index).characteristics().forceIsoMax().to_mx()
+            else:
+                return self._model.muscle(index).characteristics().forceIsoMax()
         else:
             raise NotImplementedError(f"Parameter {parameter_to_get} not implemented")
 

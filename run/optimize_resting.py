@@ -7,9 +7,6 @@ from shoulder import ModelBiorbd, ControlsTypes, MuscleHelpers, MuscleParameter
 
 # Add muscletendon equilibrium constraint
 # Multivariate normal => center + noise , returns covariance matrix (Robust optimization)
-# TODO The tendon slack length should be opimized at optimal length instead of shortest length?
-# OR
-# TODO use tendon force if flpe == 0?
 # TODO Does the model target the same pose as the astronaut?
 
 
@@ -83,19 +80,25 @@ class Results:
 
 
 def optimize_muscle_parameters(
-    cx, model: ModelBiorbd, use_predefined_muscle_ratio_values, expand: bool = True
+    cx: type[casadi.MX | casadi.SX],
+    model: ModelBiorbd,
+    use_predefined_muscle_ratio_values: bool,
+    robust_optimization: bool,
+    expand: bool,
 ) -> Results:
     """
     Find values for the tendon slack lengths that do not produce any muscle force
 
     Parameters
     ----------
-    cx: casadi.SX
+    cx: type
         The casadi symbol
     model: ModelBiorbd
         The model to optimize
     use_predefined_muscle_ratio_values: bool
         If True, the muscle parameters use predefined values to compute their initial guess
+    robust_optimization: bool
+        If True, the optimization is robust
     expand: bool
         If True, the casadi functions are expanded
 
@@ -185,31 +188,51 @@ def optimize_muscle_parameters(
     ubg = []
 
     # Acceleration should be zero at the relaxed pose
-    q = casadi.MX(model.relaxed_pose)
+    q_sym = casadi.MX.sym("q", model.n_q, 1)
     qdot = casadi.MX.zeros(model.n_q, 1)
     emg = casadi.MX.ones(n_muscles, 1) * 0.01
-    qddot = model.forward_dynamics(q=q, qdot=qdot, controls=emg, controls_type=ControlsTypes.EMG)[1]
-    f_mx.append(qddot**2)
+
+    fd = casadi.Function(
+        "fd",
+        [q_sym, x_mx],
+        [model.forward_dynamics(q=q_sym, qdot=qdot, controls=emg, controls_type=ControlsTypes.EMG)[1]],
+    )
+    if expand:
+        fd = fd.expand()
+
+    weight = 100
+    if robust_optimization:
+        n_robusts = 5
+        poses = model.ranged_relaxed_poses(limit=1.0 * np.pi / 180, n_elements=n_robusts).T
+        weight *= 1 / len(poses)
+        for q in poses:
+            f_mx.append(weight * fd(q, x_mx) ** 2)
+    else:
+        f_mx.append(weight * fd(model.relaxed_pose, x_mx) ** 2)
 
     emg = casadi.MX.ones(n_muscles, 1)
     qdot = casadi.MX.zeros(model.n_q, 1)
     for i in range(n_muscles):
         q_optimal = casadi.MX(strongest_poses[model.muscle_names[i]])
         flpe, flce = model.muscle_force_coefficients(emg, q_optimal, muscle_index=i)
-        force = model.muscle_force(emg, q_optimal, qdot, muscle_index=i)
+        maximal_force = model.get_muscle_parameter(i, MuscleParameter.MAXIMAL_FORCE)
+        normalized_force = model.muscle_force(emg, q_optimal, qdot, muscle_index=i) / maximal_force
 
         # Forces should be maximized at the optimal pose
-        f_mx.append(1000 * -(force**2))
+        # weight = 1
+        # f_mx.append(weight * -(normalized_force**2))
 
         # Forces should be maximized at the optimal pose
         g_mx.append(flce)
-        lbg.append(0.95)
+        lbg.append(0.70)
         ubg.append(1.00)
+        f_mx.append(100 * -flpe)
 
         # Passive force should be almost zero at the optimal pose
         g_mx.append(flpe)
         lbg.append(0.000)
-        ubg.append(0.001)
+        ubg.append(0.025)
+        f_mx.append(100 * flce)
 
     # Converting to casadi functions
     if len(f_mx) == 0:
@@ -239,7 +262,7 @@ def optimize_muscle_parameters(
         {"ipopt.max_iter": 10000, "ipopt.hessian_approximation": "limited-memory"},
     )
     sol = solver(x0=x0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
-    print(f"Optimization done in {time.time() - start:.2f} s")
+    print(f"Optimization done in {time.time() - start:.2f}s")
 
     # Set the muscle parameters to the decision variables
     for i in range(n_muscles):
@@ -247,11 +270,13 @@ def optimize_muscle_parameters(
             index=i, optimal_length=float(sol["x"][:n_muscles][i]), tendon_slack_length=float(sol["x"][n_muscles:][i])
         )
 
+    print("")
     for i in range(n_muscles):
         q_optimal = strongest_poses[model.muscle_names[i]]
         flpe, flce = model.muscle_force_coefficients(np.ones((n_muscles, 1)), np.array(q_optimal), muscle_index=i)
-        print(f"{model.muscle_names[i]}: flpe = {float(flpe)}, flce = {float(flce)}")
-    print(f"qddot = {np.sum(casadi.Function('qddot', [x_mx], [qddot])(sol['x']))}")
+        print(f"{model.muscle_names[i]:<12}: flpe = {flpe[0, 0]:.8f}, flce = {flce[0, 0]:.8f}")
+    print(f"sum(fd) at relaxed = {np.sum(fd(model.relaxed_pose, sol['x'])):.2f}")
+    print("")
 
     # Parse the results
     return Results(
@@ -275,17 +300,22 @@ def optimize_muscle_parameters(
 
 def main():
     # Aliases
+    np.random.seed(42)
     cx = casadi.SX
-    use_predefined_muscle_ratio_values = True
+    use_predefined_muscle_ratio_values = False
+    robust_optimization = True
     models = (
         ModelBiorbd("models/Wu_DeGroote.bioMod", use_casadi=True),
-        # ModelBiorbd("models/Wu_Thelen.bioMod", use_casadi=True),
+        ModelBiorbd("models/Wu_Thelen.bioMod", use_casadi=True),
     )
+    expand = True
 
     results = []
     for model in models:
         # Optimize
-        results.append(optimize_muscle_parameters(cx, model, use_predefined_muscle_ratio_values, expand=True))
+        results.append(
+            optimize_muscle_parameters(cx, model, use_predefined_muscle_ratio_values, robust_optimization, expand)
+        )
 
     for result in results:
         print(result)

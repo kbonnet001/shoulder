@@ -36,6 +36,9 @@ class ModelMujoco(ModelAbstract):
     def relaxed_pose(self) -> np.ndarray:
         raise NotImplementedError("ModelMujoco.relaxed_pose is not implemented yet")
 
+    def ranged_relaxed_poses(self, limit: float, n_elements: int) -> np.ndarray:
+        raise NotImplementedError("ModelMujoco.ranged_relaxed_poses is not implemented yet")
+
     @property
     def strongest_poses(self, muscle_index: int | range | slice | None = None) -> dict[str, np.ndarray]:
         raise NotImplementedError("ModelMujoco.strongest_poses is not implemented yet")
