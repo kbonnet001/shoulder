@@ -1,4 +1,5 @@
 from functools import partial
+from packaging.version import Version
 
 import biorbd
 import biorbd_casadi
@@ -8,15 +9,25 @@ from scipy import integrate
 
 
 from .enums import ControlsTypes, IntegrationMethods, MuscleParameter
-from ..helpers import Vector, Scalar, VectorHelpers
 from .model_abstract import ModelAbstract
+from .parameters_optimization import Results, optimize_muscle_parameters
+from ..helpers import Vector, Scalar, VectorHelpers
+
+
+assert Version(biorbd.__version__) == Version("1.11.2")
+assert Version(biorbd_casadi.__version__) == Version("1.11.2")
 
 
 class ModelBiorbd(ModelAbstract):
-    def __init__(self, model_path: str, use_casadi: bool = False):
+    def __init__(self, model: str | ModelAbstract, use_casadi: bool = False):
         self._use_casadi = use_casadi
         self.brbd = biorbd_casadi if self._use_casadi else biorbd
-        self._model = self.brbd.Model(model_path)
+        if isinstance(model, str):
+            self._model = self.brbd.Model(model)
+        elif isinstance(model, ModelBiorbd):
+            self._model = self.brbd.Model(model._model.path().absolutePath().to_string())
+        else:
+            raise ValueError("model_path must be a string or a ModelBiorbd object")
 
     @property
     def biorbd_model(self) -> biorbd.Model | biorbd_casadi.Model:
@@ -45,6 +56,23 @@ class ModelBiorbd(ModelAbstract):
     @property
     def muscle_names(self) -> list[str]:
         return [name.to_string() for name in self._model.muscleNames()]
+
+    def optimize_muscle_parameters(
+        self, use_predefined_muscle_ratio_values: bool = True, robust_optimization: bool = False, expand: bool = True
+    ) -> None:
+        results = optimize_muscle_parameters(
+            cx=casadi.SX,
+            model=self._model if self._use_casadi else ModelBiorbd(self, use_casadi=True),
+            use_predefined_muscle_ratio_values=use_predefined_muscle_ratio_values,
+            robust_optimization=robust_optimization,
+            expand=expand,
+        )
+        for i in range(self.n_muscles):
+            self.set_muscle_parameters(
+                i,
+                optimal_length=results.optimal_lengths.values[i],
+                tendon_slack_length=results.tendon_slack_lengths.values[i],
+            )
 
     @property
     def relaxed_pose(self) -> np.ndarray:

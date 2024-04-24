@@ -40,6 +40,27 @@ class ModelAbstract(ABC):
         The muscle names
         """
 
+    @abstractmethod
+    def optimize_muscle_parameters(
+        self, use_predefined_muscle_ratio_values: bool = True, robust_optimization: bool = False, expand: bool = True
+    ) -> None:
+        """
+        Interface for calling the "optimize_muscle_parameters" and having the results dispatched to the current model
+
+        Parameters
+        ----------
+        use_predefined_muscle_ratio_values: bool
+            If the predefined muscle ratio of the model values should be used
+        robust_optimization: bool
+            If the optimization should be robust
+        expand: bool
+            If the optimization should expand the casadi Functions (faster but takes more RAM)
+
+        Returns
+        -------
+        Changes the muscle parameters of the model, returns nothing
+        """
+
     @property
     @abstractmethod
     def relaxed_pose(self) -> np.ndarray:

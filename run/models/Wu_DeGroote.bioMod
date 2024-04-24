@@ -92,6 +92,7 @@ segment humerus_right
     parent scapula_right
     RT 0 0 0 xyz -0.00955 -0.034 0.009
 	rotations yxy
+	jointDampings 0.0 0.8 0.001
 	ranges
         -pi/3 3*pi/4
 	    -1.9*pi/2 -0.01
@@ -115,6 +116,7 @@ segment ulna_effector_right
        -0.0493668331166902   -0.0366447496814640  0.998108249694797   -0.0123
         0                     0                   0                    1
 	rotations z
+	jointDampings 0.0
 	ranges
 	    0.05 pi*3/4
 endsegment

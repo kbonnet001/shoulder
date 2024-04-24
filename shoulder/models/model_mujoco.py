@@ -32,6 +32,11 @@ class ModelMujoco(ModelAbstract):
     def muscle_names(self) -> list[str]:
         raise NotImplementedError("ModelMujoco.muscle_names is not implemented yet")
 
+    def optimize_muscle_parameters(
+        self, use_predefined_muscle_ratio_values: bool = True, robust_optimization: bool = False, expand: bool = True
+    ) -> None:
+        raise NotImplementedError("ModelMujoco.optimize_muscle_parameters is not implemented yet")
+
     @property
     def relaxed_pose(self) -> np.ndarray:
         raise NotImplementedError("ModelMujoco.relaxed_pose is not implemented yet")

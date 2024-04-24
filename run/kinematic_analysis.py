@@ -4,23 +4,28 @@ from shoulder import ModelBiorbd, ModelMujoco, Plotter, ControlsTypes, Integrati
 
 def main():
     # Setup
-    tf = 50  # seconds
+    tf = 10  # seconds
     control_type = ControlsTypes.EMG
+    should_optimize_muscle_parameters = False
     show_animate = False
     show_graphs = True
 
     # Aliases
     models = (
-        (ModelMujoco("../external/myo_sim/arm/myoarm.xml"), IntegrationMethods.RK4),
-        (ModelBiorbd("models/Wu_Thelen.bioMod"), IntegrationMethods.RK45),
+        # (ModelMujoco("../external/myo_sim/arm/myoarm.xml"), IntegrationMethods.RK4),
+        (ModelBiorbd("models/Wu_DeGroote.bioMod"), IntegrationMethods.RK45),
     )
 
     for model, integration_method in models:
         n_q = model.n_q
         n_muscles = model.n_muscles
 
+        if should_optimize_muscle_parameters and control_type == ControlsTypes.EMG:
+            np.random.seed(42)
+            model.optimize_muscle_parameters(use_predefined_muscle_ratio_values=True, robust_optimization=False)
+
         # Prepare the states
-        q = np.zeros((n_q,))
+        q = model.relaxed_pose
         qdot = np.zeros((n_q,))
 
         # Prepare controls
