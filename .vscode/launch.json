@@ -28,5 +28,13 @@
             "cwd": "${workspaceFolder}/run",
             "console": "integratedTerminal"
         },
+        {
+            "name": "Muscle geometry",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run/muscle_geometry.py",
+            "cwd": "${workspaceFolder}/run",
+            "console": "integratedTerminal"
+        },
     ]
 }
