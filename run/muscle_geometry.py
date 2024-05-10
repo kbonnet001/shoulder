@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+<<<<<<< HEAD
 from scipy.linalg import norm
 
 # Functions for Step 1
@@ -89,6 +90,26 @@ def find_via_points_xy(p0, p1, r) :
   # - v1 = [v1_x, v1_y, 0] : array 3*1 position of the first obstacle via point
   # - v2 = [v2_x, v2_y, 0] : array 3*1 position of the second obstacle via point
 
+=======
+from scipy.linalg import norm # à voir si ok d'utiliser ça
+
+# Functions for Step 2
+#---------------------
+
+def find_via_points(p0, p1, r) :
+
+  # Compute xy coordinates of v1 and v2
+  #
+  # INPUT
+  # - p0 : array 3*1 position of the first point
+  # - p1 : array 3*1 position of the second point
+  # - r : radius of the cylinder * side
+  #
+  # OUTPUT
+  # - v1 = [v1_x, v1_y, 0] : array 3*1 position of the first obstacle via point
+  # - v2 = [v2_x, v2_y, 0] : array 3*1 position of the second obstacle via point
+
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
   p0_x2y2 = p0[0] ** 2 + p0[1] ** 2
   if p0_x2y2 == 0:
     raise ValueError("Please choose other coordinates for p0. You mustn't have a bounding-fixed via point with x=y=0.")
@@ -97,6 +118,7 @@ def find_via_points_xy(p0, p1, r) :
   if p1_x2y2 == 0:
     raise ValueError("Please choose other coordinates for p1. You mustn't have a bounding-fixed via point with x=y=0.")
 
+<<<<<<< HEAD
   if p0[0]**2+p0[1]**2-r**2 < 0 :
     print("You choose p0 in the cylinder. Muscle path is straight line")
     return [0,0,0], [0,0,0]
@@ -106,6 +128,17 @@ def find_via_points_xy(p0, p1, r) :
     return [0,0,0], [0,0,0]
 
   else :
+=======
+  if p0[0]**2+p0[1]**2-r**2 < 0 : 
+    print("You choose p0 in the cylinder. Muscle path is straight line")
+    return [0,0,0], [0,0,0]
+
+  elif p1[0]**2+p1[1]**2-r**2 < 0 : 
+    print("You choose p1 in the cylinder. Muscle path is straight line")
+    return [0,0,0], [0,0,0]
+
+  else : 
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
     v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[0]
     v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[1]
 
@@ -159,6 +192,7 @@ def z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point) :
 
   return v1_z, v2_z
 
+<<<<<<< HEAD
 def find_via_points(p0, p1, r) :
 
    # Compute xyz coordinates of v1 and v2
@@ -182,12 +216,22 @@ def find_via_points(p0, p1, r) :
 #----------------------
 
 def determine_if_via_points_inactive_single_cylinder(v1,v2, r) :
+=======
+# Functions for Step 3 and 4
+#---------------------------
+
+def determine_if_via_points_inactive(v1,v2, r) :
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
 
   # Determine if via points v1 and v2 are inactive
   #
   # /!\ Differences with the B.A. Garner and M.G. Pandy paper !
   #   if Det < 0 : orientation is clockwise
+<<<<<<< HEAD
   #   so for a side right-handed (side = 1), we need actived via points
+=======
+  #   so for a side right-handed (side = 1), we need actived via points 
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
   #   so, if Det*r < 0 ==> determine_if_via_points_inactive = False
   #   (and not "True" as originally presented in the paper)
   #
@@ -205,12 +249,18 @@ def determine_if_via_points_inactive_single_cylinder(v1,v2, r) :
   else :
     return True
 
+<<<<<<< HEAD
 # Functions for Step 4
 #----------------------
 
 def compute_length_v1_v2(v1,v2, v1_v2_length_xy) :
 
   # Compute length of path segments v1 v2
+=======
+def compute_length_v1_v2(v1,v2, v1_v2_length_xy) :
+
+  # Compute length of path segments
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
   #
   # INPUT
   # - v1 : array 3*1 position of the first obstacle via point
@@ -222,6 +272,7 @@ def compute_length_v1_v2(v1,v2, v1_v2_length_xy) :
 
   return np.sqrt(v1_v2_length_xy**2+(v2[0]-v1[2])**2)
 
+<<<<<<< HEAD
 def segment_length_single_cylinder(obstacle_via_point_inactive, origin_point, final_point, v1, v2, r) :
 
   # Compute length of path segments
@@ -307,6 +358,8 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
 
    return v1o, v2o, obstacle_via_point_inactive, segment_length
 
+=======
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
 # Functions for Plot
 #---------------------------
 
@@ -340,34 +393,50 @@ def data_cylinder(center_circle_1, center_circle_2, radius, num_points = 100) :
   n2 = np.cross(v_unit, n1)
 
   # Surface ranges over t from 0 to length of axis and 0 to 2*pi
+<<<<<<< HEAD
   t = np.linspace(0, norm(v_cylinder), num_points)
   theta = np.linspace(0, 2 * np.pi, num_points)
+=======
+  t = np.linspace(0, norm(v_cylinder), 100)
+  theta = np.linspace(0, 2 * np.pi, 100)
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
   t, theta = np.meshgrid(t, theta)
 
   # Generate coordinates for surface
   X, Y, Z = [center_circle_1[i] + v_unit[i] * t + radius * np.sin(theta) * n1[i] + radius * np.cos(theta) * n2[i] for i in [0, 1, 2]]
   return X, Y, Z
 
+<<<<<<< HEAD
 def data_semi_circle(v1, v2, cylinder_origin, cylinder_frame, r, num_points=100) :
+=======
+def data_semi_circle(v1, v2, c, r, num_points=100) :
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
 
   # Compute datas for plot the semi-circle between bounding fixed via points v1 and v2
   #
   # INPUT
   # - v1 : array 3*1 position of the first obstacle via point
   # - v2 : array 3*1 position of the second obstacle via point
+<<<<<<< HEAD
   # - cylinder_origin : array 3*1 coordinates of the center of the cylinder
   # - cylinder_frame : array 3*3 local frame of the cylinder
   # - r : radius of the cylinder
+=======
+  # - c : array 3*1 position of the center of the circle passing through v1 and v2
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
   # - num_points : int number of points for representation (default 100)
   #
   # OUTPUT
   # - semi_circle_points : array nm_point*n3 coordinates of points for the representation of the semi-circle
 
+<<<<<<< HEAD
   # Change frame
   v1 = transpose_switch_frame(v1, cylinder_frame, [0,0,0] - cylinder_origin)
   v2 = transpose_switch_frame(v2, cylinder_frame, [0,0,0] - cylinder_origin)
   c = np.array([0,0, (v1[2]+v2[2])/2])
 
+=======
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
   # Calculation of the normal vect of plan def by v1, v2 and c1
   norm = np.cross(v1 - c, v2 - c)
   norm /= np.linalg.norm(norm)
@@ -380,18 +449,25 @@ def data_semi_circle(v1, v2, cylinder_origin, cylinder_frame, r, num_points=100)
   semi_circle_points = c + r * np.cos(theta)[:, np.newaxis] * (v1 - c) / np.linalg.norm(v1 - c) + \
                         r * np.sin(theta)[:, np.newaxis] * np.cross(norm, (v1 - c) / np.linalg.norm(v1 - c))
 
+<<<<<<< HEAD
   for i in range (len(semi_circle_points)) :
     semi_circle_points[i] = switch_frame(semi_circle_points[i], np.transpose(cylinder_frame), cylinder_origin)
 
   return semi_circle_points
 
 def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius, v1, v2, obstacle_via_point_inactive, segment_length, cylinder_origin, cylinder_frame) :
+=======
+  return semi_circle_points
+
+def plot_one_cylinder_obstacle(origin_point, final_point, center_circle_1, center_circle_2, radius, v1, v2, obstacle_via_point_inactive, segment_length) :
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
 
    # Plot the representation of the single-cylinder obstacle-set algorithm
    #
    # INPUT
    # - origin_point : array 3*1 position of the first point
    # - final_point : array 3*1 position of the second point
+<<<<<<< HEAD
    # - center_circle : 2*array 3*1 coordinates of the first and second circles of the cylinder
    # - radius : radius of the cylinder
    # - v1 : array 3*1 position of the first obstacle via point
@@ -400,6 +476,13 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
    # - segment_length : length of path segments
    # - cylinder_origin : array 3*1 coordinates of the center of the cylinder
    # - cylinder_frame : array 3*3 local frame of the cylinder
+=======
+   # - center_circle_2 : array 3*1 coordinates of the first circle of the cylinder
+   # - center_circle_2 : array 3*1 coordinates of the second circle of the cylinder
+   # - radius : radius of the cylinder
+   # - obstacle_via_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
+   # - segment_length : length of path segments
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
    #
    # OUTPUT
    # - None : Plot axis, cylinder, points and muscle path
@@ -417,15 +500,26 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
    ax.scatter(*v2, color='r', label="v2")
 
    # Cylinder
+<<<<<<< HEAD
    Xc,Yc,Zc = data_cylinder(center_circle[0], center_circle[1], radius )
    ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
    ax.plot(*zip(center_circle[0], center_circle[1]), color = 'k')
+=======
+   Xc,Yc,Zc = data_cylinder(center_circle_1, center_circle_2, radius )
+   ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
+   ax.plot(*zip(center_circle_1, center_circle_2), color = 'k')
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
 
    if (obstacle_via_point_inactive == True) : # Muscle path is straight line from origin point to final point
     ax.plot(*zip(origin_point, final_point), color='r')
    else :
     # Semi-circle between v1 and v2
+<<<<<<< HEAD
     semi_circle_points = data_semi_circle(v1,v2,cylinder_origin, cylinder_frame,radius, 100)
+=======
+    center_circle=np.array([center_circle_1[0], center_circle_1[1], (v1[2]+v2[2])/2])
+    semi_circle_points = data_semi_circle(v1,v2,center_circle,radius, 100)
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(origin_point, v1), color='g')
@@ -443,13 +537,108 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
    ax.set_ylim(-5,5)
    ax.set_zlim(-5,5)
 
+<<<<<<< HEAD
    plt.title("Single Cylinder Wrapping")
+=======
+   plt.title("Cylinder Wrapping")
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
    plt.legend()
   #  plt.legend(["obstacle_via_point_inactive : "+ ("True" if obstacle_via_point_inactive else "False")])
   #  plt.legend(["segment_length : ", segment_length])
    plt.show()
+<<<<<<< HEAD
 
 def main():
+=======
+
+# Algorithm
+#---------------------------
+
+def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, side) :
+
+   # Provide the length wrapping around a cylinder
+   #  Based on:
+   #  -B.A. Garner and M.G. Pandy, The obstacle-set method for
+   #  representing muscle paths in musculoskeletal models,
+   #  Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
+   # -----------------------------------------------------------
+   #
+   # INPUT
+   # - origin_point : array 3*1 position of the first point
+   # - final_point : array 3*1 position of the second point
+   # - radius : radius of the cylinder
+   # - side : side of the wrapping, -1 for the left side, 1 for the right side
+   #
+   # OUTPUT
+   # - v1 : array 3*1 position of the first obstacle via point
+   # - v2 : array 3*1 position of the second obstacle via point
+   # - obstacle_via_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
+   # - segment_lenght : length of path segments
+
+   # ------
+   # Step 1
+   # ------
+   r = radius * side
+
+   # ------
+   # Step 2
+   # ------
+   # Via points
+   v1, v2 = find_via_points(origin_point, final_point,r)
+   v1_v2_length_xy = compute_length_v1_v2_xy(v1, v2, r)
+   v1[2], v2[2] = z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point)
+
+   # --------------------------
+   # Step 3 - v1, v2 inactive ?
+   # --------------------------
+   obstacle_via_point_inactive = determine_if_via_points_inactive(v1,v2, r)
+
+   if (obstacle_via_point_inactive == True) : # Muscle path is straight line from origin_point to final_point
+    segment_lenght = norm(np.array(final_point)-np.array(origin_point))
+
+   else :
+    # ------
+    # Step 4
+    # ------
+    v1_v2_length = compute_length_v1_v2(v1,v2, v1_v2_length_xy)
+
+    segment_lenght = norm (v1 - np.array(origin_point)) + v1_v2_length + norm(np.array(final_point) - v2)
+
+   return v1, v2, obstacle_via_point_inactive, segment_lenght
+
+def main():
+
+   # Provide the length wrapping around a cylinder
+   #  Based on:
+   #  -B.A. Garner and M.G. Pandy, The obstacle-set method for
+   #  representing muscle paths in musculoskeletal models,
+   #  Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
+   # -----------------------------------------------------------
+
+   # ------
+   # Inputs
+   # ------
+   # Points
+   origin_point = [-5, -1,2]
+   final_point =[-1,-5,-1]
+
+   # Points for cylinder
+   center_circle_1 = np.array([0,0,-4])
+   center_circle_2 = np.array([0,0,4])
+   radius = 1
+   side = 1 # Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
+
+   #
+   v1, v2, obstacle_via_point_inactive, segment_length = single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, side)
+
+   # ----
+   # Plot
+   # ----
+   plot_one_cylinder_obstacle(origin_point, final_point, center_circle_1, center_circle_2, radius, v1, v2, obstacle_via_point_inactive, segment_length)
+
+   print("obstacle_via_point_inactive = ",obstacle_via_point_inactive)
+   print("segment_length = ", round(segment_length, 2))
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
 
    # Provide the length wrapping around a cylinder
    #  Based on:
@@ -495,4 +684,9 @@ def main():
     print("segment_length = ", round(segment_length, 2))
 
 if __name__ == "__main__":
+<<<<<<< HEAD
    main()
+=======
+   main()
+
+>>>>>>> 0fa47e04c52e89b607a9a2f5fe966171388f3478
