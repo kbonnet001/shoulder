@@ -76,6 +76,14 @@ def transpose_switch_frame(point, rotation_matrix, vect) :
 # Functions for Step 2
 #---------------------
 
+def point_inside_cylinder(P, S, radius):
+  # for exception
+
+    if np.linalg.norm(P[:2]) < radius or np.linalg.norm(S[:2]) < radius :
+        return True
+    else:
+        return False
+
 def find_via_points_xy(p0, p1, r) :
 
   # Compute xy coordinates of v1 and v2
@@ -90,28 +98,42 @@ def find_via_points_xy(p0, p1, r) :
   # - v2 = [v2_x, v2_y, 0] : array 3*1 position of the second obstacle via point
 
   p0_x2y2 = p0[0] ** 2 + p0[1] ** 2
-  if p0_x2y2 == 0:
-    raise ValueError("Please choose other coordinates for p0. You mustn't have a bounding-fixed via point with x=y=0.")
+#  if p0_x2y2 == 0:
+#    raise ValueError("Please choose other coordinates for p0. You mustn't have a bounding-fixed via point with x=y=0.")
 
   p1_x2y2 = p1[0] ** 2 + p1[1] ** 2
-  if p1_x2y2 == 0:
-    raise ValueError("Please choose other coordinates for p1. You mustn't have a bounding-fixed via point with x=y=0.")
+#  if p1_x2y2 == 0:
+#    raise ValueError("Please choose other coordinates for p1. You mustn't have a bounding-fixed via point with x=y=0.")
+
+  # else :
+  #   v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[0]
+  #   v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[1]
+
+  #   v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[0]
+  #   v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[1]
+
+
+  print("p0[0]**2+p0[1]**2-r**2 = ", p0[0]**2+p0[1]**2-r**2)
+  print("p1[0]**2+p1[1]**2-r**2  = ", p1[0]**2+p1[1]**2-r**2 )
 
   if p0[0]**2+p0[1]**2-r**2 < 0 :
-    print("You choose p0 in the cylinder. Muscle path is straight line")
-    return [0,0,0], [0,0,0]
-
-  elif p1[0]**2+p1[1]**2-r**2 < 0 :
-    print("You choose p1 in the cylinder. Muscle path is straight line")
-    return [0,0,0], [0,0,0]
-
+    v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(0))/p0_x2y2 # + c[0]
+    v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(0))/p0_x2y2 # + c[1]
   else :
     v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[0]
     v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[1]
 
+  if p1[0]**2+p1[1]**2-r**2 < 0 :
+    v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(0))/p1_x2y2 # + c[0]
+    v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(0))/p1_x2y2 # + c[1]
+  else :
     v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[0]
     v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[1]
 
+  print("p0 = ", p0, "p1 = ", p1)
+
+  print("v1_x = ", v1_x, "v1_y = ", v1_y)
+  print("v2_x = ", v2_x, "v2_y = ", v2_y)
 
   return [v1_x, v1_y, 0], [v2_x, v2_y, 0]
 
@@ -130,7 +152,6 @@ def compute_length_v1_v2_xy(v1,v2, r) :
   if r == 0:
     raise ValueError("Please choose an other radius, positive or negative are accepted. You musn't have r=0")
 
-  # The length of the line segment v1v2(x,y) is found using the law of cosines
   return np.absolute(r*np.arccos(1.0-((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2)))
 
 def z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point) :
@@ -176,6 +197,9 @@ def find_via_points(p0, p1, r) :
    v1_v2_length_xy = compute_length_v1_v2_xy(v1, v2, r)
    v1[2], v2[2] = z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, p0, p1)
 
+   print("v1 = ", v1, "v2 = ", v2)
+   print("-------------------------\n")
+
    return v1, v2
 
 def find_via_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame ) :
@@ -201,17 +225,19 @@ def find_via_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V
    H0, T0 = find_via_points(origin_U_in_V_frame, S_V_cylinder_frame, r_V)
    ecart_H0_H1 = [1,1,1]
 
-   while (abs(ecart_H0_H1[0]) > 0.0001 or abs(ecart_H0_H1[1]) > 0.0001 or abs(ecart_H0_H1[2]) > 0.0001) :
+   while (abs(ecart_H0_H1[0]) > 0.000001 or abs(ecart_H0_H1[1]) > 0.000001 or abs(ecart_H0_H1[2]) > 0.000001) :
 
     # On passe notre H0 dans le ref du cylindre U --> h0
     h0 = switch_frame(H0, rotation_matrix_UV, origin_V_in_U_frame)
 
+    print("Cylindre U ")
     # On fait maintenant le calcul de Q et G, soit v1_U et v2_U
     Q0, G0 = find_via_points(P_U_cylinder_frame, h0,r_U)
 
     # Notre G est v1_U, on veut g dans le frame du cylindre V
     g0 = switch_frame(G0, np.transpose(rotation_matrix_UV), origin_U_in_V_frame)
 
+    print("Cylindre V")
     # On calcule v1_V et v2_V à partir de g0
     H1, T1 = find_via_points(g0, S_V_cylinder_frame,r_V)
 
@@ -453,13 +479,40 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
    # ------
    # Step 2
    # ------
-   Q, G, H, T = find_via_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame )
+
+   point_inside_U = point_inside_cylinder(P_U_cylinder_frame, S_U_cylinder_frame, radius_U)
+   point_inside_V = point_inside_cylinder(P_V_cylinder_frame, S_V_cylinder_frame, radius_V)
+
+   if point_inside_U and point_inside_V :
+    print("You choose P and/or S in the cylinder U and V. Muscle path is straight line")
+    Q, G, H, T = [0,0,0], [0,0,0], [0,0,0], [0,0,0]
+
+   elif point_inside_U :
+    print("You choose P and/or S in the cylinder U. Muscle path is straight line")
+    Q, G = [0,0,0], [0,0,0]
+    H, T = find_via_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+
+   elif point_inside_V :
+    print("You choose P and/or S in the cylinder V. Muscle path is straight line")
+    H, T = [0,0,0], [0,0,0]
+    Q, G = find_via_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
+
+   else :
+    Q, G, H, T = find_via_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame )
 
    # ------
    # Step 3
    # ------
    Q_G_inactive = determine_if_via_points_inactive_single_cylinder(Q, G, r_U)
    H_T_inactive = determine_if_via_points_inactive_single_cylinder(H, T, r_V)
+
+  #  if Q_G_inactive==True :
+  #   H, T = find_via_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+  #   H_T_inactive = determine_if_via_points_inactive_single_cylinder(H, T, r_V)
+
+  #  if H_T_inactive==True :
+  #    Q, G = find_via_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
+  #    Q_G_inactive = determine_if_via_points_inactive_single_cylinder(Q, G, r_U)
 
    # ------
    # Step 4
@@ -730,21 +783,21 @@ def main():
    # Inputs
    # ------
    # Points
-   P = [-2, -4,2] # origin_point
-   S =[6,-5,3] # final_point
+   P = [0,-4,-2] # origin_point
+   S =[4,4,2] # final_point
 
    # Points for 1st cylinder
-   center_circle_U = [np.array([-2,-2,-4]),np.array([-2,-2,4])]
+   center_circle_U = [np.array([0,-5,-4]),np.array([0,-3,4])]
    radius_U = 1
-   side_U = 1 # Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
+   side_U = - 1 # Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
 
    # Points for 2nd cylinder
-   center_circle_V = [np.array([2,2,-3]),np.array([2,6,5])]
+   center_circle_V = [np.array([-2,2,-4]),np.array([-4,2,4])]
    radius_V = 1
    side_V = 1 # Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
 
    show_details = True
-   single_cylinder = True # with U cylinder
+   single_cylinder = False # with U cylinder
    double_cylinder = True # with U and V cylinders
 
    # Other inputs -----------------------------------------
