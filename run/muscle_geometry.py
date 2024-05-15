@@ -3,6 +3,56 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.linalg import norm
 
+
+
+
+####################
+import biorbd
+import bioviz
+
+model = biorbd.Model("models/Wu_DeGroote.bioMod")
+q = np.zeros((model.nbQ(), ))
+q[1] = -2
+
+segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
+humerus_index = segment_names.index("humerus_right")
+
+
+humerus_dof_names = [model.segment(humerus_index).nameDof(i).to_string() for i in range(model.segment(humerus_index).nbQ())]
+q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(humerus_index).QRanges()]
+
+q[1] = -2
+gcs = [gcs.to_array() for gcs in model.allGlobalJCS(q)]
+gcs_humerus = gcs[humerus_index]
+# Cylinder pose
+model.updateMuscles(q)
+mus = model.muscle(0)
+origin_0 = mus.musclesPointsInGlobal(model, q)[0].to_array()
+insertion_0 = mus.musclesPointsInGlobal(model, q)[-1].to_array()
+
+q[1] = 0
+gcs = [gcs.to_array() for gcs in model.allGlobalJCS(q)]
+gcs_humerus = gcs[humerus_index]
+# Cylinder pose
+model.updateMuscles(q)
+mus = model.muscle(0)
+origin_1 = mus.musclesPointsInGlobal(model, q)[0].to_array()
+insertion_1 = mus.musclesPointsInGlobal(model, q)[-1].to_array()
+
+
+# transpose => [R_T, -R_T @ t; 0 0 0 1]
+
+# Show
+b = bioviz.Viz(loaded_model=model)
+b.set_q(q)
+b.exec()
+
+exit(0)
+#################
+
+
+
+
 # Functions for Step 1
 #---------------------
 def find_cylinder_frame(center_circle) :
@@ -20,7 +70,7 @@ def find_cylinder_frame(center_circle) :
 
   # Make some vector not in the same direction as vect_U
   not_unit_vect = np.array([1, 0, 0])
-  if (unit_vect == [1,0,0]).all() or (unit_vect == [-1,0,0]).all():
+  if (unit_vect == not_unit_vect).all():
     not_unit_vect = np.array([0, 1, 0])
 
   # Make a normalized vector perpendicular to vect_U
@@ -77,22 +127,14 @@ def transpose_switch_frame(point, rotation_matrix, vect) :
 #---------------------
 
 def point_inside_cylinder(P, S, radius):
-  # Exception if P or S are in the cylinder
-  #
-  # INPUT
-  # - P : array 3*1 position of the first point
-  # - S : array 3*1 position of the second point
-  # - radius : radius of the cylinder
-  #
-  # OUTPUT
-  # - point_inside : bool, True if P or S are in the cylinder, False otherwise
+  # for exception
 
     if np.linalg.norm(P[:2]) < radius or np.linalg.norm(S[:2]) < radius :
         return True
     else:
         return False
 
-def find_tangent_points_xy(p0, p1, r) :
+def find_via_points_xy(p0, p1, r) :
 
   # Compute xy coordinates of v1 and v2
   #
@@ -102,11 +144,27 @@ def find_tangent_points_xy(p0, p1, r) :
   # - r : radius of the cylinder * side
   #
   # OUTPUT
-  # - v1 = [v1_x, v1_y, 0] : array 3*1 position of the first obstacle tangent point
-  # - v2 = [v2_x, v2_y, 0] : array 3*1 position of the second obstacle tangent point
+  # - v1 = [v1_x, v1_y, 0] : array 3*1 position of the first obstacle via point
+  # - v2 = [v2_x, v2_y, 0] : array 3*1 position of the second obstacle via point
 
   p0_x2y2 = p0[0] ** 2 + p0[1] ** 2
+#  if p0_x2y2 == 0:
+#    raise ValueError("Please choose other coordinates for p0. You mustn't have a bounding-fixed via point with x=y=0.")
+
   p1_x2y2 = p1[0] ** 2 + p1[1] ** 2
+#  if p1_x2y2 == 0:
+#    raise ValueError("Please choose other coordinates for p1. You mustn't have a bounding-fixed via point with x=y=0.")
+
+  # else :
+  #   v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[0]
+  #   v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2 # + c[1]
+
+  #   v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[0]
+  #   v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[1]
+
+
+  print("p0[0]**2+p0[1]**2-r**2 = ", p0[0]**2+p0[1]**2-r**2)
+  print("p1[0]**2+p1[1]**2-r**2  = ", p1[0]**2+p1[1]**2-r**2 )
 
   if p0[0]**2+p0[1]**2-r**2 < 0 :
     v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(0))/p0_x2y2 # + c[0]
@@ -122,6 +180,11 @@ def find_tangent_points_xy(p0, p1, r) :
     v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[0]
     v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2 # + c[1]
 
+  print("p0 = ", p0, "p1 = ", p1)
+
+  print("v1_x = ", v1_x, "v1_y = ", v1_y)
+  print("v2_x = ", v2_x, "v2_y = ", v2_y)
+
   return [v1_x, v1_y, 0], [v2_x, v2_y, 0]
 
 def compute_length_v1_v2_xy(v1,v2, r) :
@@ -129,8 +192,8 @@ def compute_length_v1_v2_xy(v1,v2, r) :
   # Compute xy coordinates of segment lengths in plane
   #
   # INPUT
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
+  # - v1 : array 3*1 position of the first obstacle via point
+  # - v2 : array 3*1 position of the second obstacle via point
   # - r : radius of the cylinder * side
   #
   # OUTPUT
@@ -146,8 +209,8 @@ def z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point) :
   # Compute z coordinates of v1 and v2
   #
   # INPUT
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
+  # - v1 : array 3*1 position of the first obstacle via point
+  # - v2 : array 3*1 position of the second obstacle via point
   # - v1_v2_length_xy : xy coordinates of segment lengths in plane
   # - origin_point : array 3*1 position of the first point
   # - final_point : array 3*1 position of the second point
@@ -167,7 +230,7 @@ def z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point) :
 
   return v1_z, v2_z
 
-def find_tangent_points(p0, p1, r) :
+def find_via_points(p0, p1, r) :
 
    # Compute xyz coordinates of v1 and v2
    #
@@ -177,16 +240,19 @@ def find_tangent_points(p0, p1, r) :
    # - r : radius of the cylinder * side
    #
    # OUTPUT
-   # - v1 = [v1_x, v1_y, v1_z] : array 3*1 position of the first obstacle tangent point
-   # - v2 = [v2_x, v2_y, v2_z] : array 3*1 position of the second obstacle tangent point
+   # - v1 = [v1_x, v1_y, v1_z] : array 3*1 position of the first obstacle via point
+   # - v2 = [v2_x, v2_y, v2_z] : array 3*1 position of the second obstacle via point
 
-   v1, v2 = find_tangent_points_xy(p0, p1, r)
+   v1, v2 = find_via_points_xy(p0, p1, r)
    v1_v2_length_xy = compute_length_v1_v2_xy(v1, v2, r)
    v1[2], v2[2] = z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, p0, p1)
 
+   print("v1 = ", v1, "v2 = ", v2)
+   print("-------------------------\n")
+
    return v1, v2
 
-def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame ) :
+def find_via_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame ) :
 
    # Compute xyz coordinates of Q, G, H and T using iterative method
    #
@@ -200,28 +266,30 @@ def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame,
    # - origin_U_in_V_frame : array 3*1 coordinates of the center of the cylinder U in V cylinder frame
    #
    # OUTPUT
-   # - Q0 : array 3*1 position of the first obstacle tangent point (in V cylinder frame)
-   # - G0 : array 3*1 position of the second obstacle tangent point (in V cylinder frame)
-   # - H0 : array 3*1 position of the third obstacle tangent point (in U cylinder frame)
-   # - T0 : array 3*1 position of the fourth obstacle tangent point (in U cylinder frame)
+   # - Q0 : array 3*1 position of the first obstacle via point (in V cylinder frame)
+   # - G0 : array 3*1 position of the second obstacle via point (in V cylinder frame)
+   # - H0 : array 3*1 position of the third obstacle via point (in U cylinder frame)
+   # - T0 : array 3*1 position of the fourth obstacle via point (in U cylinder frame)
 
-   # v1_V est notre tangent point H0, v2_V est T, on fait dans le repere V
-   H0, T0 = find_tangent_points(origin_U_in_V_frame, S_V_cylinder_frame, r_V)
+   # v1_V est notre via point H0, v2_V est T, on fait dans le repere V
+   H0, T0 = find_via_points(origin_U_in_V_frame, S_V_cylinder_frame, r_V)
    ecart_H0_H1 = [1,1,1]
 
-   while (abs(ecart_H0_H1[0]) > 0.000001 or abs(ecart_H0_H1[1]) > 0.000001 or abs(ecart_H0_H1[2]) > 0.000001) :
+   while (abs(ecart_H0_H1[0]) > 1e-4 or abs(ecart_H0_H1[1]) > 1e-4 or abs(ecart_H0_H1[2]) > 1e-4) :
 
     # On passe notre H0 dans le ref du cylindre U --> h0
     h0 = switch_frame(H0, rotation_matrix_UV, origin_V_in_U_frame)
 
+    print("Cylindre U ")
     # On fait maintenant le calcul de Q et G, soit v1_U et v2_U
-    Q0, G0 = find_tangent_points(P_U_cylinder_frame, h0,r_U)
+    Q0, G0 = find_via_points(P_U_cylinder_frame, h0,r_U)
 
     # Notre G est v1_U, on veut g dans le frame du cylindre V
     g0 = switch_frame(G0, np.transpose(rotation_matrix_UV), origin_U_in_V_frame)
 
+    print("Cylindre V")
     # On calcule v1_V et v2_V à partir de g0
-    H1, T1 = find_tangent_points(g0, S_V_cylinder_frame,r_V)
+    H1, T1 = find_via_points(g0, S_V_cylinder_frame,r_V)
 
     ecart_H0_H1 = np.array(H1)-np.array(H0)
 
@@ -233,24 +301,24 @@ def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame,
 # Functions for Step 3
 #----------------------
 
-def determine_if_tangent_points_inactive_single_cylinder(v1,v2, r) :
+def determine_if_via_points_inactive_single_cylinder(v1,v2, r) :
 
-  # Determine if tangent points v1 and v2 are inactive
+  # Determine if via points v1 and v2 are inactive
   #
   # /!\ Differences with the B.A. Garner and M.G. Pandy paper !
   #   if Det < 0 : orientation is clockwise
-  #   so for a side right-handed (side = 1), we need actived tangent points
-  #   so, if Det*r < 0 ==> determine_if_tangent_points_inactive = False
+  #   so for a side right-handed (side = 1), we need actived via points
+  #   so, if Det*r < 0 ==> determine_if_via_points_inactive = False
   #   (and not "True" as originally presented in the paper)
   #
   # INPUT
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
+  # - v1 : array 3*1 position of the first obstacle via point
+  # - v2 : array 3*1 position of the second obstacle via point
   # - r : radius of the cylinder * side
   #
   # OUTPUT
-  # - obstacle_tangent_point_inactive: bool True if tangent points are inactive --> Muscle path is straight line from origin point to final point
-  #                                     False if tangent points are active --> Muscle passes by the two tangent points
+  # - obstacle_via_point_inactive: bool True if via points are inactive --> Muscle path is straight line from origin point to final point
+  #                                     False if via points are active --> Muscle passes by the two via points
 
   if (r*(v1[0]*v2[1] - v1[1]*v2[0])<0) :
     return False
@@ -265,8 +333,8 @@ def compute_length_v1_v2(v1,v2, v1_v2_length_xy) :
   # Compute length of path segments v1 v2
   #
   # INPUT
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
+  # - v1 : array 3*1 position of the first obstacle via point
+  # - v2 : array 3*1 position of the second obstacle via point
   # - v1_v2_length_xy : xy coordinates of segment lengths in plane
   #
   # OUTPUT
@@ -274,22 +342,22 @@ def compute_length_v1_v2(v1,v2, v1_v2_length_xy) :
 
   return np.sqrt(v1_v2_length_xy**2+(v2[0]-v1[2])**2)
 
-def segment_length_single_cylinder(obstacle_tangent_point_inactive, origin_point, final_point, v1, v2, r) :
+def segment_length_single_cylinder(obstacle_via_point_inactive, origin_point, final_point, v1, v2, r) :
 
   # Compute length of path segments
   #
   # INPUT
-  # - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
+  # - obstacle_via_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
   # - origin_point : array 3*1 position of the first point
   # - final_point : array 3*1 position of the second point
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
+  # - v1 : array 3*1 position of the first obstacle via point
+  # - v2 : array 3*1 position of the second obstacle via point
   # - r : radius of the cylinder * side
   #
   # OUTPUT
   # - segment_length : length of path segments
 
-  if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin_point to final_point
+  if (obstacle_via_point_inactive == True) : # Muscle path is straight line from origin_point to final_point
    segment_length = norm(np.array(final_point)-np.array(origin_point))
 
   else :
@@ -312,10 +380,10 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
    # - P_V_cylinder_frame : array 3*1 position of the first point in V cylinder frame
    # - S_U_cylinder_frame : array 3*1 position of the second point in U cylinder frame
    # - S_V_cylinder_frame : array 3*1 position of the second point in V cylinder frame
-   # - Q : array 3*1 position of the first obstacle tangent point (in V cylinder frame)
-   # - G : array 3*1 position of the second obstacle tangent point (in V cylinder frame)
-   # - H : array 3*1 position of the third obstacle tangent point (in U cylinder frame)
-   # - T : array 3*1 position of the fourth obstacle tangent point (in U cylinder frame)
+   # - Q : array 3*1 position of the first obstacle via point (in V cylinder frame)
+   # - G : array 3*1 position of the second obstacle via point (in V cylinder frame)
+   # - H : array 3*1 position of the third obstacle via point (in U cylinder frame)
+   # - T : array 3*1 position of the fourth obstacle via point (in U cylinder frame)
    # - r_V : radius of the cylinder U * side_U
    # - r_U : radius of the cylinder V * side_V
    # - cylinder_frame_U : array 3*3 ortonormal frame for the cylinder U
@@ -373,9 +441,9 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    # - cylinder_frame : array 3*3 local frame of the cylinder
    #
    # OUTPUT
-   # - v1o : array 3*1 position of the first obstacle tangent point (in conventionnal frame)
-   # - v2o : array 3*1 position of the second obstacle tangent point (in conventionnal frame)
-   # - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
+   # - v1o : array 3*1 position of the first obstacle via point (in conventionnal frame)
+   # - v2o : array 3*1 position of the second obstacle via point (in conventionnal frame)
+   # - obstacle_via_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
    # - segment_lenght : length of path segments
 
    # ------
@@ -390,19 +458,19 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    # ------
    # Step 2
    # ------
-   # tangent points
-   v1, v2 = find_tangent_points(P_cylinder_frame, S_cylinder_frame, r)
+   # Via points
+   v1, v2 = find_via_points(P_cylinder_frame, S_cylinder_frame, r)
    v1_v2_length_xy = compute_length_v1_v2_xy(v1, v2, r)
 
    # ------
    # Step 3
    # ------
-   obstacle_tangent_point_inactive = determine_if_tangent_points_inactive_single_cylinder(v1,v2, r)
+   obstacle_via_point_inactive = determine_if_via_points_inactive_single_cylinder(v1,v2, r)
 
    # ------
    # Step 4
    # ------
-   segment_length = segment_length_single_cylinder(obstacle_tangent_point_inactive, P_cylinder_frame, S_cylinder_frame, v1, v2, r)
+   segment_length = segment_length_single_cylinder(obstacle_via_point_inactive, P_cylinder_frame, S_cylinder_frame, v1, v2, r)
 
    # ------
    # Step 5
@@ -410,7 +478,7 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    v1o = switch_frame(v1, np.transpose(cylinder_frame), cylinder_origin)
    v2o = switch_frame(v2, np.transpose(cylinder_frame), cylinder_origin)
 
-   return v1o, v2o, obstacle_tangent_point_inactive, segment_length
+   return v1o, v2o, obstacle_via_point_inactive, segment_length
 
 def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, radius_U, side_U, V_origin, cylinder_frame_V, radius_V, side_V, rotation_matrix_UV) :
 
@@ -435,10 +503,10 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
    # - rotation_matrix_UV : array 3*3 rotation matrix to change frame (U --> V)
    #
    # OUTPUT
-   # - Qo : array 3*1 position of the first obstacle tangent point (in conventional frame)
-   # - Go : array 3*1 position of the second obstacle tangent point (in conventional frame)
-   # - Ho : array 3*1 position of the third obstacle tangent point (in conventional frame)
-   # - To : array 3*1 position of the fourth obstacle tangent point (in conventional frame)
+   # - Qo : array 3*1 position of the first obstacle via point (in conventional frame)
+   # - Go : array 3*1 position of the second obstacle via point (in conventional frame)
+   # - Ho : array 3*1 position of the third obstacle via point (in conventional frame)
+   # - To : array 3*1 position of the fourth obstacle via point (in conventional frame)
    # - Q_G_inactive : bool determine if Q and G or inactive (True) or not (False)
    # - H_T_inactive : bool determine if H and T or inactive (True) or not (False)
    # - segment_lenght : length of path segments
@@ -472,29 +540,29 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
    elif point_inside_U :
     print("You choose P and/or S in the cylinder U. Muscle path is straight line")
     Q, G = [0,0,0], [0,0,0]
-    H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+    H, T = find_via_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
 
    elif point_inside_V :
     print("You choose P and/or S in the cylinder V. Muscle path is straight line")
     H, T = [0,0,0], [0,0,0]
-    Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
+    Q, G = find_via_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
 
    else :
-    Q, G, H, T = find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame )
+    Q, G, H, T = find_via_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame )
 
    # ------
    # Step 3
    # ------
-   Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
-   H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
+   Q_G_inactive = determine_if_via_points_inactive_single_cylinder(Q, G, r_U)
+   H_T_inactive = determine_if_via_points_inactive_single_cylinder(H, T, r_V)
 
   #  if Q_G_inactive==True :
-  #   H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
-  #   H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
+  #   H, T = find_via_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+  #   H_T_inactive = determine_if_via_points_inactive_single_cylinder(H, T, r_V)
 
   #  if H_T_inactive==True :
-  #    Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
-  #    Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
+  #    Q, G = find_via_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
+  #    Q_G_inactive = determine_if_via_points_inactive_single_cylinder(Q, G, r_U)
 
    # ------
    # Step 4
@@ -514,7 +582,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
 # Functions for Plot
 #---------------------------
 
-def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_points = 100) :
+def data_cylinder(center_circle_1, center_circle_2, radius, num_points = 100) :
 
   # Compute datas for plot the cylinder
   # The cylinder is charaterized by coordinates of his two circle face and his radius
@@ -522,7 +590,6 @@ def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_
   # INPUT
   # - center_circle_2 : array 3*1 coordinates of the first circle of the cylinder
   # - center_circle_2 : array 3*1 coordinates of the second circle of the cylinder
-  # - cylinder_frame : array 3*3 local frame of the cylinder
   # - radius : radius of the cylinder
   # - num_points : int number of points for representation (default 100)
   #
@@ -531,8 +598,18 @@ def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_
 
   # Create a unit vector in direction of axis
   v_cylinder=center_circle_2-center_circle_1
+  v_unit=(v_cylinder)/norm(v_cylinder)
 
-  n2,n1,v_unit = cylinder_frame
+  # Make some vector not in the same direction as v
+  not_v_unit = np.array([1, 0, 0])
+  if (v_unit == not_v_unit).all():
+    not_v_unit = np.array([0, 1, 0])
+
+  # Make a normalized vector perpendicular to v
+  n1 = np.cross(v_unit, not_v_unit)/norm(np.cross(v_unit, not_v_unit))
+
+  # Make unit vector perpendicular to v and n1
+  n2 = np.cross(v_unit, n1)
 
   # Surface ranges over t from 0 to length of axis and 0 to 2*pi
   t = np.linspace(0, norm(v_cylinder), num_points)
@@ -545,11 +622,11 @@ def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_
 
 def data_semi_circle(v1, v2, cylinder_origin, cylinder_frame, r, num_points=100) :
 
-  # Compute datas for plot the semi-circle between bounding fixed tangent points v1 and v2
+  # Compute datas for plot the semi-circle between bounding fixed via points v1 and v2
   #
   # INPUT
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
+  # - v1 : array 3*1 position of the first obstacle via point
+  # - v2 : array 3*1 position of the second obstacle via point
   # - cylinder_origin : array 3*1 coordinates of the center of the cylinder
   # - cylinder_frame : array 3*3 local frame of the cylinder
   # - r : radius of the cylinder
@@ -580,7 +657,7 @@ def data_semi_circle(v1, v2, cylinder_origin, cylinder_frame, r, num_points=100)
 
   return semi_circle_points
 
-def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius, v1, v2, obstacle_tangent_point_inactive, segment_length, cylinder_origin, cylinder_frame) :
+def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius, v1, v2, obstacle_via_point_inactive, segment_length, cylinder_origin, cylinder_frame) :
 
    # Plot the representation of the single-cylinder obstacle-set algorithm
    #
@@ -589,9 +666,9 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
    # - final_point : array 3*1 position of the second point
    # - center_circle : 2*array 3*1 coordinates of the first and second circles of the cylinder
    # - radius : radius of the cylinder
-   # - v1 : array 3*1 position of the first obstacle tangent point
-   # - v2 : array 3*1 position of the second obstacle tangent point
-   # - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
+   # - v1 : array 3*1 position of the first obstacle via point
+   # - v2 : array 3*1 position of the second obstacle via point
+   # - obstacle_via_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
    # - segment_length : length of path segments
    # - cylinder_origin : array 3*1 coordinates of the center of the cylinder
    # - cylinder_frame : array 3*3 local frame of the cylinder
@@ -603,20 +680,20 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
    fig = plt.figure("Single Cylinder Wrapping")
    ax = fig.add_subplot(111, projection='3d')
 
-   # Bouding-fixed tangent point
+   # Bouding-fixed via point
    ax.scatter(*origin_point, color='g', label="Origin point")
    ax.scatter(*final_point, color='b', label="Final point")
 
-   #Obstacle tangent points
+   #Obstacle via points
    ax.scatter(*v1, color='r', label="v1")
    ax.scatter(*v2, color='r', label="v2")
 
    # Cylinder
-   Xc,Yc,Zc = data_cylinder(center_circle[0], center_circle[1], cylinder_frame, radius )
+   Xc,Yc,Zc = data_cylinder(center_circle[0], center_circle[1], radius )
    ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
    ax.plot(*zip(center_circle[0], center_circle[1]), color = 'k')
 
-   if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin point to final point
+   if (obstacle_via_point_inactive == True) : # Muscle path is straight line from origin point to final point
     ax.plot(*zip(origin_point, final_point), color='r')
    else :
     # Semi-circle between v1 and v2
@@ -654,10 +731,10 @@ def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius
    # - center_circle_V : 2*array 3*1 coordinates of the first and second circles of the cylinder V
    # - radius_U : radius of the cylinder U
    # - radius_V : radius of the cylinder V
-   # - Q : array 3*1 position of the first obstacle tangent point (in conventional frame)
-   # - G : array 3*1 position of the second obstacle tangent point (in conventional frame)
-   # - H : array 3*1 position of the third obstacle tangent point (in conventional frame)
-   # - T : array 3*1 position of the fourth obstacle tangent point (in conventional frame)
+   # - Q : array 3*1 position of the first obstacle via point (in conventional frame)
+   # - G : array 3*1 position of the second obstacle via point (in conventional frame)
+   # - H : array 3*1 position of the third obstacle via point (in conventional frame)
+   # - T : array 3*1 position of the fourth obstacle via point (in conventional frame)
    # - U_origin : array 3*1 coordinates of the center of the cylinder U
    # - V_origin : array 3*1 coordinates of the center of the cylinder V
    # - Q_G_inactive : bool determine if Q and G or inactive (True) or not (False)
@@ -670,23 +747,23 @@ def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius
    fig = plt.figure("Double Cylinder Wrapping")
    ax = fig.add_subplot(111, projection='3d')
 
-   # Bouding-fixed tangent point
+   # Bouding-fixed via point
    ax.scatter(*P, color='g', label="Origin point")
    ax.scatter(*S, color='b', label="Final point")
 
-   #Obstacle tangent points
+   #Obstacle via points
    ax.scatter(*Q, color='r', label="Q")
    ax.scatter(*G, color='r', label="G")
    ax.scatter(*H, color='r', label="H")
    ax.scatter(*T, color='r', label="T")
 
    # 1st Cylinder
-   Xcu,Ycu,Zcu = data_cylinder(center_circle_U[0], center_circle_U[1], cylinder_frame_U, radius_U)
+   Xcu,Ycu,Zcu = data_cylinder(center_circle_U[0], center_circle_U[1], radius_U)
    ax.plot_surface(Xcu, Ycu, Zcu, alpha=0.5)
    ax.plot(*zip(center_circle_U[0], center_circle_U[1]), color = 'k')
 
    # 2nd Cylinder
-   Xcv,Ycv,Zcv = data_cylinder(center_circle_V[0], center_circle_V[1], cylinder_frame_V, radius_V)
+   Xcv,Ycv,Zcv = data_cylinder(center_circle_V[0], center_circle_V[1], radius_V)
    ax.plot_surface(Xcv, Ycv, Zcv, alpha=0.5)
    ax.plot(*zip(center_circle_V[0], center_circle_V[1]), color = 'k')
 
@@ -696,7 +773,7 @@ def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius
 
    elif Q_G_inactive: # single cylinder algorithm with V cylinder
     # Semi-circle between H and T
-    semi_circle_points = data_semi_circle(H,T,V_origin, cylinder_frame_V, radius_V, 100)
+    semi_circle_points = data_semi_circle(H,T,V_origin, cylinder_frame_V,radius_V, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(P, H), color='g')
@@ -760,9 +837,9 @@ def main():
    S =[0,4,2] # final_point
 
    # Points for 1st cylinder
-   center_circle_U = [np.array([2,0,0]),np.array([-2,0,0])]
+   center_circle_U = [np.array([-3,0,-2]),np.array([5,0,-2])]
    radius_U = 1
-   side_U = 1 # Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
+   side_U =  -1 # Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
 
    # Points for 2nd cylinder
    center_circle_V = [np.array([0,1.5,-4]),np.array([0,1.5,4])]
@@ -788,19 +865,19 @@ def main():
     # --------------------------------------
     # Single cylinder obstacle set algorithm
     # --------------------------------------
-    v1, v2, obstacle_tangent_point_inactive, segment_length = single_cylinder_obstacle_set_algorithm(P,S, radius_U, side_U, U_origin, cylinder_frame_U)
+    v1, v2, obstacle_via_point_inactive, segment_length = single_cylinder_obstacle_set_algorithm(P,S, radius_U, side_U, U_origin, cylinder_frame_U)
 
     # ----
     # Plot
     # ----
-    plot_one_cylinder_obstacle(P,S, center_circle_U, radius_U, v1, v2, obstacle_tangent_point_inactive, segment_length, U_origin, cylinder_frame_U)
+    plot_one_cylinder_obstacle(P,S, center_circle_U, radius_U, v1, v2, obstacle_via_point_inactive, segment_length, U_origin, cylinder_frame_U)
 
     if (show_details) :
      print("origin_point = ", P)
      print("final_point = ", S)
      print("v1 = ", v1)
      print("v2 = ", v2)
-     print("obstacle_tangent_point_inactive = ",obstacle_tangent_point_inactive)
+     print("obstacle_via_point_inactive = ",obstacle_via_point_inactive)
      print("segment_length = ", round(segment_length, 2))
 
    if (double_cylinder) :
