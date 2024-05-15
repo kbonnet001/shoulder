@@ -462,38 +462,25 @@ endmusclegroup
 		pennationAngle		0.2094
 	endmuscle
 
-		viapoint via1
-			parent 		humerus_right
-			muscle 		TRIlong
-			musclegroup 	scapula_to_ulna
-			position 		-0.02714 -0.11441 -0.00664
-		endviapoint
-		viapoint via2
-			parent 		humerus_right
-			muscle 		TRIlong
-			musclegroup 	scapula_to_ulna
-			position 		-0.03184 -0.22637 -0.01217
-		endviapoint
-		viapoint via3
-			parent 		humerus_right
-			muscle 		TRIlong
-			musclegroup 	scapula_to_ulna
-			position 		-0.02743 -0.275757 -0.01208 // -0.01743 -0.26757 -0.01208
-		endviapoint
 
         
-        // wrapping TRI
-        //     // parent humerus_right
-        //     parent ulna_right
-        //     type halfcylinder
-        //     musclegroup scapula_to_ulna
-        //     muscle TRIlong
-        //     // RT -0.14015 -0.00628 -0.155 xyz 0.0028 -0.2919 -0.0119
-        //     RT 0 0 pi/2+pi/4 xyz 0 0 0
-        //     // radius 0.016
-        //     radius 0.018
-        //     length 0.04
-        // endwrapping
+        wrapping TRI
+            // parent humerus_right
+			RTinmatrix 1
+            parent ulna_right
+            type halfcylinder
+            musclegroup scapula_to_ulna
+            muscle TRIlong
+            // RT -0.14015 -0.00628 -0.155 xyz 0.0028 -0.2919 -0.0119
+            // RT 0 0 pi/2+pi/4 xyz 0 0 0
+			RT 0 1 0 0
+			   0 0 1 0.3
+			   1 0 0 0
+			   0 0 0 1
+            // radius 0.016
+            radius 0.018
+            length 0.04
+        endwrapping
 
 
 musclegroup clavicle_to_humerus
