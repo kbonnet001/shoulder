@@ -8,7 +8,7 @@ from wrapping.step_4 import segment_length_single_cylinder, segment_length_doubl
 # Algorithm
 #---------------------------
 
-def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, side, cylinder_origin, cylinder_frame) :
+def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, side, matrix) :
 
    # Provide the length wrapping around a cylinder
    #  Based on:
@@ -22,8 +22,7 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    # - final_point : array 3*1 position of the second point
    # - radius : radius of the cylinder
    # - side : side of the wrapping, -1 for the left side, 1 for the right side
-   # - cylinder_origin : array 3*1 coordinates of the center of the cylinder
-   # - cylinder_frame : array 3*3 local frame of the cylinder
+   # - matrix : array 4*4 rotation_matrix and vect
    #
    # OUTPUT
    # - v1o : array 3*1 position of the first obstacle tangent point (in conventionnal frame)
@@ -37,8 +36,8 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    r = radius * side
 
    # Express P and S in the cylinder frame
-   P_cylinder_frame = transpose_switch_frame(origin_point, cylinder_frame, [0,0,0] - cylinder_origin)
-   S_cylinder_frame = transpose_switch_frame(final_point, cylinder_frame, [0,0,0] - cylinder_origin)
+   P_cylinder_frame = transpose_switch_frame(origin_point, matrix)
+   S_cylinder_frame = transpose_switch_frame(final_point, matrix)
 
    # ------
    # Step 2
@@ -60,12 +59,12 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    # ------
    # Step 5
    # ------
-   v1o = switch_frame(v1, np.transpose(cylinder_frame), cylinder_origin)
-   v2o = switch_frame(v2, np.transpose(cylinder_frame), cylinder_origin)
+   v1o = switch_frame(v1, matrix)
+   v2o = switch_frame(v2, matrix)
 
    return v1o, v2o, obstacle_tangent_point_inactive, segment_length
 
-def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, radius_U, side_U, V_origin, cylinder_frame_V, radius_V, side_V, rotation_matrix_UV) :
+def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, matrix_V, radius_V, side_V, rotation_matrix_UV) :
 
    # Provide the length wrapping around a cylinder
    #  Based on:
@@ -77,12 +76,10 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
    # INPUT
    # - P : array 3*1 position of the first point
    # - S : array 3*1 position of the second point
-   # - U_origin : array 3*1 coordinates of the center of the cylinder U
-   # - cylinder_frame_U : array 3*3 ortonormal frame for the cylinder U
+   # - matrix_U : array 4*4 rotation_matrix and vect for cylinder U
    # - radius_U : radius of the cylinder U
    # - side_U : side of the wrapping (cylinder U), -1 for the left side, 1 for the right side
-   # - V_origin : array 3*1 coordinates of the center of the cylinder V
-   # - cylinder_frame_V : array 3*3 ortonormal frame for the cylinder V
+   # - matrix_V : array 4*4 rotation_matrix and vect for cylinder V
    # - radius_V : radius of the cylinder V
    # - side_V : side of the wrapping (cylinder V), -1 for the left side, 1 for the right side
    # - rotation_matrix_UV : array 3*3 rotation matrix to change frame (U --> V)
@@ -101,15 +98,15 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
    # ------
    r_U = radius_U * side_U
    r_V = radius_V * side_V
-   origin_V_in_U_frame = transpose_switch_frame(V_origin, cylinder_frame_U, [0,0,0] - U_origin)
-   origin_U_in_V_frame = transpose_switch_frame(U_origin, cylinder_frame_V, [0,0,0] - V_origin)
+   origin_V_in_U_frame = transpose_switch_frame(matrix_V[0:3, 3], matrix_U)
+   origin_U_in_V_frame = transpose_switch_frame(matrix_U[0:3, 3], matrix_V)
 
    # Express P (S) in U (V) cylinder frame
-   P_U_cylinder_frame = transpose_switch_frame(P, cylinder_frame_U, [0,0,0] - U_origin)
-   P_V_cylinder_frame = transpose_switch_frame(P, cylinder_frame_V, [0,0,0] - V_origin)
+   P_U_cylinder_frame = transpose_switch_frame(P, matrix_U)
+   P_V_cylinder_frame = transpose_switch_frame(P, matrix_V)
 
-   S_U_cylinder_frame = transpose_switch_frame(S, cylinder_frame_U, [0,0,0] - U_origin)
-   S_V_cylinder_frame = transpose_switch_frame(S, cylinder_frame_V, [0,0,0] - V_origin)
+   S_U_cylinder_frame = transpose_switch_frame(S, matrix_U)
+   S_V_cylinder_frame = transpose_switch_frame(S, matrix_V)
 
    # ------
    # Step 2
@@ -133,7 +130,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
     Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
 
    else :
-    Q, G, H, T = find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame )
+    Q, G, H, T = find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV)
 
    # ------
    # Step 3
@@ -152,14 +149,14 @@ def double_cylinder_obstacle_set_algorithm(P, S, U_origin, cylinder_frame_U, rad
    # ------
    # Step 4
    # ------
-   segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, cylinder_frame_U, cylinder_frame_V, U_origin, V_origin)
+   segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, matrix_U, matrix_V)
 
    # ------
    # Step 5
    # ------
-   Qo = switch_frame(Q, np.transpose(cylinder_frame_U), U_origin)
-   Go = switch_frame(G, np.transpose(cylinder_frame_U), U_origin)
-   Ho = switch_frame(H, np.transpose(cylinder_frame_V), V_origin)
-   To = switch_frame(T, np.transpose(cylinder_frame_V), V_origin)
+   Qo = switch_frame(Q, matrix_U)
+   Go = switch_frame(G, matrix_U)
+   Ho = switch_frame(H, matrix_V)
+   To = switch_frame(T, matrix_V)
 
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length

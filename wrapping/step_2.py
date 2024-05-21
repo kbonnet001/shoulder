@@ -1,5 +1,5 @@
 import numpy as np
-from wrapping.step_1 import switch_frame
+from wrapping.step_1 import switch_frame, transpose_switch_frame
 
 # Functions for Step 2
 #---------------------
@@ -114,7 +114,7 @@ def find_tangent_points(p0, p1, r) :
 
    return v1, v2
 
-def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, origin_V_in_U_frame, origin_U_in_V_frame ) :
+def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV) :
 
    # Compute xyz coordinates of Q, G, H and T using iterative method
    #
@@ -123,9 +123,7 @@ def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame,
    # - S_V_cylinder_frame : array 3*1 position of the second point in V cylinder frame
    # - r_V : radius of the cylinder U * side_U
    # - r_U : radius of the cylinder V * side_V
-   # - rotation_matrix_UV : array 3*3 rotation matrix to change frame (U --> V)
-   # - origin_V_in_U_frame : array 3*1 coordinates of the center of the cylinder V in U cylinder frame
-   # - origin_U_in_V_frame : array 3*1 coordinates of the center of the cylinder U in V cylinder frame
+   # - rotation_matrix_UV : array 4*4 rotation matrix and vect to change frame (U --> V)
    #
    # OUTPUT
    # - Q0 : array 3*1 position of the first obstacle tangent point (in V cylinder frame)
@@ -134,19 +132,19 @@ def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame,
    # - T0 : array 3*1 position of the fourth obstacle tangent point (in U cylinder frame)
 
    # v1_V est notre tangent point H0, v2_V est T, on fait dans le repere V
-   H0, T0 = find_tangent_points(origin_U_in_V_frame, S_V_cylinder_frame, r_V)
+   H0, T0 = find_tangent_points(rotation_matrix_UV[0:3, 3], S_V_cylinder_frame, r_V)
    ecart_H0_H1 = [1,1,1]
 
    while (abs(ecart_H0_H1[0]) > 0.000001 or abs(ecart_H0_H1[1]) > 0.000001 or abs(ecart_H0_H1[2]) > 0.000001) :
 
     # On passe notre H0 dans le ref du cylindre U --> h0
-    h0 = switch_frame(H0, rotation_matrix_UV, origin_V_in_U_frame)
+    h0 = transpose_switch_frame(H0, rotation_matrix_UV) # ok à priori ...
 
     # On fait maintenant le calcul de Q et G, soit v1_U et v2_U
     Q0, G0 = find_tangent_points(P_U_cylinder_frame, h0,r_U)
 
     # Notre G est v1_U, on veut g dans le frame du cylindre V
-    g0 = switch_frame(G0, np.transpose(rotation_matrix_UV), origin_U_in_V_frame)
+    g0 = switch_frame(G0, rotation_matrix_UV)
 
     # On calcule v1_V et v2_V à partir de g0
     H1, T1 = find_tangent_points(g0, S_V_cylinder_frame,r_V)

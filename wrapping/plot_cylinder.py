@@ -35,15 +35,14 @@ def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_
   X, Y, Z = [center_circle_1[i] + v_unit[i] * t + radius * np.sin(theta) * n1[i] + radius * np.cos(theta) * n2[i] for i in [0, 1, 2]]
   return X, Y, Z
 
-def data_semi_circle(v1, v2, cylinder_origin, cylinder_frame, r, num_points=100) :
+def data_semi_circle(v1, v2, matrix, r, num_points=100) :
 
   # Compute datas for plot the semi-circle between bounding fixed tangent points v1 and v2
   #
   # INPUT
   # - v1 : array 3*1 position of the first obstacle tangent point
   # - v2 : array 3*1 position of the second obstacle tangent point
-  # - cylinder_origin : array 3*1 coordinates of the center of the cylinder
-  # - cylinder_frame : array 3*3 local frame of the cylinder
+  # - matrix : array 4*4 rotation_matrix and vect
   # - r : radius of the cylinder
   # - num_points : int number of points for representation (default 100)
   #
@@ -51,8 +50,8 @@ def data_semi_circle(v1, v2, cylinder_origin, cylinder_frame, r, num_points=100)
   # - semi_circle_points : array nm_point*n3 coordinates of points for the representation of the semi-circle
 
   # Change frame
-  v1 = transpose_switch_frame(v1, cylinder_frame, [0,0,0] - cylinder_origin)
-  v2 = transpose_switch_frame(v2, cylinder_frame, [0,0,0] - cylinder_origin)
+  v1 = transpose_switch_frame(v1, matrix)
+  v2 = transpose_switch_frame(v2, matrix)
   c = np.array([0,0, (v1[2]+v2[2])/2])
 
   # Calculation of the normal vect of plan def by v1, v2 and c1
@@ -68,11 +67,11 @@ def data_semi_circle(v1, v2, cylinder_origin, cylinder_frame, r, num_points=100)
                         r * np.sin(theta)[:, np.newaxis] * np.cross(norm, (v1 - c) / np.linalg.norm(v1 - c))
 
   for i in range (len(semi_circle_points)) :
-    semi_circle_points[i] = switch_frame(semi_circle_points[i], np.transpose(cylinder_frame), cylinder_origin)
+    semi_circle_points[i] = switch_frame(semi_circle_points[i], matrix)
 
   return semi_circle_points
 
-def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius, v1, v2, obstacle_tangent_point_inactive, segment_length, cylinder_origin, cylinder_frame) :
+def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius, v1, v2, obstacle_tangent_point_inactive, segment_length, cylinder_origin, matrix) :
 
    # Plot the representation of the single-cylinder obstacle-set algorithm
    #
@@ -86,7 +85,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
    # - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
    # - segment_length : length of path segments
    # - cylinder_origin : array 3*1 coordinates of the center of the cylinder
-   # - cylinder_frame : array 3*3 local frame of the cylinder
+   # - matrix : array 4*4 rotation_matrix and vect
    #
    # OUTPUT
    # - None : Plot axis, cylinder, points and muscle path
@@ -104,7 +103,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
    ax.scatter(*v2, color='r', label="v2")
 
    # Cylinder
-   Xc,Yc,Zc = data_cylinder(center_circle[0], center_circle[1], cylinder_frame, radius )
+   Xc,Yc,Zc = data_cylinder(center_circle[0], center_circle[1], matrix[0:3, 0:3], radius )
    ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
    ax.plot(*zip(center_circle[0], center_circle[1]), color = 'k')
 
@@ -112,7 +111,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
     ax.plot(*zip(origin_point, final_point), color='r')
    else :
     # Semi-circle between v1 and v2
-    semi_circle_points = data_semi_circle(v1,v2,cylinder_origin, cylinder_frame,radius, 100)
+    semi_circle_points = data_semi_circle(v1,v2, matrix,radius, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(origin_point, v1), color='g')
@@ -135,7 +134,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, center_circle, radius,
 
    plt.show()
 
-def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius_U, radius_V, Q, G, H, T, cylinder_frame_U, cylinder_frame_V, U_origin, V_origin, Q_G_inactive, H_T_inactive ) :
+def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius_U, radius_V, Q, G, H, T, matrix_U, matrix_V, U_origin, V_origin, Q_G_inactive, H_T_inactive ) :
 
    # Plot the representation of the double-cylinder obstacle-set algorithm
    #
@@ -150,6 +149,8 @@ def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius
    # - G : array 3*1 position of the second obstacle tangent point (in conventional frame)
    # - H : array 3*1 position of the third obstacle tangent point (in conventional frame)
    # - T : array 3*1 position of the fourth obstacle tangent point (in conventional frame)
+   # - matrix_U : array 4*4 rotation_matrix and vect for cylinder U
+   # - matrix_V : array 4*4 rotation_matrix and vect for cylinder V
    # - U_origin : array 3*1 coordinates of the center of the cylinder U
    # - V_origin : array 3*1 coordinates of the center of the cylinder V
    # - Q_G_inactive : bool determine if Q and G or inactive (True) or not (False)
@@ -173,22 +174,21 @@ def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius
    ax.scatter(*T, color='r', label="T")
 
    # 1st Cylinder
-   Xcu,Ycu,Zcu = data_cylinder(center_circle_U[0], center_circle_U[1], cylinder_frame_U, radius_U)
+   Xcu,Ycu,Zcu = data_cylinder(center_circle_U[0], center_circle_U[1], matrix_U[0:3, 0:3], radius_U)
    ax.plot_surface(Xcu, Ycu, Zcu, alpha=0.5)
    ax.plot(*zip(center_circle_U[0], center_circle_U[1]), color = 'k')
 
    # 2nd Cylinder
-   Xcv,Ycv,Zcv = data_cylinder(center_circle_V[0], center_circle_V[1], cylinder_frame_V, radius_V)
+   Xcv,Ycv,Zcv = data_cylinder(center_circle_V[0], center_circle_V[1], matrix_V[0:3, 0:3], radius_V)
    ax.plot_surface(Xcv, Ycv, Zcv, alpha=0.5)
    ax.plot(*zip(center_circle_V[0], center_circle_V[1]), color = 'k')
-
 
    if Q_G_inactive and H_T_inactive: # Muscle path is straight line from origin_point to final_point
        ax.plot(*zip(P, S), color='r')
 
    elif Q_G_inactive: # single cylinder algorithm with V cylinder
     # Semi-circle between H and T
-    semi_circle_points = data_semi_circle(H,T,V_origin, cylinder_frame_V, radius_V, 100)
+    semi_circle_points = data_semi_circle(H,T,matrix_V, radius_V, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(P, H), color='g')
@@ -197,7 +197,7 @@ def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius
    elif H_T_inactive: # single cylinder algorithm with U cylinder
     # Semi-circle between Q and G
     center_circle=np.array([0,0, (Q[2]+G[2])/2])
-    semi_circle_points = data_semi_circle(Q,G, U_origin, cylinder_frame_U,radius_U, 100)
+    semi_circle_points = data_semi_circle(Q,G, matrix_U,radius_U, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(P, Q), color='g')
@@ -207,12 +207,12 @@ def plot_double_cylinder_obstacle(P, S, center_circle_U, center_circle_V, radius
 
     # Semi-circle between H and T
     center_circle=np.array([0,0, (H[2]+T[2])/2])
-    semi_circle_points = data_semi_circle(H,T,V_origin, cylinder_frame_V,radius_V, 100)
+    semi_circle_points = data_semi_circle(H,T,matrix_V,radius_V, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     # Semi-circle between Q and G
     center_circle=np.array([0,0, (Q[2]+G[2])/2])
-    semi_circle_points = data_semi_circle(Q,G, U_origin, cylinder_frame_U,radius_U, 100)
+    semi_circle_points = data_semi_circle(Q,G, matrix_U,radius_U, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(P, Q), color='g')

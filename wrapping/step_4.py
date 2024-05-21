@@ -45,7 +45,7 @@ def segment_length_single_cylinder(obstacle_tangent_point_inactive, origin_point
 
   return segment_length
 
-def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, cylinder_frame_U, cylinder_frame_V, U_origin, V_origin) :
+def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, matrix_U, matrix_V) :
 
    # Compute length of path segments
    #
@@ -64,10 +64,8 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
    # - T : array 3*1 position of the fourth obstacle tangent point (in U cylinder frame)
    # - r_V : radius of the cylinder U * side_U
    # - r_U : radius of the cylinder V * side_V
-   # - cylinder_frame_U : array 3*3 ortonormal frame for the cylinder U
-   # - cylinder_frame_V : array 3*3 ortonormal frame for the cylinder V
-   # - U_origin : array 3*1 coordinates of the center of the cylinder
-   # - V_origin : array 3*1 coordinates of the center of the cylinder
+   # - matrix_U : array 4*4 rotation_matrix and vect for cylinder U
+   # - matrix_V : array 4*4 rotation_matrix and vect for cylinder V
    #
    # OUTPUT
    # - segment_length : length of path segments
@@ -92,7 +90,7 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
        H_T_length_xy = compute_length_v1_v2_xy(H, T, r_V)
        H_T_length = compute_length_v1_v2(H, T, H_T_length_xy)
 
-       G_H_length = norm(switch_frame(H, np.transpose(cylinder_frame_V), V_origin) - switch_frame(G, np.transpose(cylinder_frame_U), U_origin))
+       G_H_length = norm(switch_frame(H, matrix_V) - switch_frame(G, matrix_U))
 
        segment_length = norm(Q - np.array(P_U_cylinder_frame)) + Q_G_length + G_H_length + H_T_length_xy + norm(np.array(S_V_cylinder_frame) - T)
 

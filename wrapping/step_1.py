@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.linalg import norm
 
-
 # Functions for Step 1
 #---------------------
 def find_cylinder_frame(center_circle) :
@@ -30,14 +29,13 @@ def find_cylinder_frame(center_circle) :
 
   return np.array([n2,n1, unit_vect])
 
-def switch_frame(point, rotation_matrix, vect) :
+def switch_frame(point, matrix) :
 
   # Express point in a new frame
   #
   # INPUT
   # - point : array 3*1 coordinates of the point
-  # - rotation_matrix : array 3*3 rotation matrix to change frame
-  # - vect : 3*1 transition vector to change frame
+  # - matrix : array 4*4 rotation_matrix and vect
   #
   # OUTPUT
   # - point_new_frame : array 3*1 coordinates of the point in the nex frame
@@ -48,16 +46,15 @@ def switch_frame(point, rotation_matrix, vect) :
   #                                   [0, 0, 0, 1]])
   # ----------------------------------
 
-  return vect + np.dot(rotation_matrix, point)
+  return matrix[0:3, 3] + np.dot(np.transpose(matrix[0:3, 0:3]), point)
 
-def transpose_switch_frame(point, rotation_matrix, vect) :
+def transpose_switch_frame(point, matrix) :
 
   # Express point in its previous frame
   #
   # INPUT
   # - point : array 3*1 coordinates of the point
-  # - rotation_matrix : array 3*3 rotation matrix to change frame
-  # - vect : 3*1 transition vector to change frame
+  # - matrix : array 4*4 rotation_matrix and vect
   #
   # OUTPUT
   # - point_previous_frame : array 3*1 coordinates of the point in its previous frame
@@ -68,6 +65,6 @@ def transpose_switch_frame(point, rotation_matrix, vect) :
   #                                 [0, 0, 0, 1]])
   # ----------------------------------
 
-  vect_transition = np.dot(rotation_matrix, vect)
+  vect_transition = np.dot(matrix[0:3, 0:3], [0,0,0] - matrix[0:3, 3])
 
-  return vect_transition + np.dot(rotation_matrix, point)
+  return vect_transition + np.dot(matrix[0:3, 0:3], point)
