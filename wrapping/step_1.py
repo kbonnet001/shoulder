@@ -29,6 +29,12 @@ def find_cylinder_frame(center_circle) :
 
   return np.array([n2,n1, unit_vect])
 
+def find_matrix(cylinder_frame, origin) :
+  return np.array([[cylinder_frame[0][0], cylinder_frame[0][1], cylinder_frame[0][2], origin[0]],
+                        [cylinder_frame[1][0], cylinder_frame[1][1], cylinder_frame[1][2], origin[1]],
+                        [cylinder_frame[2][0], cylinder_frame[2][1], cylinder_frame[2][2], origin[2]],
+                        [0, 0, 0, 1]])
+
 def switch_frame(point, matrix) :
 
   # Express point in a new frame
