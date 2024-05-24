@@ -135,7 +135,7 @@ def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame,
    H0, T0 = find_tangent_points(rotation_matrix_UV[0:3, 3], S_V_cylinder_frame, r_V)
    ecart_H0_H1 = [1,1,1]
 
-   while (abs(ecart_H0_H1[0]) > 0.000001 or abs(ecart_H0_H1[1]) > 0.000001 or abs(ecart_H0_H1[2]) > 0.000001) :
+   while (abs(ecart_H0_H1[0]) > 1e-4  or abs(ecart_H0_H1[1]) > 1e-4  or abs(ecart_H0_H1[2]) > 1e-4) :
 
     # On passe notre H0 dans le ref du cylindre U --> h0
     h0 = transpose_switch_frame(H0, rotation_matrix_UV) # ok à priori ...
@@ -155,3 +155,5 @@ def find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame,
     T0=T1
 
    return Q0, G0, H0, T0
+ 
+ 
