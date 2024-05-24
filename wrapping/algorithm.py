@@ -120,12 +120,12 @@ def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, mat
     Q, G, H, T = [0,0,0], [0,0,0], [0,0,0], [0,0,0]
 
    elif point_inside_U :
-    print("You choose P and/or S in the cylinder U. Muscle path is straight line")
+    print("You choose P in the cylinder U. Muscle path is straight line")
     Q, G = [0,0,0], [0,0,0]
     H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
 
    elif point_inside_V :
-    print("You choose P and/or S in the cylinder V. Muscle path is straight line")
+    print("You choose S in the cylinder V. Muscle path is straight line")
     H, T = [0,0,0], [0,0,0]
     Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
 
@@ -138,13 +138,13 @@ def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, mat
    Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
    H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
 
-  #  if Q_G_inactive==True :
-  #   H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
-  #   H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
+   if Q_G_inactive==True :
+    H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+    H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
 
-  #  if H_T_inactive==True :
-  #    Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
-  #    Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
+   if H_T_inactive==True :
+     Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
+     Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
 
    # ------
    # Step 4
