@@ -69,6 +69,13 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
    #
    # OUTPUT
    # - segment_length : length of path segments
+   
+  #  print("P = ", P)
+  #  print("S = ", S)
+  #  print("Q = ", Q)
+  #  print("G = ", G)
+  #  print("H = ", H)
+  #  print("T = ", T)
 
    # Compute lengths
    H_T_length_xy = compute_length_v1_v2_xy(H, T, r_V)
@@ -87,9 +94,6 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
        segment_length = norm(Q - np.array(P_U_cylinder_frame)) + Q_G_length + norm(np.array(S_U_cylinder_frame) - G)
 
    else: # double cylinder
-       H_T_length_xy = compute_length_v1_v2_xy(H, T, r_V)
-       H_T_length = compute_length_v1_v2(H, T, H_T_length_xy)
-
        G_H_length = norm(switch_frame(H, matrix_V) - switch_frame(G, matrix_U))
 
        segment_length = norm(Q - np.array(P_U_cylinder_frame)) + Q_G_length + G_H_length + H_T_length_xy + norm(np.array(S_V_cylinder_frame) - T)

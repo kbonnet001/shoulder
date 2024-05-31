@@ -1,4 +1,3 @@
-import numpy as np
 from wrapping.step_1 import switch_frame, transpose_switch_frame
 from wrapping.step_2 import find_tangent_points, compute_length_v1_v2_xy, find_tangent_points_iterative_method, point_inside_cylinder
 from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
@@ -10,25 +9,25 @@ from wrapping.step_4 import segment_length_single_cylinder, segment_length_doubl
 
 def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, side, matrix) :
 
-   # Provide the length wrapping around a cylinder
-   #  Based on:
-   #  -B.A. Garner and M.G. Pandy, The obstacle-set method for
-   #  representing muscle paths in musculoskeletal models,
-   #  Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
-   # -----------------------------------------------------------
-   #
-   # INPUT
-   # - origin_point : array 3*1 position of the first point
-   # - final_point : array 3*1 position of the second point
-   # - radius : radius of the cylinder
-   # - side : side of the wrapping, -1 for the left side, 1 for the right side
-   # - matrix : array 4*4 rotation_matrix and vect
-   #
-   # OUTPUT
-   # - v1o : array 3*1 position of the first obstacle tangent point (in conventionnal frame)
-   # - v2o : array 3*1 position of the second obstacle tangent point (in conventionnal frame)
-   # - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
-   # - segment_lenght : length of path segments
+   """Provide the length wrapping around a cylinder
+    Based on:
+    -B.A. Garner and M.G. Pandy, The obstacle-set method for
+    representing muscle paths in musculoskeletal models,
+    Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
+   -----------------------------------------------------------
+   
+   INPUT
+   - origin_point : array 3*1 position of the first point
+   - final_point : array 3*1 position of the second point
+   - radius : radius of the cylinder
+   - side : side of the wrapping, -1 for the left side, 1 for the right side
+   - matrix : array 4*4 rotation_matrix and vect
+   
+   OUTPUT
+   - v1o : array 3*1 position of the first obstacle tangent point (in conventionnal frame)
+   - v2o : array 3*1 position of the second obstacle tangent point (in conventionnal frame)
+   - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
+   - segment_lenght : length of path segments"""
 
    # ------
    # Step 1
@@ -44,7 +43,6 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    # ------
    # tangent points
    v1, v2 = find_tangent_points(P_cylinder_frame, S_cylinder_frame, r)
-   v1_v2_length_xy = compute_length_v1_v2_xy(v1, v2, r)
 
    # ------
    # Step 3
@@ -66,40 +64,38 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
 
 def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, matrix_V, radius_V, side_V, rotation_matrix_UV) :
 
-   # Provide the length wrapping around a cylinder
-   #  Based on:
-   #  -B.A. Garner and M.G. Pandy, The obstacle-set method for
-   #  representing muscle paths in musculoskeletal models,
-   #  Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
-   # -----------------------------------------------------------
-   #
-   # INPUT
-   # - P : array 3*1 position of the first point
-   # - S : array 3*1 position of the second point
-   # - matrix_U : array 4*4 rotation_matrix and vect for cylinder U
-   # - radius_U : radius of the cylinder U
-   # - side_U : side of the wrapping (cylinder U), -1 for the left side, 1 for the right side
-   # - matrix_V : array 4*4 rotation_matrix and vect for cylinder V
-   # - radius_V : radius of the cylinder V
-   # - side_V : side of the wrapping (cylinder V), -1 for the left side, 1 for the right side
-   # - rotation_matrix_UV : array 3*3 rotation matrix to change frame (U --> V)
-   #
-   # OUTPUT
-   # - Qo : array 3*1 position of the first obstacle tangent point (in conventional frame)
-   # - Go : array 3*1 position of the second obstacle tangent point (in conventional frame)
-   # - Ho : array 3*1 position of the third obstacle tangent point (in conventional frame)
-   # - To : array 3*1 position of the fourth obstacle tangent point (in conventional frame)
-   # - Q_G_inactive : bool determine if Q and G or inactive (True) or not (False)
-   # - H_T_inactive : bool determine if H and T or inactive (True) or not (False)
-   # - segment_lenght : length of path segments
+   """Provide the length wrapping around a cylinder
+    Based on:
+    -B.A. Garner and M.G. Pandy, The obstacle-set method for
+    representing muscle paths in musculoskeletal models,
+    Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
+   -----------------------------------------------------------
+   
+   INPUT
+   - P : array 3*1 position of the first point
+   - S : array 3*1 position of the second point
+   - matrix_U : array 4*4 rotation_matrix and vect for cylinder U
+   - radius_U : radius of the cylinder U
+   - side_U : side of the wrapping (cylinder U), -1 for the left side, 1 for the right side
+   - matrix_V : array 4*4 rotation_matrix and vect for cylinder V
+   - radius_V : radius of the cylinder V
+   - side_V : side of the wrapping (cylinder V), -1 for the left side, 1 for the right side
+   - rotation_matrix_UV : array 3*3 rotation matrix to change frame (U --> V)
+   
+   OUTPUT
+   - Qo : array 3*1 position of the first obstacle tangent point (in conventional frame)
+   - Go : array 3*1 position of the second obstacle tangent point (in conventional frame)
+   - Ho : array 3*1 position of the third obstacle tangent point (in conventional frame)
+   - To : array 3*1 position of the fourth obstacle tangent point (in conventional frame)
+   - Q_G_inactive : bool determine if Q and G or inactive (True) or not (False)
+   - H_T_inactive : bool determine if H and T or inactive (True) or not (False)
+   - segment_lenght : length of path segments"""
 
    # ------
    # Step 1
    # ------
    r_U = radius_U * side_U
    r_V = radius_V * side_V
-   origin_V_in_U_frame = transpose_switch_frame(matrix_V[0:3, 3], matrix_U)
-   origin_U_in_V_frame = transpose_switch_frame(matrix_U[0:3, 3], matrix_V)
 
    # Express P (S) in U (V) cylinder frame
    P_U_cylinder_frame = transpose_switch_frame(P, matrix_U)

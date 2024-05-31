@@ -5,13 +5,13 @@ from scipy.linalg import norm
 #---------------------
 def find_cylinder_frame(center_circle) :
 
-  # Find the frame of the cylinder
-  #
-  # INPUT
-  # - center_circle : 2*array 3*1 coordinates of the first and second circles of the cylinder
-  #
-  # OUTPUT
-  # - cylinder_frame : array 3*3 ortonormal frame for the cylinder
+  """Find the frame of the cylinder
+  
+  INPUT
+  - center_circle : 2*array 3*1 coordinates of the first and second circles of the cylinder
+  
+  OUTPUT
+  - cylinder_frame : array 3*3 ortonormal frame for the cylinder"""
 
   vect = center_circle[1] - center_circle[0]
   unit_vect = vect / norm(vect) # z axis du cylindre
@@ -37,39 +37,39 @@ def find_matrix(cylinder_frame, origin) :
 
 def switch_frame(point, matrix) :
 
-  # Express point in a new frame
-  #
-  # INPUT
-  # - point : array 3*1 coordinates of the point
-  # - matrix : array 4*4 rotation_matrix and vect
-  #
-  # OUTPUT
-  # - point_new_frame : array 3*1 coordinates of the point in the nex frame
-  # ----------------------------------
-  # transformation_matrix = np.array([[rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2], vect[0]],
-  #                                   [rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2], vect[1]],
-  #                                   [rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2], vect[2]],
-  #                                   [0, 0, 0, 1]])
-  # ----------------------------------
+  """ Express point in a new frame
+  
+   INPUT
+   - point : array 3*1 coordinates of the point
+   - matrix : array 4*4 rotation_matrix and vect
+  
+   OUTPUT
+   - point_new_frame : array 3*1 coordinates of the point in the nex frame
+   ----------------------------------
+   transformation_matrix = np.array([[rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2], vect[0]],
+                                     [rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2], vect[1]],
+                                     [rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2], vect[2]],
+                                     [0, 0, 0, 1]])
+   ----------------------------------"""
 
   return matrix[0:3, 3] + np.dot(np.transpose(matrix[0:3, 0:3]), point)
 
 def transpose_switch_frame(point, matrix) :
 
-  # Express point in its previous frame
-  #
-  # INPUT
-  # - point : array 3*1 coordinates of the point
-  # - matrix : array 4*4 rotation_matrix and vect
-  #
-  # OUTPUT
-  # - point_previous_frame : array 3*1 coordinates of the point in its previous frame
-  # ----------------------------------
-  # transformation_matrix = np.array([[rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2], vect_transition[0]],
-  #                                 [rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2], vect_transition[1]],
-  #                                 [rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2], vect_transition[2]],
-  #                                 [0, 0, 0, 1]])
-  # ----------------------------------
+  """Express point in its previous frame
+  
+  INPUT
+  - point : array 3*1 coordinates of the point
+  - matrix : array 4*4 rotation_matrix and vect
+  
+  OUTPUT
+  - point_previous_frame : array 3*1 coordinates of the point in its previous frame
+  ----------------------------------
+  transformation_matrix = np.array([[rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2], vect_transition[0]],
+                                  [rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2], vect_transition[1]],
+                                  [rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2], vect_transition[2]],
+                                  [0, 0, 0, 1]])
+  ----------------------------------"""
 
   vect_transition = np.dot(matrix[0:3, 0:3], [0,0,0] - matrix[0:3, 3])
 
