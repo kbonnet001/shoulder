@@ -50,29 +50,56 @@ def apply_transformation(matrix, radius, height, num_points = 100):
   
   return x_transformed, y_transformed, z_transformed
 
-def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_points = 100) :
+# def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_points = 100) :
 
-  """  Compute datas for plot the cylinder
-  The cylinder is charaterized by coordinates of his two circle face and his radius
+#   """  Compute datas for plot the cylinder
+#   The cylinder is charaterized by coordinates of his two circle face and his radius
   
-  INPUT
-  - center_circle_2 : array 3*1 coordinates of the first circle of the cylinder
-  - center_circle_2 : array 3*1 coordinates of the second circle of the cylinder
-  - cylinder_frame : array 3*3 local frame of the cylinder
-  - radius : radius of the cylinder
-  - num_points : int number of points for representation (default 100)
+#   INPUT
+#   - center_circle_2 : array 3*1 coordinates of the first circle of the cylinder
+#   - center_circle_2 : array 3*1 coordinates of the second circle of the cylinder
+#   - cylinder_frame : array 3*3 local frame of the cylinder
+#   - radius : radius of the cylinder
+#   - num_points : int number of points for representation (default 100)
   
-  OUTPUT
-  - X, Y, Z :  array nm_point*num_point coordinates of points for the representation of the cylinder"""
+#   OUTPUT
+#   - X, Y, Z :  array nm_point*num_point coordinates of points for the representation of the cylinder"""
+
+#   # Create a unit vector in direction of axis
+#   v_cylinder=center_circle_2-center_circle_1
+
+#   n2,n1,v_unit = cylinder_frame
+
+#   # Surface ranges over t from 0 to length of axis and 0 to 2*pi
+#   t = np.linspace(0, norm(v_cylinder), num_points)
+#   theta = np.linspace(0, 2 * np.pi, num_points)
+#   t, theta = np.meshgrid(t, theta)
+
+#   # Generate coordinates for surface
+#   X, Y, Z = [center_circle_1[i] + v_unit[i] * t + radius * np.sin(theta) * n1[i] + radius * np.cos(theta) * n2[i] for i in [0, 1, 2]]
+#   return X, Y, Z
+
+def data_cylinder(center_circle_1, center_circle_2, radius) :
+  # Center_circle_1 and 2 are two points caracterizing the position of the cylinder
 
   # Create a unit vector in direction of axis
   v_cylinder=center_circle_2-center_circle_1
+  v_unit=(v_cylinder)/norm(v_cylinder)
 
-  n2,n1,v_unit = cylinder_frame
+  # Make some vector not in the same direction as v
+  not_v_unit = np.array([1, 0, 0])
+  if (v_unit == not_v_unit).all():
+    not_v_unit = np.array([0, 1, 0])
+
+  # Make a normalized vector perpendicular to v
+  n1 = np.cross(v_unit, not_v_unit)/norm(np.cross(v_unit, not_v_unit))
+
+  # Make unit vector perpendicular to v and n1
+  n2 = np.cross(v_unit, n1)
 
   # Surface ranges over t from 0 to length of axis and 0 to 2*pi
-  t = np.linspace(0, norm(v_cylinder), num_points)
-  theta = np.linspace(0, 2 * np.pi, num_points)
+  t = np.linspace(0, norm(v_cylinder), 100)
+  theta = np.linspace(0, 2 * np.pi, 100)
   t, theta = np.meshgrid(t, theta)
 
   # Generate coordinates for surface
@@ -115,7 +142,7 @@ def data_semi_circle(v1, v2, matrix, r, num_points=100) :
 
   return semi_circle_points
 
-def plot_one_cylinder_obstacle(origin_point, final_point, radius, v1, v2, obstacle_tangent_point_inactive, matrix) :
+def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obstacle_tangent_point_inactive) :
 
   """   Plot the representation of the single-cylinder obstacle-set algorithm
    
@@ -145,14 +172,14 @@ def plot_one_cylinder_obstacle(origin_point, final_point, radius, v1, v2, obstac
   ax.scatter(*v2, color='r', label="v2")
 
   # Cylinder
-  Xc,Yc,Zc = apply_transformation(matrix, radius, 0.1, 100)  
+  Xc,Yc,Zc = apply_transformation(Cylinder.matrix, Cylinder.radius, 0.1, 100)  
   ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
 
   if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin point to final point
     ax.plot(*zip(origin_point, final_point), color='r')
   else :
     # Semi-circle between v1 and v2
-    semi_circle_points = data_semi_circle(v1,v2, matrix,radius, 100)
+    semi_circle_points = data_semi_circle(v1,v2, Cylinder.matrix,Cylinder.radius, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(origin_point, v1), color='g')
@@ -175,7 +202,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, radius, v1, v2, obstac
 
   plt.show()
 
-def plot_double_cylinder_obstacle(P, S, radius_U, radius_V, Q, G, H, T, matrix_U, matrix_V, Q_G_inactive, H_T_inactive ) :
+def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_inactive, H_T_inactive) :
 
   """Plot the representation of the double-cylinder obstacle-set algorithm
   
@@ -206,19 +233,18 @@ def plot_double_cylinder_obstacle(P, S, radius_U, radius_V, Q, G, H, T, matrix_U
 
   #Obstacle tangent points
   ax.scatter(*Q, color='r', label="Q")
-  ax.scatter(*G, color='r', label="G")
-  ax.scatter(*H, color='r', label="H")
-  ax.scatter(*T, color='r', label="T")
-   
+  ax.scatter(*G, color='y', label="G")
+  ax.scatter(*H, color='c', label="H")
+  ax.scatter(*T, color='k', label="T")
    
   # 1st Cylinder
-  #  Xcu,Ycu,Zcu = data_cylinder(center_circle_U[0], center_circle_U[1], matrix_U[0:3, 0:3], radius_U)
-  Xcu,Ycu,Zcu = apply_transformation(matrix_U, radius_U, 0.1, 100)
+  Xcu,Ycu,Zcu = data_cylinder(Cylinder_U.c1, Cylinder_U.c2, Cylinder_U.radius)
+  # Xcu,Ycu,Zcu = apply_transformation(matrix_U, radius_U, 0.1, 100)
   ax.plot_surface(Xcu, Ycu, Zcu, alpha=0.5)
 
   # 2nd Cylinder
-  #  Xcv,Ycv,Zcv = data_cylinder(center_circle_V[0], center_circle_V[1], matrix_V[0:3, 0:3], radius_V)
-  Xcv,Ycv,Zcv = apply_transformation(matrix_V, radius_V, 0.1, 100)
+  Xcv,Ycv,Zcv = data_cylinder(Cylinder_V.c1, Cylinder_V.c2, Cylinder_V.radius)
+  # Xcv,Ycv,Zcv = apply_transformation(matrix_V, radius_V, 0.1, 100)
   ax.plot_surface(Xcv, Ycv, Zcv, alpha=0.5)
 
   if Q_G_inactive and H_T_inactive: # Muscle path is straight line from origin_point to final_point
@@ -226,7 +252,7 @@ def plot_double_cylinder_obstacle(P, S, radius_U, radius_V, Q, G, H, T, matrix_U
 
   elif Q_G_inactive: # single cylinder algorithm with V cylinder
     # Semi-circle between H and T
-    semi_circle_points = data_semi_circle(H,T,matrix_V, radius_V, 100)
+    semi_circle_points = data_semi_circle(H,T,Cylinder_V.matrix, Cylinder_V.radius, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(P, H), color='g')
@@ -234,7 +260,7 @@ def plot_double_cylinder_obstacle(P, S, radius_U, radius_V, Q, G, H, T, matrix_U
 
   elif H_T_inactive: # single cylinder algorithm with U cylinder
     # Semi-circle between Q and G
-    semi_circle_points = data_semi_circle(Q,G, matrix_U,radius_U, 100)
+    semi_circle_points = data_semi_circle(Q,G, Cylinder_U.matrix, Cylinder_U.radius, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(P, Q), color='g')
@@ -243,11 +269,11 @@ def plot_double_cylinder_obstacle(P, S, radius_U, radius_V, Q, G, H, T, matrix_U
   else: # double cylinder
 
     # Semi-circle between H and T
-    semi_circle_points = data_semi_circle(H,T,matrix_V,radius_V, 100)
+    semi_circle_points = data_semi_circle(H,T,Cylinder_V.matrix, Cylinder_V.radius, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     # Semi-circle between Q and G
-    semi_circle_points = data_semi_circle(Q,G, matrix_U,radius_U, 100)
+    semi_circle_points = data_semi_circle(Q,G, Cylinder_U.matrix, Cylinder_U.radius, 100)
     ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], semi_circle_points[:, 2])
 
     ax.plot(*zip(P, Q), color='g')
@@ -260,12 +286,18 @@ def plot_double_cylinder_obstacle(P, S, radius_U, radius_V, Q, G, H, T, matrix_U
   ax.set_zlabel("Z")
   ax.grid(True)
 
-  # Set ax limit
-  ax.set_ylim(-0.1,0.1)
-  ax.set_zlim(-0.2,0)
-  ax.set_xlim(0,0.2)
-
+  # # Set ax limit
+  # ax.set_ylim(-0.1,0.1)
+  # ax.set_zlim(-0.2,0)
+  # ax.set_xlim(0,0.2)
+  
+  ax.set_xlim(-0.1,0.1)
+  ax.set_ylim(-0.2,0)
+  ax.set_zlim(0,0.2)
+  
   plt.title("Double Cylinder Wrapping")
   plt.legend()
 
   plt.show()
+  
+

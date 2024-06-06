@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def accuracy(predictions, targets, tolerance = 1e-4):
     """

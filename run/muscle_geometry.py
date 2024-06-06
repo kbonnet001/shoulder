@@ -9,8 +9,9 @@ from wrapping.algorithm import*
 from wrapping.step_1 import find_cylinder_frame, find_matrix
 from wrapping.Cylinder import Cylinder
 from sklearn.model_selection import train_test_split
+from neural_networks.main_trainning import test_model_supervised_learning
 
-from neural_networks.prepare_data import data_for_learning
+from neural_networks.data_generation import data_for_learning, test_limit_data_for_learning
 
 #################### 
 import biorbd
@@ -33,12 +34,36 @@ q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(humerus_ind
 C_T_PECM2_1 = np.array([0.0187952455, -0.0992656744, 0.0784311931])
 C_T_PECM2_2 = np.array([0.0171630409, -0.014154527, 0.0749634019])
 
-# Datas for cylinder's humerus right (muscle PECM1, PECM2 and PCM3)
-C_H_PECM2_1 = np.array([-0.0452034817, -0.0711088305, 0.175903012])
-C_H_PECM2_2 = np.array([-0.0273048302, -0.0009948723, 0.1717388404])
+# C_T_PECM2_1 = np.array([0.0292629922, -0.1122388526, 0.0788642283])
+# C_T_PECM2_2 = np.array([0.0274894968, -0.0197601115, 0.0750962498])
 
-cylinder_T_PECM2 = Cylinder(0.025, -1, C_T_PECM2_1, C_T_PECM2_2, "thorax")
-cylinder_H_PECM2 = Cylinder(0.0175, 1, C_H_PECM2_1, C_H_PECM2_2, "humerus_right")
+
+# Datas for cylinder's humerus right (muscle PECM1, PECM2 and PCM3)
+# C_H_PECM2_1 = np.array([-0.0452034817, -0.0711088305, 0.175903012])
+# C_H_PECM2_2 = np.array([-0.0273048302, -0.0009948723, 0.1717388404])
+C_H_PECM2_1 = np.array([-0.0427634125, -0.0615504057, 0.175335323])
+C_H_PECM2_2 = np.array([-0.0072928929, 0.0773974095, 0.167083007])
+
+cylinder_T_PECM2 = Cylinder.from_points(0.025, 1, C_T_PECM2_1, C_T_PECM2_2, "thorax")
+print("matrix = ", cylinder_T_PECM2.matrix)
+
+cylinder_H_PECM2 = Cylinder.from_points(0.0169, 1, C_H_PECM2_1, C_H_PECM2_2, "humerus_right")
+
+# cylinder_U = np.array([[ 9.99816470e-01 , 1.91420333e-02, -7.79928088e-04 , 1.79791432e-02],
+#                      [ 0.00000000e+00 ,-4.07104880e-02, -9.99170984e-01 ,-5.67101007e-02],
+#                      [-1.91579155e-02 , 9.98987607e-01, -4.07030164e-02 , 7.66972975e-02],
+#                      [ 0.00000000e+00 , 0.00000000e+00 , 0.00000000e+00 , 1.00000000e+00]])
+
+# cylinder_V = np.array([[-0.79481162  ,0.57873846 ,-0.18302028 ,-0.02082093],
+#                         [-0.14524663  ,0.11079776 , 0.98314264 , 0.03127978],
+#                         [ 0.58931593 , 0.80782082, -0.00576126 , 0.17126575],
+#                         [ 0.      ,	0.    ,  	0.      	,1.    	]])
+
+# cylinder_T_PECM2 = Cylinder.from_matrix(0.025, 1, cylinder_U, "thorax")
+# cylinder_H_PECM2 = Cylinder.from_matrix(0.017, 1, cylinder_V, "humerus_right")
+
+# cylinder_T_PECM2.rotate_around_axis(20)
+# cylinder_H_PECM2.rotate_around_axis(-10)
 
 # Please, choose a list of cylinder with 0, 1 or 2 cylinders
 # List of PECM2's cylinders
@@ -67,8 +92,27 @@ for k in range (3) :
 # ----------------------
 muscle_selected = "PECM2"
 
-data_for_learning (muscle_selected,cylinders_PECM2, model, q_ranges_PECM2,500, "df_PECM2_datas2.xlsx") 
+test_limit_data_for_learning(muscle_selected,cylinders_PECM2, model, q_ranges,"PECM2_datas00.xlsx", True) 
+
+# data_for_learning (muscle_selected,cylinders_PECM2, model, q_ranges_PECM2,10, "df_PECM2_datas_plusgrand2.xlsx") 
 # ----------------------
+# test_model_supervised_learning("df_PECM2_datas_15259.xlsx")
+# ----------------------
+# data_for_learning (muscle_selected, cylinders_PECM2, model, q_ranges_PECM2, 2, plot=False) 
+
+# pour q0
+# origin =  [ 0.0248658 ,-0.0475832,  0.0174664]
+# insertion =  [-0.01972176,-0.04075831 , 0.17976807]
+
+# pour q 3
+# origin =  [ 0.0248658 ,-0.0475832 , 0.0174664]
+# insertion  =  [-0.03443068 , 0.03347737 , 0.18312634]
+
+
+# Q, G, H, T, Q_G_inactive, H_T_inactive , _= double_cylinder_obstacle_set_algorithm(origin , insertion, cylinder_T_PECM2.matrix, cylinder_T_PECM2.radius, cylinder_H_PECM2.side, cylinder_H_PECM2.matrix, cylinder_H_PECM2.radius, cylinder_H_PECM2.side, np.dot(np.linalg.inv(cylinder_T_PECM2.matrix), cylinder_H_PECM2.matrix), [0,0,0])
+
+# plot_double_cylinder_obstacle(origin, insertion, cylinder_T_PECM2, cylinder_H_PECM2, Q, G, H, T, Q_G_inactive, H_T_inactive)
+   
 
 # # Show
 # b = bioviz.Viz(loaded_model=model)

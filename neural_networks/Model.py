@@ -1,8 +1,8 @@
 import torch.nn as nn
 
-class CustomModel(nn.Module):
+class Model(nn.Module):
     def __init__(self, input_shape, output_shape, n_layers, n_nodes, activation, L1_penalty, L2_penalty, use_batch_norm):
-        super(CustomModel, self).__init__()
+        super(Model, self).__init__()
         layers = []
         for i in range(n_layers):
             layers.append(nn.Linear(input_shape if i == 0 else n_nodes, n_nodes))

@@ -16,12 +16,12 @@ def find_cylinder_frame(center_circle) :
   vect = center_circle[1] - center_circle[0]
   unit_vect = vect / norm(vect) # z axis du cylindre
 
-  # Make some vector not in the same direction as vect_U
+  # Make some vector not in the same direction as vect
   not_unit_vect = np.array([1, 0, 0])
   if (unit_vect == [1,0,0]).all() or (unit_vect == [-1,0,0]).all():
     not_unit_vect = np.array([0, 1, 0])
 
-  # Make a normalized vector perpendicular to vect_U
+  # Make a normalized vector perpendicular to vect
   n1 = np.cross(unit_vect, not_unit_vect)/norm(np.cross(unit_vect, not_unit_vect)) # notre y par exemple
 
   # Make unit vector perpendicular to v and n1
