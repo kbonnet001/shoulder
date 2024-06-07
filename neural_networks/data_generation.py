@@ -95,7 +95,7 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
       cylinder_U_rot = np.dot(matrix_rot_zy, cylinders[0].matrix)
       cylinders[0].compute_matrix_rotation_zy(matrix_rot_zy) 
 
-      Q_rot, T_rot, Q_T_inactive, segment_length = single_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0].radius, cylinders[0].side, cylinder_U_rot)
+      Q_rot, T_rot, Q_T_inactive, segment_length = single_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0])
 
       if plot == True : 
          plot_one_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0], Q_rot, T_rot, Q_T_inactive)
@@ -112,7 +112,7 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
       cylinders[0].compute_matrix_rotation_zy(matrix_rot_zy) 
       cylinders[1].compute_matrix_rotation_zy(matrix_rot_zy) 
 
-      Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive , segment_length  = double_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinder_U_rot,cylinders[0].radius, cylinders[0].side, cylinder_V_rot, cylinders[1].radius, cylinders[1].side, np.dot(np.linalg.inv(cylinder_V_rot), cylinder_U_rot) )
+      Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive , segment_length  = double_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1], np.dot(np.linalg.inv(cylinder_V_rot), cylinder_U_rot) )
 
       if plot == True : 
          plot_double_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1], Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive)

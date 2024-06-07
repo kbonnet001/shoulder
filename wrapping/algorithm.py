@@ -7,7 +7,7 @@ from wrapping.step_4 import segment_length_single_cylinder, segment_length_doubl
 # Algorithm
 #---------------------------
 
-def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, side, matrix) :
+def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -32,11 +32,11 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    # ------
    # Step 1
    # ------
-   r = radius * side
+   r = Cylinder.radius * Cylinder.side
 
    # Express P and S in the cylinder frame
-   P_cylinder_frame = transpose_switch_frame(origin_point, matrix)
-   S_cylinder_frame = transpose_switch_frame(final_point, matrix)
+   P_cylinder_frame = transpose_switch_frame(origin_point, Cylinder.matrix)
+   S_cylinder_frame = transpose_switch_frame(final_point, Cylinder.matrix)
 
    # ------
    # Step 2
@@ -57,12 +57,12 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, radius, si
    # ------
    # Step 5
    # ------
-   v1o = switch_frame(v1, matrix)
-   v2o = switch_frame(v2, matrix)
+   v1o = switch_frame(v1, Cylinder.matrix)
+   v2o = switch_frame(v2, Cylinder.matrix)
 
    return v1o, v2o, obstacle_tangent_point_inactive, segment_length
 
-def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, matrix_V, radius_V, side_V, rotation_matrix_UV) :
+def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, rotation_matrix_UV) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -74,13 +74,13 @@ def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, mat
    INPUT
    - P : array 3*1 position of the first point
    - S : array 3*1 position of the second point
-   - matrix_U : array 4*4 rotation_matrix and vect for cylinder U
-   - radius_U : radius of the cylinder U
+   - Cylinder_U.matrix : array 4*4 rotation_matrix and vect for cylinder U
+   - Cylinder_U.radius : radius of the cylinder U
    - side_U : side of the wrapping (cylinder U), -1 for the left side, 1 for the right side
-   - matrix_V : array 4*4 rotation_matrix and vect for cylinder V
-   - radius_V : radius of the cylinder V
+   - Cylinder_V.matrix : array 4*4 rotation_matrix and vect for cylinder V
+   - Cylinder_V.radius : radius of the cylinder V
    - side_V : side of the wrapping (cylinder V), -1 for the left side, 1 for the right side
-   - rotation_matrix_UV : array 3*3 rotation matrix to change frame (U --> V)
+   - rotation_Cylinder_U.matrixV : array 3*3 rotation matrix to change frame (U --> V)
    
    OUTPUT
    - Qo : array 3*1 position of the first obstacle tangent point (in conventional frame)
@@ -94,22 +94,22 @@ def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, mat
    # ------
    # Step 1
    # ------
-   r_U = radius_U * side_U
-   r_V = radius_V * side_V
+   r_U = Cylinder_U.radius * Cylinder_U.side
+   r_V = Cylinder_V.radius * Cylinder_V.side
 
    # Express P (S) in U (V) cylinder frame
-   P_U_cylinder_frame = transpose_switch_frame(P, matrix_U)
-   P_V_cylinder_frame = transpose_switch_frame(P, matrix_V)
+   P_U_cylinder_frame = transpose_switch_frame(P, Cylinder_U.matrix)
+   P_V_cylinder_frame = transpose_switch_frame(P, Cylinder_V.matrix)
 
-   S_U_cylinder_frame = transpose_switch_frame(S, matrix_U)
-   S_V_cylinder_frame = transpose_switch_frame(S, matrix_V)
+   S_U_cylinder_frame = transpose_switch_frame(S, Cylinder_U.matrix)
+   S_V_cylinder_frame = transpose_switch_frame(S, Cylinder_V.matrix)
 
    # ------
    # Step 2
    # ------
 
-   point_inside_U = point_inside_cylinder(P_U_cylinder_frame, S_U_cylinder_frame, radius_U)
-   point_inside_V = point_inside_cylinder(P_V_cylinder_frame, S_V_cylinder_frame, radius_V)
+   point_inside_U = point_inside_cylinder(P_U_cylinder_frame, S_U_cylinder_frame, Cylinder_U.radius)
+   point_inside_V = point_inside_cylinder(P_V_cylinder_frame, S_V_cylinder_frame, Cylinder_V.radius)
 
    if point_inside_U and point_inside_V :
     print("You choose P and/or S in the cylinder U and V. Muscle path is straight line")
@@ -126,7 +126,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, mat
     Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
 
    else :
-    Q, G, H, T = find_tangent_points_iterative_method_2(P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, matrix_U, matrix_V)
+    Q, G, H, T = find_tangent_points_iterative_method_2(P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, Cylinder_U.matrix, Cylinder_V.matrix)
 
    # ------
    # Step 3
@@ -145,14 +145,14 @@ def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, mat
    # ------
    # Step 4
    # ------
-   segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, matrix_U, matrix_V)
+   segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
 
    # ------
    # Step 5
    # ------
-   Qo = switch_frame(Q, matrix_U)
-   Go = switch_frame(G, matrix_U)
-   Ho = switch_frame(H, matrix_V)
-   To = switch_frame(T, matrix_V)
+   Qo = switch_frame(Q, Cylinder_U.matrix)
+   Go = switch_frame(G, Cylinder_U.matrix)
+   Ho = switch_frame(H, Cylinder_V.matrix)
+   To = switch_frame(T, Cylinder_V.matrix)
 
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
