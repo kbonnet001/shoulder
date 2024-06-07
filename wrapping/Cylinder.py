@@ -16,6 +16,7 @@ class Cylinder:
         self.side = side
         self.c1 = c1
         self.c2 = c2
+        self.matrix_initial = matrix
         self.matrix = matrix
         self.segment = segment
 
@@ -91,6 +92,15 @@ class Cylinder:
         unit_AB = (z - origin) / norm_AB
         
         return origin - d * unit_AB, origin + d * unit_AB
+    
+    def compute_new_matrix_segment(self, model, q, gcs_seg_0, segment_index) :
+        
+        gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][segment_index]
+        self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(gcs_seg_0), self.matrix_initial))
+        
+    def compute_matrix_rotation_zy(self, matrix_rot_zy) : 
+        self.matrix = np.dot(matrix_rot_zy, self.matrix)
+
 
     def __str__(self):
         return (f"Cylinder(radius = {self.radius}, "

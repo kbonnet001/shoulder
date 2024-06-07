@@ -14,7 +14,7 @@ def find_position(muscle, muscle_names):
    - muscle_names : string, list of muscle names
    
    OUTPUT : 
-   - position : int, position of the uscle in the list"""
+   - position : int, position of the muscle in the list"""
 
    try:
       position = muscle_names.index(muscle) 
@@ -54,11 +54,6 @@ def create_gcs_seg_0(model, cylinders, segment_names, muscle_index) :
       
       mus = model.muscle(muscle_index) 
       model.UpdateKinematicsCustom(q)
-      origin_muscle = mus.musclesPointsInGlobal(model, q)[0].to_array() 
-      insertion_muscle = mus.musclesPointsInGlobal(model, q)[-1].to_array() 
-         
-      print("origin 0 = ", origin_muscle)
-      print("insertion 0  = ", insertion_muscle)
       
    return segment_U_index, segment_V_index, gcs_seg_U_0, gcs_seg_V_0
 
@@ -94,32 +89,33 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
       segment_length = norm(np.array(origin_muscle_rot) - np.array(insertion_muscle_rot))
 
    elif (len(cylinders) == 1) :
-      gcs_seg_U = [gcs.to_array() for gcs in model.allGlobalJCS(q)][segment_U_index]
 
       # Compute transformation of cylider matrix
-      cylinder_U = np.dot(gcs_seg_U, np.dot(np.linalg.inv(gcs_seg_U_0), cylinders[0].matrix))
-      cylinder_U_rot = np.dot(matrix_rot_zy, cylinder_U)
+      cylinders[0].compute_new_matrix_segment(model, q, gcs_seg_U_0, segment_U_index)
+      cylinder_U_rot = np.dot(matrix_rot_zy, cylinders[0].matrix)
+      cylinders[0].compute_matrix_rotation_zy(matrix_rot_zy) 
 
       Q_rot, T_rot, Q_T_inactive, segment_length = single_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0].radius, cylinders[0].side, cylinder_U_rot)
 
       if plot == True : 
-         plot_one_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0].radius, Q_rot, T_rot, Q_T_inactive, cylinder_U_rot)
+         plot_one_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0], Q_rot, T_rot, Q_T_inactive)
 
    else : # (len(cylinders) == 2 ) 
-      gcs_seg_U = [gcs.to_array() for gcs in model.allGlobalJCS(q)][segment_U_index]
-      gcs_seg_V = [gcs.to_array() for gcs in model.allGlobalJCS(q)][segment_V_index]
 
       # Compute transformation of cylider matrix
-      cylinder_U = np.dot(gcs_seg_U, np.dot(np.linalg.inv(gcs_seg_U_0), cylinders[0].matrix))
-      cylinder_V = np.dot(gcs_seg_V, np.dot(np.linalg.inv(gcs_seg_V_0), cylinders[1].matrix))
+      cylinders[0].compute_new_matrix_segment(model, q, gcs_seg_U_0, segment_U_index)
+      cylinders[1].compute_new_matrix_segment(model, q, gcs_seg_V_0, segment_V_index)
 
-      cylinder_U_rot = np.dot(matrix_rot_zy, cylinder_U)
-      cylinder_V_rot = np.dot(matrix_rot_zy, cylinder_V)
+      cylinder_U_rot = np.dot(matrix_rot_zy, cylinders[0].matrix)
+      cylinder_V_rot = np.dot(matrix_rot_zy, cylinders[1].matrix)
+      
+      cylinders[0].compute_matrix_rotation_zy(matrix_rot_zy) 
+      cylinders[1].compute_matrix_rotation_zy(matrix_rot_zy) 
 
       Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive , segment_length  = double_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinder_U_rot,cylinders[0].radius, cylinders[0].side, cylinder_V_rot, cylinders[1].radius, cylinders[1].side, np.dot(np.linalg.inv(cylinder_V_rot), cylinder_U_rot) )
 
       if plot == True : 
-         plot_double_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0].radius, cylinders[1].radius, Q_rot, G_rot, H_rot, T_rot, cylinder_U_rot, cylinder_V_rot, Q_G_inactive, H_T_inactive)
+         plot_double_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1], Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive)
 
    return segment_length  
 
@@ -265,7 +261,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, f
    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
    segment_U_index, segment_V_index, gcs_seg_U_0, gcs_seg_V_0 = create_gcs_seg_0(model, cylinders, segment_names, muscle_index) 
    
-   q_test_limite = [[0,0,0],[0,0,0],[0,0,0]]
+   q_test_limite = [[0.,0.,0.],[0.,0.,0.],[0.,0.,0.]]
    for k in range (3) :
       q_test_limite[k][0]  = q_ranges [k][0] 
       q_test_limite[k][1]  = (q_ranges [k][0]  + q_ranges[k][1] ) /2
@@ -302,50 +298,6 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, f
             add_line_df(f"test_limit_{filename}", muscle_index, q, origin_muscle, insertion_muscle, segment_length)
 
    return None
-
-def compute_initial_tangent_points(model, cylinders, q, origin_muscle, insertion_muscle, segment_U_index, segment_V_index, gcs_seg_U_0, gcs_seg_V_0, plot = False) :
-   
-   """Compute segment length
-   
-   INPUT : 
-   - model : model
-   - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-   - q : array 4*2, q randomly generated
-   - origin_muscle : array 1*3, coordinate of the origin point
-   - insertion_muscle : array 1*3, coordinate of the insertion point
-   - segment_U_index : int, index of the segment of U cylinder (if it exist)
-   - segment_V_index : int, index of the segment of V cylinder (if it exist)
-   - gcs_seg_U_0 : gcs 0 (inital) of the segment U (if it exist)
-   - gcs_seg_V_0 : gcs 0 (inital) of the segment V (if it exist)
-   - plot = bool, (default = False) plot cylinder(s), points and muscle path
-   
-   OUTPUT : 
-   - segment_length : length of muscle path """
-   
-   # First of all, create a rotation matrix (the model have y and not z for ax up) 
-   # Single cylinder algo and double cylinders algo don,t work without this change
-   matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
-   
-   # Rotation
-   origin_muscle_rot = np.dot(matrix_rot_zy[0:3, 0:3], origin_muscle)
-   insertion_muscle_rot = np.dot(matrix_rot_zy[0:3, 0:3], insertion_muscle)
-   
-   gcs_seg_U = [gcs.to_array() for gcs in model.allGlobalJCS(q)][segment_U_index]
-   gcs_seg_V = [gcs.to_array() for gcs in model.allGlobalJCS(q)][segment_V_index]
-
-   # Compute transformation of cylider matrix
-   cylinder_U = np.dot(gcs_seg_U, np.dot(np.linalg.inv(gcs_seg_U_0), cylinders[0].matrix))
-   cylinder_V = np.dot(gcs_seg_V, np.dot(np.linalg.inv(gcs_seg_V_0), cylinders[1].matrix))
-   
-   cylinder_U_rot = np.dot(matrix_rot_zy, cylinder_U)
-   cylinder_V_rot = np.dot(matrix_rot_zy, cylinder_V)
-   
-   Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive , _ = double_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinder_U_rot,cylinders[0].radius, cylinders[0].side, cylinder_V_rot, cylinders[1].radius, cylinders[1].side, np.dot(np.linalg.inv(cylinder_V_rot), cylinder_U_rot))
-
-   if plot == True : 
-      plot_double_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0].radius, cylinders[1].radius, Q_rot, G_rot, H_rot, T_rot, cylinder_U_rot, cylinder_V_rot, Q_G_inactive, H_T_inactive)
-   
-   return Q_rot, G_rot, H_rot, T_rot
 
 
 def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, i, plot=False) :
@@ -429,7 +381,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, i, pl
    return None
 
 
-def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, i, num_points = 100, plot=False) :
+def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, i, num_points = 100, plot_all = False, plot_limit = False) :
    
    """Create a data frame for prepare datas
    
@@ -452,14 +404,18 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
    segment_U_index, segment_V_index, gcs_seg_U_0, gcs_seg_V_0 = create_gcs_seg_0(model, cylinders, segment_names, muscle_index) 
    
+   plot_limit_q = [q_ranges_muscle[i][0], (num_points/2) * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0], q_ranges_muscle[i][1], 10]
    segment_lengths = []
    qs = []
+   
+   print("q range = ", q_ranges_muscle)
 
-   for k in range (num_points) : 
+   for k in range (num_points+1) : 
       print("k = ", k)
       
       # Incrémenter qi
       qi = k * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0]
+      print("qi = ", qi)
       
       # Generate a random q 
       q = np.array([0.,0.,0.,0.])
@@ -485,7 +441,10 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
       
       # ------------------------------------------------
 
-      segment_length = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, segment_U_index, segment_V_index, gcs_seg_U_0, gcs_seg_V_0, plot)  
+      if k in [0,num_points/2, num_points] and plot_limit :
+         segment_length = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, segment_U_index, segment_V_index, gcs_seg_U_0, gcs_seg_V_0, plot_limit)  
+      else :  
+         segment_length = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, segment_U_index, segment_V_index, gcs_seg_U_0, gcs_seg_V_0, plot_all)  
 
       
       qs.append(qi)
@@ -496,16 +455,16 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    plt.plot(qs, segment_lengths, marker='o', linestyle='-', color='b')
 
    # Ajout des étiquettes et du titre
-   plt.xlabel('qs')
-   plt.ylabel('muscle_length')
-   plt.title(f'Muscle length en fonction de q{i}')
+   plt.xlabel(f'q{i}')
+   plt.ylabel('Muscle_length')
+   plt.title(f'Muscle Length as a Function of q{i} Values')
 
-   # Définir les marques sur l'axe y
-   plt.xticks(qs)
-   plt.yticks(segment_lengths)
+   # Définir les marques sur l'axe x et y de manière espacée
+   plt.xticks(qs[::5])  # Afficher les ticks tous les 5 sur l'axe x
+   plt.yticks(segment_lengths[::5])  # Afficher les ticks tous les 10 sur l'axe y
    
    # Affichage de la grille
    plt.grid(True)
    plt.show()
-   
+
    return None
