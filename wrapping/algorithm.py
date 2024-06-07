@@ -1,5 +1,5 @@
 from wrapping.step_1 import switch_frame, transpose_switch_frame
-from wrapping.step_2 import find_tangent_points, compute_length_v1_v2_xy, find_tangent_points_iterative_method, point_inside_cylinder
+from wrapping.step_2 import find_tangent_points, compute_length_v1_v2_xy, find_tangent_points_iterative_method, point_inside_cylinder, find_tangent_points_iterative_method_2
 from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
 from wrapping.step_4 import segment_length_single_cylinder, segment_length_double_cylinder
 
@@ -126,7 +126,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, matrix_U, radius_U, side_U, mat
     Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
 
    else :
-    Q, G, H, T = find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV)
+    Q, G, H, T = find_tangent_points_iterative_method_2(P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, matrix_U, matrix_V)
 
    # ------
    # Step 3

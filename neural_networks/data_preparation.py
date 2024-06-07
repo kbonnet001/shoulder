@@ -106,4 +106,3 @@ def plot_datas_distribution(X_tensor, y_tensor):
     plt.tight_layout()  
     plt.show()
 
-

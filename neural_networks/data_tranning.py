@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def accuracy(predictions, targets, tolerance = 1e-4):
     """
@@ -187,7 +188,6 @@ def plot_predictions_and_targets(model, loader, num) :
     plt.ylabel('Muscle length')
     plt.legend()
     plt.show()
-
 
 
 
