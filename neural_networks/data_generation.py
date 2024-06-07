@@ -4,6 +4,8 @@ from wrapping.plot_cylinder import plot_one_cylinder_obstacle, plot_double_cylin
 import pandas as pd
 from scipy.linalg import norm
 import matplotlib.pyplot as plt
+import os
+from openpyxl import load_workbook
 
 def initialisation_generation(model, muscle_selected, cylinders) :
    # Find index of the muscle selected
@@ -156,7 +158,98 @@ def add_line_df(filename, muscle_selected_index, q, origin_muscle, insertion_mus
    
    with pd.ExcelWriter(filename, engine='openpyxl', mode='w') as writer:
       df.to_excel(writer, index=False)
-         
+
+# import os
+# import pandas as pd
+# from openpyxl import load_workbook
+
+# def initialize_excel(filename):
+#     """Initialize the Excel file with the correct structure if it doesn't exist."""
+#     if not os.path.exists(filename):
+#         data = {
+#             "muscle_selected": [],
+#             "humerus_right_RotY": [],
+#             "humerus_right_RotX": [],
+#             "humerus_right_RotY2": [],
+#             "ulna_effector_right_RotZ": [],
+#             "origin_muscle_x": [],
+#             "origin_muscle_y": [],
+#             "origin_muscle_z": [],
+#             "insertion_muscle_x": [],
+#             "insertion_muscle_y": [],
+#             "insertion_muscle_z": [],
+#             "segment_length": []
+#         }
+#         pd.DataFrame(data).to_excel(filename, index=False)
+
+# def add_line_batch(filename, batch_size=100):
+#     """Add lines to the file in batch to optimize writing time."""
+#     lines_to_add = []
+    
+#     def add_line(muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length):
+#         """Add one line to the batch."""
+#         new_line = {
+#             "muscle_selected": muscle_selected_index,
+#             "humerus_right_RotY": q[0],
+#             "humerus_right_RotX": q[1],
+#             "humerus_right_RotY2": q[2],
+#             "ulna_effector_right_RotZ": q[3],
+#             "origin_muscle_x": origin_muscle[0],
+#             "origin_muscle_y": origin_muscle[1],
+#             "origin_muscle_z": origin_muscle[2],
+#             "insertion_muscle_x": insertion_muscle[0],
+#             "insertion_muscle_y": insertion_muscle[1],
+#             "insertion_muscle_z": insertion_muscle[2],
+#             "segment_length": segment_length
+#         }
+#         lines_to_add.append(new_line)
+#         if len(lines_to_add) >= batch_size:
+#             flush_lines()
+
+#     def flush_lines():
+#         """Write the accumulated lines to the Excel file."""
+#         if not lines_to_add:
+#             return
+
+#         # Load existing data
+#         df_existing = pd.read_excel(filename)
+        
+#         # Create a DataFrame from the new lines
+#         df_new = pd.DataFrame(lines_to_add)
+        
+#         # Concatenate existing data with new lines
+#         df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+        
+#         # Write combined data back to the Excel file
+#         with pd.ExcelWriter(filename, engine='openpyxl', mode='w') as writer:
+#             df_combined.to_excel(writer, index=False)
+        
+#         # Clear the list of lines to add
+#         lines_to_add.clear()
+    
+#     # Return the inner functions to be used externally
+#     return add_line, flush_lines
+
+# # Usage example
+# filename = 'path_to_your_file.xlsx'
+# initialize_excel(filename)
+
+# # Create the add_line function and flush_lines function
+# add_line, flush_lines = add_line_batch(filename, batch_size=100)
+
+# # Add lines using the add_line function
+# for _ in range(1000):  # Example loop to add 1000 lines
+#     muscle_selected_index = 1  # Example data
+#     q = [0, 0, 0, 0]  # Example data
+#     origin_muscle = [0, 0, 0]  # Example data
+#     insertion_muscle = [0, 0, 0]  # Example data
+#     segment_length = 1.0  # Example data
+#     add_line(muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length)
+
+# # Make sure to flush remaining lines after the loop
+# flush_lines()
+
+
 
 def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, plot=False) :
    

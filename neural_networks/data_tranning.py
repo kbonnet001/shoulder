@@ -3,29 +3,20 @@ import torch
 import matplotlib as plt
 import matplotlib.pyplot as plt
 
-def accuracy(predictions, targets, tolerance = 1e-4):
+def mean_distance(predictions, targets):
     """
-    Compute the accuracy given model predictions and true targets within a specified tolerance.
+    Compute mean distance beetween predictions and targets
 
-    Args:
-    - predictions: Tensor of model predictions
-    - targets: Tensor of true target values
-    - tolerance: Float, the tolerance within which predictions are considered correct
+    INPUTS :
+    - predictions (torch.Tensor): Model's predictions 
+    - targets (torch.Tensor): Targets
 
-    Returns:
-    - accuracy: Accuracy of the model predictions
+    OUPUT : 
+        float: mean distance
     """
-    # Move tensors to GPU and convert it in numpy array
-    predictions_np = predictions.cpu().detach().numpy()
-    targets_np = targets.cpu().detach().numpy()
+    distance = torch.mean(torch.abs(predictions - targets))
+    return distance.item()
 
-    # Compute accurancy
-    correct_predictions = np.sum(np.abs(predictions_np - targets_np) <= tolerance)
-    total_predictions = len(targets_np)
-
-    accuracy = correct_predictions / total_predictions
-
-    return accuracy
 
 def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     """
@@ -43,29 +34,34 @@ def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' 
     - epoch_acc (float): The accuracy of the model on the training dataset for the current epoch.
     """
 
-    model.train()  # train mode
+    model.train()  # Train mode
     running_loss = 0.0
     all_predictions = []
     all_targets = []
 
     for inputs, targets in train_loader:
         inputs, targets = inputs.to(device), targets.to(device)
-        optimizer.zero_grad()  # gradients initialization
+        optimizer.zero_grad()  # Gradients initialization
         outputs = model(inputs)  # Model prediction
+
+        targets = targets.unsqueeze(1)
         loss = criterion(outputs, targets)  # Compute loss
-        loss.backward()  
-        optimizer.step() 
+        loss.backward()  # Backpropagation
+        optimizer.step()  # Updating weights
 
         # Stats for plot
         running_loss += loss.item() * inputs.size(0)
         all_predictions.append(outputs)
         all_targets.append(targets)
 
+    # Calculation of average loss
     epoch_loss = running_loss / len(train_loader.dataset)
 
+    # Calculation of mean distance
     all_predictions = torch.cat(all_predictions)
     all_targets = torch.cat(all_targets)
-    epoch_acc = accuracy(all_predictions, all_targets)
+    # epoch_acc = accuracy(all_predictions, all_targets)
+    epoch_acc = mean_distance(all_predictions, all_targets)
 
     return epoch_loss, epoch_acc
 
@@ -84,15 +80,17 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
     - epoch_acc (float): The accuracy of the model on the validation or test dataset.
     """
 
-    model.eval()  # evaluation mode
+    model.eval()  # Eval mode
     running_loss = 0.0
     all_predictions = []
     all_targets = []
 
-    with torch.no_grad():  
+    with torch.no_grad():  # Disable gradient calculation to speed up evaluation
         for inputs, targets in data_loader:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)  # Model prediction
+
+            targets = targets.unsqueeze(1)
             loss = criterion(outputs, targets)  # Compute loss
 
             # Stats for plot
@@ -100,26 +98,29 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
             all_predictions.append(outputs)
             all_targets.append(targets)
 
+    # Calculation of average loss
     epoch_loss = running_loss / len(data_loader.dataset)
 
+    # Calculation of mean distance
     all_predictions = torch.cat(all_predictions)
     all_targets = torch.cat(all_targets)
-    epoch_acc = accuracy(all_predictions, all_targets)
+    # epoch_acc = accuracy(all_predictions, all_targets)
+    epoch_acc = mean_distance(all_predictions, all_targets)
 
     return epoch_loss, epoch_acc
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     """Plot loss and accuracy (train and validation)
-    
-    INPUT : 
-    - train_losses : 
+
+    INPUT :
+    - train_losses :
     - val_losses
     - train_accs
     - val_accs """
-
+    # Créer une figure avec deux sous-graphiques
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
-    # Plot loss graph
+    # Tracer les courbes de pertes
     axs[0].plot(train_losses, label='Train Loss')
     axs[0].plot(val_losses, label='Validation Loss')
     axs[0].set_xlabel('Epoch')
@@ -127,7 +128,7 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     axs[0].set_title('Train and Validation Loss over Epochs')
     axs[0].legend()
 
-    # Plot accuracy graph
+    # Tracer les courbes d'accuracy
     axs[1].plot(train_accs, label='Train Accuracy')
     axs[1].plot(val_accs, label='Validation Accuracy')
     axs[1].set_xlabel('Epoch')
@@ -135,6 +136,7 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     axs[1].set_title('Train and Validation Accuracy over Epochs')
     axs[1].legend()
 
+    # Afficher la figure
     plt.tight_layout()
     plt.show()
 
@@ -179,6 +181,9 @@ def plot_predictions_and_targets(model, loader, num) :
 
     # Obtain predictions and true values
     predictions, targets = get_predictions_and_targets(model, loader)
+    
+    acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+    print("acc = ", acc)
 
     # Plot
     plt.figure(figsize=(10, 5))
@@ -188,7 +193,4 @@ def plot_predictions_and_targets(model, loader, num) :
     plt.ylabel('Muscle length')
     plt.legend()
     plt.show()
-
-
-
 

@@ -2,23 +2,27 @@ import numpy as np
 from wrapping.step_1 import find_cylinder_frame, find_matrix
 
 class Cylinder:
-    def __init__(self, radius, side, c1, c2, matrix, segment=None):
+    def __init__(self, radius, side, matrix, segment = None, segment_index = None, gcs_seg_0 = None):
         """Initialize a cylinder with a transformation matrix
         
         - radius : radius of the cylinder
         - side (-1 or 1) : Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
+        - matrix_initial : array 4*4 rotation matrix and translation vector initialy
         - matrix : array 4*4 rotation matrix and translation vector
-        - segment : segment of the cylinder. Please choose an authorized name in this list: 
+        - segment : (default = None) segment of the cylinder. Please choose an authorized name in this list: 
                     ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 
                      'scapula_right', 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 
-                     'radius_right', 'hand_right']"""
+                     'radius_right', 'hand_right']
+        - segment_index : (default = None) int, index position of the segment in the segment list of model
+        - gcs_seg_0 : (default = None) array 4*4, rotation matrix and translation vector of the segment initialy"""
+        
         self.radius = radius
         self.side = side
-        self.c1 = c1
-        self.c2 = c2
         self.matrix_initial = matrix
         self.matrix = matrix
         self.segment = segment
+        self.segment_index = segment_index
+        self.gcs_seg_0 = gcs_seg_0
 
     @classmethod
     def from_matrix(cls, radius, side, matrix, segment=None, d = 0.1):
@@ -42,7 +46,7 @@ class Cylinder:
         c1 = origin - d * unit_AB
         c2 = origin + d * unit_AB
         
-        return cls(radius, side, c1, c2, matrix, segment)
+        return cls(radius, side, matrix, segment)
     
     @classmethod
     def from_points(cls, radius, side, c1, c2, segment=None):
@@ -59,7 +63,7 @@ class Cylinder:
         frame = find_cylinder_frame([c1, c2])
         midpoint = (c1 + c2) / 2
         matrix = find_matrix(frame, midpoint)
-        return cls(radius, side, c1, c2, matrix, segment)
+        return cls(radius, side, matrix, segment)
         
     def rotate_around_axis(self, alpha) :
         """
@@ -93,16 +97,37 @@ class Cylinder:
         
         return origin - d * unit_AB, origin + d * unit_AB
     
-    def compute_new_matrix_segment(self, model, q, gcs_seg_0, segment_index) :
+    def compute_new_matrix_segment(self, model, q) :
+        """ Compute the matrix with new q
+        - model : model 
+        - q : array 4*2, refer to humerus segment"""
         
-        gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][segment_index]
-        self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(gcs_seg_0), self.matrix_initial))
+        gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][self.segment_index]
+        self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
         
     def compute_matrix_rotation_zy(self, matrix_rot_zy) : 
+        """ Compute transformation of matrix (rotation z --> y)
+        - matrix_rot_zy : rotation matrix z --> y"""
+        
         self.matrix = np.dot(matrix_rot_zy, self.matrix)
+        
+    def compute_seg_index_and_gcs_seg_0(self, q_inital, model, segment_names) :
+        """Compute gcs 0 (inital) and index of cylinder(s)
+        
+        - model : model
+        - q_inital : array 4*2, refer to humerus segment (inital)
+        - segment_name : list of all segments name of the model"""
+        
+        self.segment_index = segment_names.index(self.segment) 
+        self.gcs_seg_0 = [gcs.to_array() for gcs in model.allGlobalJCS(q_inital)][self.segment_index] 
 
 
     def __str__(self):
         return (f"Cylinder(radius = {self.radius}, "
+                f"side=\n{self.side}, "
+                f"matrix_initial=\n{self.matrix_initial}, "
                 f"matrix=\n{self.matrix}, "
-                f"segment : {self.segment})")
+                f"segment : {self.segment},"
+                f"segment_index=\n{self.segment_index}, "
+                f"gcs_seg_0=\n{self.gcs_seg_0})")
+        
