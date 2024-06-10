@@ -74,3 +74,8 @@ def transpose_switch_frame(point, matrix) :
   vect_transition = np.dot(matrix[0:3, 0:3], [0,0,0] - matrix[0:3, 3])
 
   return vect_transition + np.dot(matrix[0:3, 0:3], point)
+
+def switch_frame_UV(point, matrix_U, matrix_V) : 
+  point = switch_frame(point, matrix_U)
+  point = transpose_switch_frame(point, matrix_V)
+  return point

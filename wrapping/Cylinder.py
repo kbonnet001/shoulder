@@ -2,7 +2,7 @@ import numpy as np
 from wrapping.step_1 import find_cylinder_frame, find_matrix
 
 class Cylinder:
-    def __init__(self, radius, side, matrix, segment = None, segment_index = None, gcs_seg_0 = None):
+    def __init__(self, radius, side, c1, c2, matrix, segment = None, segment_index = None, gcs_seg_0 = None):
         """Initialize a cylinder with a transformation matrix
         
         - radius : radius of the cylinder
@@ -18,6 +18,8 @@ class Cylinder:
         
         self.radius = radius
         self.side = side
+        self.c1 = c1
+        self.c2 = c2
         self.matrix_initial = matrix
         self.matrix = matrix
         self.segment = segment
@@ -46,7 +48,7 @@ class Cylinder:
         c1 = origin - d * unit_AB
         c2 = origin + d * unit_AB
         
-        return cls(radius, side, matrix, segment)
+        return cls(radius, side, c1, c2, matrix, segment)
     
     @classmethod
     def from_points(cls, radius, side, c1, c2, segment=None):
@@ -63,7 +65,7 @@ class Cylinder:
         frame = find_cylinder_frame([c1, c2])
         midpoint = (c1 + c2) / 2
         matrix = find_matrix(frame, midpoint)
-        return cls(radius, side, matrix, segment)
+        return cls(radius, side, c1, c2, matrix, segment)
         
     def rotate_around_axis(self, alpha) :
         """

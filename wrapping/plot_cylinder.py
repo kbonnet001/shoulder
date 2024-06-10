@@ -212,13 +212,13 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
    
    
   # 1st Cylinder
-  #  Xcu,Ycu,Zcu = data_cylinder(center_circle_U[0], center_circle_U[1], matrix_U[0:3, 0:3], Cylinder_U.radius,)
-  Xcu,Ycu,Zcu = apply_transformation(Cylinder_U,0.1, 100)
+  # Xcu,Ycu,Zcu = data_cylinder(Cylinder_U.c1, Cylinder_U.c2, Cylinder_U.matrix[0:3, 0:3], Cylinder_U.radius)
+  Xcu,Ycu,Zcu = apply_transformation(Cylinder_U, 0.1, 100) # ancienne hauteur 0.1
   ax.plot_surface(Xcu, Ycu, Zcu, alpha=0.5)
 
   # 2nd Cylinder
-  #  Xcv,Ycv,Zcv = data_cylinder(center_circle_V[0], center_circle_V[1], matrix_V[0:3, 0:3], radius_V)
-  Xcv,Ycv,Zcv = apply_transformation(Cylinder_V, 0.1, 100)
+  # Xcv,Ycv,Zcv = data_cylinder(Cylinder_V.c1, Cylinder_V.c2, Cylinder_V.matrix[0:3, 0:3], Cylinder_V.radius)
+  Xcv,Ycv,Zcv = apply_transformation(Cylinder_V, 0.1, 100) # ancienne hauteur 0.1
   ax.plot_surface(Xcv, Ycv, Zcv, alpha=0.5)
 
   if Q_G_inactive and H_T_inactive: # Muscle path is straight line from origin_point to final_point
@@ -264,6 +264,10 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
   ax.set_ylim(-0.1,0.1)
   ax.set_zlim(-0.2,0)
   ax.set_xlim(0,0.2)
+  
+  # ax.set_xlim(-5,5)
+  # ax.set_ylim(-5,5)
+  # ax.set_zlim(-5,5)
 
   plt.title("Double Cylinder Wrapping")
   plt.legend()

@@ -52,20 +52,36 @@ cylinders_PECM2=[cylinder_T_PECM2, cylinder_H_PECM2]
 
 muscle_selected = "PECM2"
 
-# test_limit_data_for_learning(muscle_selected,cylindekrs_PECM2, model, q_ranges,"PECM2_datas00.xlsx", True) 
+test_limit_data_for_learning(muscle_selected,cylinders_PECM2, model, q_ranges,"PECM2_datas00.xlsx", True) 
 
 # data_for_learning (muscle_selected,cylinders_PECM2, model, q_ranges, 1, "df_PECM2_datas_5000.xlsx") 
 # ----------------------
-test_model_supervised_learning("df_PECM2_datas_5000.xlsx")
+# test_model_supervised_learning("df_PECM2_datas_5000.xlsx")
 # ----------------------
-# data_for_learning_plot (muscle_selected, cylinders_PECM2, model, q_ranges, 2, 100, plot_all=False, plot_limit=False)
+# data_for_learning_plot (muscle_selected, cylinders_PECM2, model, q_ranges, 0, 100, plot_all=False, plot_limit=False)
 
 
-# # Show
-# b = bioviz.Viz(loaded_model=model)
-# b.set_q(q)
-# b.exec()
+P = np.array([-3.78564,-2.53658,0])
+S = np.array([7.0297,1.44896,1.21311])
 
-# exit(0)
+c11 = np.array([0,2,-4])
+c12 = np.array([0,2,4])
+
+c21 = np.array([5.45601,-2.71188,-1.38174])
+c22 = np.array([2.23726,4.56496,4])
+
+cylinder_1 = Cylinder.from_points(0.5,-1,c11, c12)
+cylinder_2 = Cylinder.from_points(1,-1,c21, c22)
+
+# double_cylinder_obstacle_set_algorithm(P, S, cylinder_1, cylinder_2, np.dot(np.linalg.inv(cylinder_1.matrix), cylinder_2.matrix) )
+
+
+
+# Show
+b = bioviz.Viz(loaded_model=model)
+b.set_q(q)
+b.exec()
+
+exit(0)
 
 #################
