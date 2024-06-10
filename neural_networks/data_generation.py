@@ -6,6 +6,7 @@ from scipy.linalg import norm
 import matplotlib.pyplot as plt
 import os
 from openpyxl import load_workbook
+from neural_networks.ExcelBatchWriter import ExcelBatchWriter
 
 def initialisation_generation(model, muscle_selected, cylinders) :
    # Find index of the muscle selected
@@ -97,159 +98,12 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
 
    else : # (len(cylinders) == 2 ) 
 
-      Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive , segment_length  = double_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1], np.dot(np.linalg.inv(cylinders[1].matrix), cylinders[0].matrix) )
+      Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive , segment_length  = double_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1])
 
       if plot == True : 
          plot_double_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1], Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive)
 
    return segment_length  
-
-
-def add_line_df(filename, muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length) :
-   """Add one line to the file
-   
-   INPUT : 
-   - filename : string, name of the file to edit
-   - muscle_selected_index : int, index of the muscle selected
-   - q : array 4*2, q randomly generated
-   - segment_length : length of muscle path (for this generated q)"""
-   
-   import os
-   if not os.path.exists(filename):
-      # Create excel file with initial structure
-      data = {
-      "muscle_selected": [],
-      "humerus_right_RotY": [],
-      "humerus_right_RotX": [],
-      "humerus_right_RotY2": [],
-      "ulna_effector_right_RotZ": [],
-      "origin_muscle_x": [],
-      "origin_muscle_y": [],
-      "origin_muscle_z": [],
-      "insertion_muscle_x": [],
-      "insertion_muscle_y": [],
-      "insertion_muscle_z": [],
-      "segment_length": []
-      }
-      
-      pd.DataFrame(data).to_excel(filename, index = False)
-
-   # Read the existing data from the Excel file
-   df = pd.read_excel(filename)
-    
-   # Create a new line with the provided data
-   new_line = {
-      "muscle_selected": muscle_selected_index,
-      "humerus_right_RotY": q[0],
-      "humerus_right_RotX": q[1],
-      "humerus_right_RotY2": q[2],
-      "ulna_effector_right_RotZ": q[3],
-      "origin_muscle_x": origin_muscle[0],
-      "origin_muscle_y": origin_muscle[1],
-      "origin_muscle_z": origin_muscle[2],
-      "insertion_muscle_x": insertion_muscle[0],
-      "insertion_muscle_y": insertion_muscle[1],
-      "insertion_muscle_z": insertion_muscle[2],
-      "segment_length": segment_length
-   }
-   
-   # Append the new line to the DataFrame using pd.concat
-   df = pd.concat([df, pd.DataFrame([new_line])], ignore_index=True)
-   
-   with pd.ExcelWriter(filename, engine='openpyxl', mode='w') as writer:
-      df.to_excel(writer, index=False)
-
-# import os
-# import pandas as pd
-# from openpyxl import load_workbook
-
-# def initialize_excel(filename):
-#     """Initialize the Excel file with the correct structure if it doesn't exist."""
-#     if not os.path.exists(filename):
-#         data = {
-#             "muscle_selected": [],
-#             "humerus_right_RotY": [],
-#             "humerus_right_RotX": [],
-#             "humerus_right_RotY2": [],
-#             "ulna_effector_right_RotZ": [],
-#             "origin_muscle_x": [],
-#             "origin_muscle_y": [],
-#             "origin_muscle_z": [],
-#             "insertion_muscle_x": [],
-#             "insertion_muscle_y": [],
-#             "insertion_muscle_z": [],
-#             "segment_length": []
-#         }
-#         pd.DataFrame(data).to_excel(filename, index=False)
-
-# def add_line_batch(filename, batch_size=100):
-#     """Add lines to the file in batch to optimize writing time."""
-#     lines_to_add = []
-    
-#     def add_line(muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length):
-#         """Add one line to the batch."""
-#         new_line = {
-#             "muscle_selected": muscle_selected_index,
-#             "humerus_right_RotY": q[0],
-#             "humerus_right_RotX": q[1],
-#             "humerus_right_RotY2": q[2],
-#             "ulna_effector_right_RotZ": q[3],
-#             "origin_muscle_x": origin_muscle[0],
-#             "origin_muscle_y": origin_muscle[1],
-#             "origin_muscle_z": origin_muscle[2],
-#             "insertion_muscle_x": insertion_muscle[0],
-#             "insertion_muscle_y": insertion_muscle[1],
-#             "insertion_muscle_z": insertion_muscle[2],
-#             "segment_length": segment_length
-#         }
-#         lines_to_add.append(new_line)
-#         if len(lines_to_add) >= batch_size:
-#             flush_lines()
-
-#     def flush_lines():
-#         """Write the accumulated lines to the Excel file."""
-#         if not lines_to_add:
-#             return
-
-#         # Load existing data
-#         df_existing = pd.read_excel(filename)
-        
-#         # Create a DataFrame from the new lines
-#         df_new = pd.DataFrame(lines_to_add)
-        
-#         # Concatenate existing data with new lines
-#         df_combined = pd.concat([df_existing, df_new], ignore_index=True)
-        
-#         # Write combined data back to the Excel file
-#         with pd.ExcelWriter(filename, engine='openpyxl', mode='w') as writer:
-#             df_combined.to_excel(writer, index=False)
-        
-#         # Clear the list of lines to add
-#         lines_to_add.clear()
-    
-#     # Return the inner functions to be used externally
-#     return add_line, flush_lines
-
-# # Usage example
-# filename = 'path_to_your_file.xlsx'
-# initialize_excel(filename)
-
-# # Create the add_line function and flush_lines function
-# add_line, flush_lines = add_line_batch(filename, batch_size=100)
-
-# # Add lines using the add_line function
-# for _ in range(1000):  # Example loop to add 1000 lines
-#     muscle_selected_index = 1  # Example data
-#     q = [0, 0, 0, 0]  # Example data
-#     origin_muscle = [0, 0, 0]  # Example data
-#     insertion_muscle = [0, 0, 0]  # Example data
-#     segment_length = 1.0  # Example data
-#     add_line(muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length)
-
-# # Make sure to flush remaining lines after the loop
-# flush_lines()
-
-
 
 def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, plot=False) :
    
@@ -266,6 +120,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    - dataset_size : int, number of data we would like
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)"""
    
+   writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
  
    # Limits of q
@@ -285,8 +140,12 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
       segment_length = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot)  
    
       # Add line to data frame
-      add_line_df(filename, muscle_index, q, origin_muscle, insertion_muscle, segment_length)
-
+      # add_line_df(filename, muscle_index, q, origin_muscle, insertion_muscle, segment_length)
+      writer.add_line(muscle_index, q, segment_length)
+   
+   # Ensure remaining lines are written to file
+   writer.close()
+   
    return None
 
 
@@ -321,6 +180,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, f
             print("i = ", i, " j = ", j, " k = ", k)
 
             q = np.array([q_test_limite[0][i],q_test_limite[1][j], q_test_limite[2][k], 0])
+            # q = np.array([q_test_limite[0][2],q_test_limite[1][0], q_test_limite[2][0], 0])
             print("q = ", q)
             
             # Updates
@@ -339,9 +199,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, f
             # ------------------------------------------------
 
             segment_length = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot)  
-         
-            # Add line to data frame
-            add_line_df(f"test_limit_{filename}", muscle_index, q, origin_muscle, insertion_muscle, segment_length)
+            print("segment_length = ", segment_length)
 
    return None
 
@@ -362,6 +220,8 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
 
+   q = np.array([0.,0.,0.,0.])
+   
    segment_lengths = []
    qs = []
    
@@ -374,8 +234,6 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
       qi = k * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0]
       print("qi = ", qi)
       
-      # Generate a random q 
-      q = np.array([0.,0.,0.,0.])
       q[i] = qi
       
       origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
