@@ -1,7 +1,7 @@
 from wrapping.step_1 import switch_frame, transpose_switch_frame
-from wrapping.step_2 import find_tangent_points, compute_length_v1_v2_xy, find_tangent_points_iterative_method, point_inside_cylinder, find_tangent_points_iterative_method_2, find_tangent_points_iterative_method_3, find_tangent_points_iterative_method_4, find_tangent_points_iterative_method_5
+from wrapping.step_2 import find_tangent_points, find_tangent_points_iterative_method, point_inside_cylinder, segment_length_double_cylinder
 from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
-from wrapping.step_4 import segment_length_single_cylinder, segment_length_double_cylinder
+from wrapping.step_4 import segment_length_single_cylinder
 from wrapping.plot_cylinder import plot_double_cylinder_obstacle
 
 
@@ -63,7 +63,7 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) 
 
    return v1o, v2o, obstacle_tangent_point_inactive, segment_length
 
-def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, rotation_matrix_UV) :
+def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -127,25 +127,8 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, rotatio
       Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
 
    else :
-      # Q1, G1, H1, T1 = find_tangent_points_iterative_method(P_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV)
-      
-      Q, G, H, T = find_tangent_points_iterative_method_5(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, Cylinder_U.matrix, Cylinder_V.matrix)
+      Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
    
-      # Q, G, H, T = find_tangent_points_iterative_method_2(P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, rotation_matrix_UV, Cylinder_U.matrix, Cylinder_V.matrix)
-   # # ------
-   # # Step 3 1
-   # # ------
-   # Q_G_inactive1 = determine_if_tangent_points_inactive_single_cylinder(Q1, G1, r_U)
-   # H_T_inactive1 = determine_if_tangent_points_inactive_single_cylinder(H1, T1, r_V)
-
-   # if Q_G_inactive1==True :
-   #    H1, T1 = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
-   #    H_T_inactive1 = determine_if_tangent_points_inactive_single_cylinder(H1, T1, r_V)
-
-   # if H_T_inactive1==True :
-   #    Q1, G1 = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
-   #    Q_G_inactive1 = determine_if_tangent_points_inactive_single_cylinder(Q1, G1, r_U)
-
    # ------
    # Step 3
    # ------
@@ -163,31 +146,9 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, rotatio
    # ------
    # Step 4
    # ------
-   # segment_length1 = segment_length_double_cylinder(Q_G_inactive1, H_T_inactive1, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q1, G1, H1, T1, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
    
    segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
 
-   # print("Comparaison entre algo iteration et nouveau : ")
-   # print("metode iterative : ", segment_length1)
-   # print("nouvelle methode : ", segment_length)
-   # if segment_length1<segment_length :
-   #    print("methode iteraive gagne")
-   # elif segment_length1>segment_length : 
-   #    print("nouvelle methode gagne")
-   # else : 
-   #    print("ca ne change rien ...")
-
-
-   # # ------
-   # # Step 5 1
-   # # ------
-   # Q1 = switch_frame(Q1, Cylinder_U.matrix)
-   # G1 = switch_frame(G1, Cylinder_U.matrix)
-   # H1 = switch_frame(H1, Cylinder_V.matrix)
-   # T1 = switch_frame(T1, Cylinder_V.matrix)
-   
-   # plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q1, G1, H1, T1, Q_G_inactive1, H_T_inactive1 )
-   
    # ------
    # Step 5
    # ------
@@ -195,8 +156,5 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, rotatio
    Go = switch_frame(G, Cylinder_U.matrix)
    Ho = switch_frame(H, Cylinder_V.matrix)
    To = switch_frame(T, Cylinder_V.matrix)
-   
-   # plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Qo, Go, Ho, To, Q_G_inactive, H_T_inactive )
-   
    
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
