@@ -6,8 +6,8 @@ from wrapping.step_4 import *
 
 # Functions for Step 2
 #---------------------
-
-def point_inside_cylinder(P, S, radius):
+    
+def point_inside_cylinder(P, radius, epsilon = 0.00095):
   """Exception if P or S are in the cylinder
   
   INPUT
@@ -18,7 +18,25 @@ def point_inside_cylinder(P, S, radius):
   OUTPUT
   - point_inside : bool, True if P or S are in the cylinder, False otherwise"""
 
-  if np.linalg.norm(P[:2]) < radius or np.linalg.norm(S[:2]) < radius :
+  if np.linalg.norm(P[:2]) < radius - epsilon:
+      return True
+  else:
+      return False
+    
+def point_tangent_inside_cylinder(point, Cylinder_1, Cylinder_2, epsilon=0.00095):
+  """Exception if P or S are in the cylinder
+  
+  INPUT
+  - P : array 3*1 position of the first point
+  - S : array 3*1 position of the second point
+  - radius : radius of the cylinder
+  
+  OUTPUT
+  - point_inside : bool, True if P or S are in the cylinder, False otherwise"""
+
+  point = switch_frame_UV(point, Cylinder_1.matrix, Cylinder_2.matrix)
+
+  if np.linalg.norm(point[:2]) < Cylinder_2.radius - epsilon:
       return True
   else:
       return False
@@ -138,35 +156,33 @@ def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_f
   # cylindre U
   Q1, G1 = find_tangent_points(P_U_cylinder_frame, S_V_cylinder_frame, r_U)
   H1, T1 = [0,0,0], [0,0,0]
+  Q0, G0 = [0,0,0], [0,0,0]
+  H0, T0 = [0,0,0], [0,0,0]
   Q1_G1_inactive = False
   H1_T1_inactive = False
   ecart_length = 1
   segment_length_1 = 100
   
-  while Q1_G1_inactive == False and H1_T1_inactive == False and ecart_length > 0 :
+  while Q1_G1_inactive == False and H1_T1_inactive == False and ecart_length > 0 and np.isnan(np.array(Q1)).any()==False and np.isnan(np.array(G1)).any()==False and np.isnan(np.array(H1)).any()==False and np.isnan(np.array(T1)).any() == False:
       Q0, G0 = Q1, G1
       H0, T0 = H1, T1
       segment_length_0 = segment_length_1
       
       g0 = switch_frame_UV(H1, matrix_U, matrix_V)
-      g0 = transpose_switch_frame(G0, matrix_V)
+      # g0 = transpose_switch_frame(G0, matrix_V)
       H1, T1 = find_tangent_points(g0, S_V_cylinder_frame, r_V)
       H1_T1_inactive = determine_if_tangent_points_inactive_single_cylinder(H1, T1, r_V)
-      if H1_T1_inactive : 
+      if H1_T1_inactive or np.isnan(np.array(H1)).any() or np.isnan(np.array(T1)).any(): 
         break
       
       h0 = switch_frame_UV(H1, matrix_V, matrix_U)
       Q1, G1 = find_tangent_points(P_U_cylinder_frame, h0, r_U)
       Q1_G1_inactive = determine_if_tangent_points_inactive_single_cylinder(Q1, G1, r_U)
-      if Q1_G1_inactive : 
+      if Q1_G1_inactive or np.isnan(np.array(Q1)).any() or np.isnan(np.array(G1)).any(): 
         break
-      
-      print("Q1_G1_inactive  = ", Q1_G1_inactive )
-      print("H1_T1_inactive = ", H1_T1_inactive)
       
       segment_length_1 = segment_length_double_cylinder(False, False, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q1, G1, H1, T1, r_U, r_V, matrix_U, matrix_V)
       ecart_length = segment_length_0 - segment_length_1
-      print("ecart_length = ", ecart_length)
   
   return Q0, G0, H0, T0
 

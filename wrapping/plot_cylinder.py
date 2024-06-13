@@ -209,16 +209,28 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
   ax.scatter(*G, color='r', label="G")
   ax.scatter(*H, color='r', label="H")
   ax.scatter(*T, color='r', label="T")
+  
+
+  # ax.scatter(*Cylinder_U.c1, color='m')
+  # ax.scatter(*Cylinder_U.c2, color='m')
+  # ax.scatter(*Cylinder_V.c1, color='m')
+  # ax.scatter(*Cylinder_V.c2, color='m')
+  # print("c1 v = ", Cylinder_V.c1)
+  # print("c2 v = ", Cylinder_V.c2)
+  
+  # ax.scatter(*Cylinder_U.c1_initial, color='r')
+  # ax.scatter(*Cylinder_U.c2_initial, color='r')
    
    
   # 1st Cylinder
-  # Xcu,Ycu,Zcu = data_cylinder(Cylinder_U.c1, Cylinder_U.c2, Cylinder_U.matrix[0:3, 0:3], Cylinder_U.radius)
-  Xcu,Ycu,Zcu = apply_transformation(Cylinder_U, 0.1, 100) # ancienne hauteur 0.1
+  # Xcu0,Ycu0,Zcu0 = data_cylinder(Cylinder_U.c1, Cylinder_U.c2, Cylinder_U.matrix[0:3, 0:3], Cylinder_U.radius)
+  # ax.plot_surface(Xcu0, Ycu0, Zcu0, alpha=0.5)
+  Xcu,Ycu,Zcu = apply_transformation(Cylinder_U, 0.2, 100) # ancienne hauteur 0.1
   ax.plot_surface(Xcu, Ycu, Zcu, alpha=0.5)
 
   # 2nd Cylinder
   # Xcv,Ycv,Zcv = data_cylinder(Cylinder_V.c1, Cylinder_V.c2, Cylinder_V.matrix[0:3, 0:3], Cylinder_V.radius)
-  Xcv,Ycv,Zcv = apply_transformation(Cylinder_V, 0.1, 100) # ancienne hauteur 0.1
+  Xcv,Ycv,Zcv = apply_transformation(Cylinder_V, 0.2, 100) # ancienne hauteur 0.1
   ax.plot_surface(Xcv, Ycv, Zcv, alpha=0.5)
 
   if Q_G_inactive and H_T_inactive: # Muscle path is straight line from origin_point to final_point
@@ -264,6 +276,10 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
   ax.set_ylim(-0.1,0.1)
   ax.set_zlim(-0.2,0)
   ax.set_xlim(0,0.2)
+  
+  # ax.set_xlim(-0.1,0.1)
+  # ax.set_ylim(-0.2,0)
+  # ax.set_zlim(0,0.2)
   
   # ax.set_xlim(-5,5)
   # ax.set_ylim(-5,5)

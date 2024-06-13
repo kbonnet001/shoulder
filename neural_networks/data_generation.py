@@ -141,7 +141,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    
       # Add line to data frame
       # add_line_df(filename, muscle_index, q, origin_muscle, insertion_muscle, segment_length)
-      writer.add_line(muscle_index, q, segment_length)
+      writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
    
    # Ensure remaining lines are written to file
    writer.close()
@@ -149,7 +149,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    return None
 
 
-def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, filename, plot=False) :
+def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, plot=False) :
    
    """Test limits of q for the muscle selected
    
@@ -180,7 +180,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, f
             print("i = ", i, " j = ", j, " k = ", k)
 
             q = np.array([q_test_limite[0][i],q_test_limite[1][j], q_test_limite[2][k], 0])
-            # q = np.array([q_test_limite[0][2],q_test_limite[1][0], q_test_limite[2][0], 0])
+            # q = np.array([-0.736696402602619,-2.81278701317883, 1.56632461528205, 0])
             print("q = ", q)
             
             # Updates
@@ -203,7 +203,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, f
 
    return None
 
-def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, i, num_points = 100, plot_all = False, plot_limit = False) :
+def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, num_points = 100, plot_all = False, plot_limit = False) :
    
    """Create a data frame for prepare datas
    
@@ -218,9 +218,10 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    - dataset_size : int, number of data we would like
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)"""
    
+   writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
 
-   q = np.array([0.,0.,0.,0.])
+   q = q_fixed
    
    segment_lengths = []
    qs = []
@@ -248,6 +249,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
       qs.append(qi)
       segment_lengths.append(segment_length)
       
+      writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
 
    # Création du graphique
    plt.plot(qs, segment_lengths, marker='o', linestyle='-', color='b')
@@ -264,5 +266,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    # Affichage de la grille
    plt.grid(True)
    plt.show()
-
+   
+   writer.close()
+   
    return None

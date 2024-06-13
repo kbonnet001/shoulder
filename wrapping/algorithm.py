@@ -1,8 +1,9 @@
 from wrapping.step_1 import switch_frame, transpose_switch_frame
-from wrapping.step_2 import find_tangent_points, find_tangent_points_iterative_method, point_inside_cylinder, segment_length_double_cylinder
+from wrapping.step_2 import find_tangent_points, find_tangent_points_iterative_method, point_inside_cylinder, segment_length_double_cylinder, point_tangent_inside_cylinder
 from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
 from wrapping.step_4 import segment_length_single_cylinder
 from wrapping.plot_cylinder import plot_double_cylinder_obstacle
+import numpy as np
 
 
 # Algorithm
@@ -104,24 +105,29 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
 
    S_U_cylinder_frame = transpose_switch_frame(S, Cylinder_U.matrix)
    S_V_cylinder_frame = transpose_switch_frame(S, Cylinder_V.matrix)
+   
+   error_wrapping = False
 
    # ------
    # Step 2
    # ------
 
-   point_inside_U = point_inside_cylinder(P_U_cylinder_frame, S_U_cylinder_frame, Cylinder_U.radius)
-   point_inside_V = point_inside_cylinder(P_V_cylinder_frame, S_V_cylinder_frame, Cylinder_V.radius)
-
-   if point_inside_U and point_inside_V :
+   epsilon = 0.00095
+   #0.0008
+   
+   P_inside_U = point_inside_cylinder(P_U_cylinder_frame, Cylinder_U.radius, epsilon)
+   S_inside_V = point_inside_cylinder(S_V_cylinder_frame, Cylinder_V.radius, epsilon)
+   
+   if P_inside_U and S_inside_V :
       print("You choose P and/or S in the cylinder U and V. Muscle path is straight line")
       Q, G, H, T = [0,0,0], [0,0,0], [0,0,0], [0,0,0]
 
-   elif point_inside_U :
+   elif P_inside_U :
       print("You choose P in the cylinder U. Muscle path is straight line")
       Q, G = [0,0,0], [0,0,0]
       H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
 
-   elif point_inside_V :
+   elif S_inside_V:
       print("You choose S in the cylinder V. Muscle path is straight line")
       H, T = [0,0,0], [0,0,0]
       Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
@@ -135,13 +141,27 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
    Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
    H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
 
-   if Q_G_inactive==True :
-      H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
-      H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
+   # if Q_G_inactive==True :
+   #    H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+   #    H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
+
+   # if H_T_inactive==True :
+   #    Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
+   #    Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
+   #    if np.linalg.norm(G[:2]) < Cylinder_V.radius : 
+   #       error_wrapping = True
+   #       print("error = ", error_wrapping)
 
    if H_T_inactive==True :
       Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
       Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
+      # if point_tangent_inside_cylinder(G, Cylinder_U, Cylinder_V, epsilon=0.0) : 
+      #    error_wrapping = True
+      #    print("error = ", error_wrapping)
+         
+   elif Q_G_inactive==True :
+      H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+      H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
 
    # ------
    # Step 4

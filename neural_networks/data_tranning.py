@@ -167,7 +167,7 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
     return predictions, targets
 
 
-def plot_predictions_and_targets(model, loader, num) :
+def plot_predictions_and_targets(model, loader, string_loader, num) :
     
     """Plot the true values and predicted values for a given model and data loader.
     INPUT:
@@ -179,18 +179,37 @@ def plot_predictions_and_targets(model, loader, num) :
     - None: The function generates a plot showing the true values and predicted values.
     """
 
-    # Obtain predictions and true values
-    predictions, targets = get_predictions_and_targets(model, loader)
+    # # Obtain predictions and true values
+    # predictions, targets = get_predictions_and_targets(model, loader)
     
+    # # Convertir les listes en numpy.ndarray
+    # predictions_np = np.array(predictions)
+    # targets_np = np.array(targets)
+
+    # # Convertir les numpy.ndarray en torch.Tensor
+    # predictions_tensor = torch.tensor(predictions_np)
+    # targets_tensor = torch.tensor(targets_np)
+
+    # # Calculer la mean_distance
+    # acc = mean_distance(predictions_tensor, targets_tensor)
+    
+    # # acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+    # print("acc = ", acc)
+
+
+    # Obtenir les prédictions et les valeurs réelles pour l'ensemble de test
+    predictions, targets = get_predictions_and_targets(model, loader)
+
     acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
     print("acc = ", acc)
 
     # Plot
     plt.figure(figsize=(10, 5))
-    plt.plot(targets[:num], label='True values')
-    plt.plot(predictions[:num], label='Predictions', linestyle='--')
+    plt.plot(targets[:num], label='True values', marker='o')
+    plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
     plt.xlabel('Échantillons')
     plt.ylabel('Muscle length')
+    plt.title(f"Predictions and targets - {string_loader}")
     plt.legend()
     plt.show()
 

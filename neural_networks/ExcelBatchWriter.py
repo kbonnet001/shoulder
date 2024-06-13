@@ -15,11 +15,17 @@ class ExcelBatchWriter:
                 "humerus_right_RotX": [],
                 "humerus_right_RotY2": [],
                 "ulna_effector_right_RotZ": [],
+                "origin_muscle_x": [],
+                "origin_muscle_y": [],
+                "origin_muscle_z": [],
+                "insertion_muscle_x": [],
+                "insertion_muscle_y": [],
+                "insertion_muscle_z": [],
                 "segment_length": []
-            }
+                 }
             pd.DataFrame(data).to_excel(filename, index=False)
 
-    def add_line(self, muscle_selected_index, q, segment_length):
+    def add_line(self, muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length):
         # Create a new line with the provided data
         new_line = {
             "muscle_selected": muscle_selected_index,
@@ -27,6 +33,12 @@ class ExcelBatchWriter:
             "humerus_right_RotX": q[1],
             "humerus_right_RotY2": q[2],
             "ulna_effector_right_RotZ": q[3],
+            "origin_muscle_x": origin_muscle[0],
+            "origin_muscle_y": origin_muscle[1],
+            "origin_muscle_z": origin_muscle[2],
+            "insertion_muscle_x": insertion_muscle[0],
+            "insertion_muscle_y": insertion_muscle[1],
+            "insertion_muscle_z": insertion_muscle[2],
             "segment_length": segment_length
         }
         

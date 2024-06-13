@@ -105,7 +105,7 @@ def data_preparation_create_tensor(df_data, limit) :
 
   # Load df
   df_muscle_datas = data_standardization(df_data, limit)
-  df_muscle_datas = df_muscle_datas.iloc[:, 1:] # on enleve les 2 premiere colonne
+  df_muscle_datas = df_muscle_datas.iloc[:, 1:] # on enleve la premiere colonne
 
   # Separate inputs from targets
   X = df_muscle_datas.iloc[:, 0:-1].values

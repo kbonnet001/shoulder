@@ -1,5 +1,5 @@
 import numpy as np
-from wrapping.step_1 import find_cylinder_frame, find_matrix
+from wrapping.step_1 import find_cylinder_frame, find_matrix, switch_frame, transpose_switch_frame
 
 class Cylinder:
     def __init__(self, radius, side, c1, c2, matrix, segment = None, segment_index = None, gcs_seg_0 = None):
@@ -18,6 +18,8 @@ class Cylinder:
         
         self.radius = radius
         self.side = side
+        self.c1_initial = c1
+        self.c2_initial = c2
         self.c1 = c1
         self.c2 = c2
         self.matrix_initial = matrix
@@ -97,7 +99,9 @@ class Cylinder:
         # Calculer le vecteur unitaire dans la direction de AB
         unit_AB = (z - origin) / norm_AB
         
-        return origin - d * unit_AB, origin + d * unit_AB
+        print("self.c1 = ", self.c1)
+        self.c1, self.c2 =  origin - d * unit_AB, origin + d * unit_AB
+        print("self.c1 = ", self.c1)
     
     def compute_new_matrix_segment(self, model, q) :
         """ Compute the matrix with new q
@@ -107,11 +111,22 @@ class Cylinder:
         gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][self.segment_index]
         self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
         
+        # self.matrix = np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial)
+        # self.c1 = transpose_switch_frame(self.c1_initial, np.linalg.inv(self.gcs_seg_0))
+        # self.c2 = transpose_switch_frame(self.c2_initial, np.linalg.inv(self.gcs_seg_0))
+    
+        
     def compute_matrix_rotation_zy(self, matrix_rot_zy) : 
         """ Compute transformation of matrix (rotation z --> y)
         - matrix_rot_zy : rotation matrix z --> y"""
         
         self.matrix = np.dot(matrix_rot_zy, self.matrix)
+        
+        # self.c1 = transpose_switch_frame(self.c1, matrix_rot_zy)
+        # self.c2 = transpose_switch_frame(self.c2, matrix_rot_zy)
+        
+        # self.c1_initial = switch_frame(self.c1_initial, np.transpose(matrix_rot_zy))
+        # self.c2_initial = switch_frame(self.c2_initial, np.transpose(matrix_rot_zy))
         
     def compute_seg_index_and_gcs_seg_0(self, q_inital, model, segment_names) :
         """Compute gcs 0 (inital) and index of cylinder(s)
