@@ -10,9 +10,10 @@ from wrapping.step_1 import find_cylinder_frame, find_matrix
 from wrapping.Cylinder import Cylinder
 
 from sklearn.model_selection import train_test_split
-from neural_networks.main_trainning import test_model_supervised_learning
+from neural_networks.data_preparation import print_informations_environment
+from neural_networks.main_trainning import main_superised_learning
 
-from neural_networks.data_generation import data_for_learning, test_limit_data_for_learning, data_for_learning_plot
+from neural_networks.data_generation import data_for_learning, data_for_learning_plot, test_limit_data_for_learning
 
 #################### 
 # Code des tests
@@ -37,29 +38,47 @@ q_ranges.append([0.05, 2.3561])
 # --------
 
 # Datas pour le cylindre (à priori) du thorax pour PECM2 et PECM3 (à partir de deux points)
-C_T_PECM2_1 = np.array([0.0187952455, -0.0992656744, 0.0784311931])
-C_T_PECM2_2 = np.array([0.0171630409, -0.014154527, 0.0749634019])
+C_T_PECM2_1 = np.array([0.0183539873, -0.0762563082, 0.0774936934])
+C_T_PECM2_2 = np.array([0.0171218365, -0.0120059285, 0.0748758588])
+
+C_T_PECM3_1 = np.array([0.0191190885, -0.1161524375, 0.0791192319])
+C_T_PECM3_2 = np.array([0.0182587352, -0.0712893992, 0.0772913203])
 
 # Datas for cylinder's humerus right (muscle PECM1, PECM2 and PCM3)
-
 C_H_PECM2_1 = np.array([-0.0468137093, -0.069205313, 0.1748923225])
 C_H_PECM2_2 = np.array([-0.0276992818, 0.0056711748, 0.1704452973])
+
+C_H_PECM3_1 = np.array([-0.0468137093,-0.069205313,0.1748923225])
+C_H_PECM3_2 = np.array([-0.0273690802, 0.0069646657, 0.1703684749])
+
+# C_H_PECM2_1 = np.array([-0.0504468139, -0.0612220954, 0.1875298764])
+# C_H_PECM2_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632]) #le mieux avec 0.025
 
 cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_1, C_T_PECM2_2, "thorax")
 cylinder_H_PECM2 = Cylinder.from_points(0.02, 1, C_H_PECM2_1, C_H_PECM2_2, "humerus_right")
 
+cylinder_T_PECM3 = Cylinder.from_points(0.025, -1, C_T_PECM3_1, C_T_PECM3_2, "thorax")
+cylinder_H_PECM3 = Cylinder.from_points(0.02, 1, C_H_PECM3_1, C_H_PECM3_2, "humerus_right")
+
+# cylinder_H_PECM2.rotate_around_axis(-45)
+
 cylinders_PECM2=[cylinder_T_PECM2, cylinder_H_PECM2]
+cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
-muscle_selected = "PECM2"
+muscles_selected = ["PECM2", "PECM3"]
 
-test_limit_data_for_learning(muscle_selected,cylinders_PECM2, model, q_ranges,"PECM2_datas00.xlsx", True) 
+# test_limit_data_for_learning(muscles_selected[1],cylinders_PECM3, model, q_ranges, True) 
 
-# data_for_learning (muscle_selected,cylinders_PECM2, model, q_ranges, 1, "df_PECM2_datas_5000.xlsx") 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_5000.xlsx") 
 # ----------------------
-# test_model_supervised_learning("df_PECM2_datas_5000.xlsx")
+# train_model_supervised_learning("df_PECM2_datas_5000_more.xlsx")
+# print_informations_environment()
+# main_superised_learning("df_PECM2_datas_25000.xlsx", True, "model_weights.pth")
 # ----------------------
-# data_for_learning_plot (muscle_selected, cylinders_PECM2, model, q_ranges, 0, 100, plot_all=False, plot_limit=False)
 
+q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges])
+
+data_for_learning_plot ("data_test_PECM3_q2.xlsx", muscles_selected[1], cylinders_PECM3, model, q_ranges, q_fixed, 2, 100, plot_all=False, plot_limit=False)
 
 P = np.array([-3.78564,-2.53658,0])
 S = np.array([7.0297,1.44896,1.21311])
@@ -70,18 +89,16 @@ c12 = np.array([0,2,4])
 c21 = np.array([5.45601,-2.71188,-1.38174])
 c22 = np.array([2.23726,4.56496,4])
 
-cylinder_1 = Cylinder.from_points(0.5,-1,c11, c12)
-cylinder_2 = Cylinder.from_points(1,-1,c21, c22)
+cylinder_1 = Cylinder.from_points(0.5,-1, c11, c12)
+cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 
 # double_cylinder_obstacle_set_algorithm(P, S, cylinder_1, cylinder_2, np.dot(np.linalg.inv(cylinder_1.matrix), cylinder_2.matrix) )
 
-
-
 # Show
-b = bioviz.Viz(loaded_model=model)
-b.set_q(q)
-b.exec()
+# b = bioviz.Viz(loaded_model=model)
+# b.set_q(q)
+# b.exec()
 
-exit(0)
+# exit(0)
 
 #################
