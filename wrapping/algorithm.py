@@ -113,27 +113,29 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
    # ------
 
    epsilon = 0.00095
-   #0.0008
+   #0.0008 #0.00095
    
-   P_inside_U = point_inside_cylinder(P_U_cylinder_frame, Cylinder_U.radius, epsilon)
-   S_inside_V = point_inside_cylinder(S_V_cylinder_frame, Cylinder_V.radius, epsilon)
+   # P_inside_U = point_inside_cylinder(P_U_cylinder_frame, Cylinder_U.radius, epsilon)
+   # S_inside_V = point_inside_cylinder(S_V_cylinder_frame, Cylinder_V.radius, epsilon)
    
-   if P_inside_U and S_inside_V :
-      print("You choose P and/or S in the cylinder U and V. Muscle path is straight line")
-      Q, G, H, T = [0,0,0], [0,0,0], [0,0,0], [0,0,0]
+   # if P_inside_U and S_inside_V :
+   #    print("You choose P and/or S in the cylinder U and V. Muscle path is straight line")
+   #    Q, G, H, T = [0,0,0], [0,0,0], [0,0,0], [0,0,0]
 
-   elif P_inside_U :
-      print("You choose P in the cylinder U. Muscle path is straight line")
-      Q, G = [0,0,0], [0,0,0]
-      H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
+   # elif P_inside_U :
+   #    print("You choose P in the cylinder U. Muscle path is straight line")
+   #    Q, G = [0,0,0], [0,0,0]
+   #    H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
 
-   elif S_inside_V:
-      print("You choose S in the cylinder V. Muscle path is straight line")
-      H, T = [0,0,0], [0,0,0]
-      Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
+   # elif S_inside_V:
+   #    print("You choose S in the cylinder V. Muscle path is straight line")
+   #    H, T = [0,0,0], [0,0,0]
+   #    Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
 
-   else :
-      Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+   # else :
+   #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+   
+   Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
    
    # ------
    # Step 3
