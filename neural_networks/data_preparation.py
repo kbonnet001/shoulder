@@ -1,21 +1,13 @@
 import platform
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, random_split
-from torch import nn, optim
-
-import torch.nn as nn
-import torch.optim as optim
-import matplotlib.pyplot as plt
-
 import sklearn
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import mean_squared_error
 
-import matplotlib.pyplot as plt
 
 def print_informations_environment() : 
   # Print environment info
@@ -121,28 +113,5 @@ def data_preparation_create_tensor(df_data, limit) :
 
   return X_tensor, y_tensor
 
-def plot_datas_distribution(X_tensor, y_tensor):
-    """To visualise tensors distribution
 
-    INPUT : 
-    - X_tensor : X tensor with all features (columns except the last one)
-    - y_tensor : y tensor with the target values (last column) """
-    
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10)) 
-    
-    for i in range(4):
-        row = i // 3  
-        col = i % 3   
-        axs[row, col].hist(X_tensor[:, i], bins=20, alpha=0.5)
-        axs[row, col].set_xlabel('Value')
-        axs[row, col].set_ylabel('Frequency')
-        axs[row, col].set_title(f'Distribution of q{i+1}')
-
-    axs[1, 2].hist(y_tensor, bins=20, alpha=0.5)  
-    axs[1, 2].set_xlabel('Value')
-    axs[1, 2].set_ylabel('Frequency')
-    axs[1, 2].set_title('Distribution of muscle length')
-
-    plt.tight_layout()  
-    plt.show()
 
