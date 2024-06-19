@@ -6,15 +6,15 @@ from wrapping.step_4 import *
 
 # Functions for Step 2
 #---------------------
-    
+
 def point_inside_cylinder(P, radius, epsilon = 0.00095):
   """Exception if P or S are in the cylinder
-  
+
   INPUT
   - P : array 3*1 position of the first point
   - S : array 3*1 position of the second point
   - radius : radius of the cylinder
-  
+
   OUTPUT
   - point_inside : bool, True if P or S are in the cylinder, False otherwise"""
 
@@ -22,15 +22,15 @@ def point_inside_cylinder(P, radius, epsilon = 0.00095):
       return True
   else:
       return False
-    
+
 def point_tangent_inside_cylinder(point, Cylinder_1, Cylinder_2, epsilon=0.00095):
   """Exception if P or S are in the cylinder
-  
+
   INPUT
   - P : array 3*1 position of the first point
   - S : array 3*1 position of the second point
   - radius : radius of the cylinder
-  
+
   OUTPUT
   - point_inside : bool, True if P or S are in the cylinder, False otherwise"""
 
@@ -44,12 +44,12 @@ def point_tangent_inside_cylinder(point, Cylinder_1, Cylinder_2, epsilon=0.00095
 def find_tangent_points_xy(p0, p1, r) :
 
   """Compute xy coordinates of v1 and v2
-  
+
   INPUT
   - p0 : array 3*1 position of the first point
   - p1 : array 3*1 position of the second point
   - r : radius of the cylinder * side
-  
+
   OUTPUT
   - v1 = [v1_x, v1_y, 0] : array 3*1 position of the first obstacle tangent point
   - v2 = [v2_x, v2_y, 0] : array 3*1 position of the second obstacle tangent point"""
@@ -76,31 +76,34 @@ def find_tangent_points_xy(p0, p1, r) :
 def compute_length_v1_v2_xy(v1,v2, r) :
 
   """Compute xy coordinates of segment lengths in plane
-  
+
   INPUT
   - v1 : array 3*1 position of the first obstacle tangent point
   - v2 : array 3*1 position of the second obstacle tangent point
   - r : radius of the cylinder * side
-  
+
   OUTPUT
   - ||v1v2||(x,y) : xy coordinates of segment lengths in plane"""
 
   if r == 0:
     raise ValueError("Please choose an other radius, positive or negative are accepted. You musn't have r=0")
 
+  # if 2.5 > ((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2) > 2.0 : #2.5
+  #   print("((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2) = ", ((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2))
+  #   return np.absolute(r*np.arccos(1.0 - 2.0))
   return np.absolute(r*np.arccos(1.0-((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2)))
 
 def z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point) :
 
   """Compute z coordinates of v1 and v2
-  
+
   INPUT
   - v1 : array 3*1 position of the first obstacle tangent point
   - v2 : array 3*1 position of the second obstacle tangent point
   - v1_v2_length_xy : xy coordinates of segment lengths in plane
   - origin_point : array 3*1 position of the first point
   - final_point : array 3*1 position of the second point
-  
+
   OUTPUT
   - v1_z = z coordinate of v1
   - v2_z = z coordinate of v2"""
@@ -119,12 +122,12 @@ def z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point) :
 def find_tangent_points(p0, p1, r) :
 
    """Compute xyz coordinates of v1 and v2
-   
+
    INPUT
    - p0 : array 3*1 position of the first point
    - p1 : array 3*1 position of the second point
    - r : radius of the cylinder * side
-   
+
    OUTPUT
    - v1 = [v1_x, v1_y, v1_z] : array 3*1 position of the first obstacle tangent point
    - v2 = [v2_x, v2_y, v2_z] : array 3*1 position of the second obstacle tangent point"""
@@ -139,20 +142,20 @@ def find_tangent_points(p0, p1, r) :
 def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, matrix_U, matrix_V) :
 
   """Compute xyz coordinates of Q, G, H and T using iterative method
-  
+
   INPUT
   - P_U_cylinder_frame : array 3*1 position of the first point in U cylinder frame
   - S_V_cylinder_frame : array 3*1 position of the second point in V cylinder frame
   - r_V : radius of the cylinder U * side_U
   - r_U : radius of the cylinder V * side_V
   - rotation_matrix_UV : array 4*4 rotation matrix and vect to change frame (U --> V)
-  
+
   OUTPUT
   - Q0 : array 3*1 position of the first obstacle tangent point (in V cylinder frame)
   - G0 : array 3*1 position of the second obstacle tangent point (in V cylinder frame)
   - H0 : array 3*1 position of the third obstacle tangent point (in U cylinder frame)
   - T0 : array 3*1 position of the fourth obstacle tangent point (in U cylinder frame)"""
-  
+
   # cylindre U
   Q1, G1 = find_tangent_points(P_U_cylinder_frame, S_V_cylinder_frame, r_U)
   H1, T1 = [0,0,0], [0,0,0]
@@ -162,28 +165,28 @@ def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_f
   H1_T1_inactive = False
   ecart_length = 1
   segment_length_1 = 100
-  
+
   while Q1_G1_inactive == False and H1_T1_inactive == False and ecart_length > 0 and np.isnan(np.array(Q1)).any()==False and np.isnan(np.array(G1)).any()==False and np.isnan(np.array(H1)).any()==False and np.isnan(np.array(T1)).any() == False:
-      Q0, G0 = Q1, G1
+      Q0, G0 = Q1, G1 # 166 que ecart et echec avec les break
       H0, T0 = H1, T1
       segment_length_0 = segment_length_1
-      
+
       g0 = switch_frame_UV(H1, matrix_U, matrix_V)
       # g0 = transpose_switch_frame(G0, matrix_V)
       H1, T1 = find_tangent_points(g0, S_V_cylinder_frame, r_V)
       H1_T1_inactive = determine_if_tangent_points_inactive_single_cylinder(H1, T1, r_V)
-      if H1_T1_inactive or np.isnan(np.array(H1)).any() or np.isnan(np.array(T1)).any(): 
+      if H1_T1_inactive or np.isnan(np.array(H1)).any() or np.isnan(np.array(T1)).any():
         break
-      
+
       h0 = switch_frame_UV(H1, matrix_V, matrix_U)
       Q1, G1 = find_tangent_points(P_U_cylinder_frame, h0, r_U)
       Q1_G1_inactive = determine_if_tangent_points_inactive_single_cylinder(Q1, G1, r_U)
-      if Q1_G1_inactive or np.isnan(np.array(Q1)).any() or np.isnan(np.array(G1)).any(): 
-        break
-      
+      if Q1_G1_inactive or np.isnan(np.array(Q1)).any() or np.isnan(np.array(G1)).any():
+        break #laisser lui aue le while
+
       segment_length_1 = segment_length_double_cylinder(False, False, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q1, G1, H1, T1, r_U, r_V, matrix_U, matrix_V)
       ecart_length = segment_length_0 - segment_length_1
-  
+
   return Q0, G0, H0, T0
 
 #################
@@ -215,7 +218,7 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
    #
    # OUTPUT
    # - segment_length : length of path segments
-   
+
   #  print("P = ", P)
   #  print("S = ", S)
   #  print("Q = ", Q)

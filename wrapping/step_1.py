@@ -52,6 +52,10 @@ def switch_frame(point, matrix) :
                                      [0, 0, 0, 1]])
    ----------------------------------"""
 
+  return (matrix @ np.concatenate((point, [1])))[:3]
+  
+  # vect1 = -np.transpose(matrix[0:3, 0:3]) @ matrix[0:3, 3] + np.dot(np.transpose(matrix[0:3, 0:3]), point)
+  # return vect1
   return matrix[0:3, 3] + np.dot(np.transpose(matrix[0:3, 0:3]), point)
 
 def transpose_switch_frame(point, matrix) :
@@ -70,6 +74,19 @@ def transpose_switch_frame(point, matrix) :
                                   [rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2], vect_transition[2]],
                                   [0, 0, 0, 1]])
   ----------------------------------"""
+
+
+  # point = np.array(([1, 2, 3, 1], [1, 2, 3, 1],[1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1])).T
+  
+  #ici
+  rot = matrix[:3, :3].T  
+  rototrans = np.eye(4)
+  rototrans[:3, :3] = rot
+  rototrans[:3, 3] = -rot @ matrix[:3, 3]
+  # rototrans @ point
+  return (rototrans @ np.concatenate((point, [1])))[:3]
+  #fin ici
+  
 
   vect_transition = np.dot(matrix[0:3, 0:3], [0,0,0] - matrix[0:3, 3])
 

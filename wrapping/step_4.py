@@ -23,32 +23,32 @@ def compute_length_v1_v2_xy(v1,v2, r) :
 
 def compute_length_v1_v2(v1,v2, v1_v2_length_xy) :
 
-  # Compute length of path segments v1 v2
-  #
-  # INPUT
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
-  # - v1_v2_length_xy : xy coordinates of segment lengths in plane
-  #
-  # OUTPUT
-  # - ||v1v2|| : length of path segments between v1 and v2
+  """Compute length of path segments v1 v2
+  
+  INPUT
+  - v1 : array 3*1 position of the first obstacle tangent point
+  - v2 : array 3*1 position of the second obstacle tangent point
+  - v1_v2_length_xy : xy coordinates of segment lengths in plane
+  
+  OUTPUT
+  - ||v1v2|| : length of path segments between v1 and v2"""
 
   return np.sqrt(v1_v2_length_xy**2+(v2[0]-v1[2])**2)
 
 def segment_length_single_cylinder(obstacle_tangent_point_inactive, origin_point, final_point, v1, v2, r) :
 
-  # Compute length of path segments
-  #
-  # INPUT
-  # - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
-  # - origin_point : array 3*1 position of the first point
-  # - final_point : array 3*1 position of the second point
-  # - v1 : array 3*1 position of the first obstacle tangent point
-  # - v2 : array 3*1 position of the second obstacle tangent point
-  # - r : radius of the cylinder * side
-  #
-  # OUTPUT
-  # - segment_length : length of path segments
+  """Compute length of path segments
+  
+  INPUT
+  - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
+  - origin_point : array 3*1 position of the first point
+  - final_point : array 3*1 position of the second point
+  - v1 : array 3*1 position of the first obstacle tangent point
+  - v2 : array 3*1 position of the second obstacle tangent point
+  - r : radius of the cylinder * side
+  
+  OUTPUT
+  - segment_length : length of path segments"""
 
   if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin_point to final_point
    segment_length = norm(np.array(final_point)-np.array(origin_point))

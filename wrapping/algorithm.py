@@ -64,7 +64,7 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) 
 
    return v1o, v2o, obstacle_tangent_point_inactive, segment_length
 
-def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
+def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_ref = []) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -136,6 +136,22 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
    #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
    
    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+   
+   # ici, Q, G sont dans le local du cylindre U
+   # G et H sont dans le repere local du cylindre V
+   
+   if list_ref != [] :
+      # Faut mettre Tref dans le local de V
+      T_ref_local = transpose_switch_frame(list_ref[-1], Cylinder_V.matrix)
+      # T_ref_local = np.dot(np.transpose(Cylinder_V.matrix), list_ref[-1])
+      print("T = ", T)
+      # print("T ref = ", T_ref_local)
+      print("T ref = ", T_ref_local)
+      
+   # utiliser list_ref
+   # verifier si ok
+   # si pas ok changer side
+   # refaire find tangent points ...
    
    # ------
    # Step 3

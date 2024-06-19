@@ -137,6 +137,23 @@ class Cylinder:
         
         self.segment_index = segment_names.index(self.segment) 
         self.gcs_seg_0 = [gcs.to_array() for gcs in model.allGlobalJCS(q_inital)][self.segment_index] 
+        
+    # def correcte_side(self, q) :
+        
+    #     # if q0 == 0 : 
+    #     #     self.side = 1
+    #     # else : 
+    #     #     self.side = q0 / abs(q0)
+    #     if q[2] < 0.355 and q[0] < -0.367 and q[1] > -1.497: 
+    #         self.side = -1
+    #     else : 
+    #         self.side = 1
+    #     # if q[1] > -1.49725651 and q[0] != 0 :#and q[2] != 2 :  # -1.49725651
+    #     #     self.side = q[0] / abs(q[0]) #* q[2] / abs(q[2])
+    #     # # elif q[1] < -1.49725651 and q[2] != 0 : # -1.49725651
+    #     # #     self.side = q[2] / abs(q[2])
+    #     # else : 
+        #     self.side = 1
 
 
     def __str__(self):

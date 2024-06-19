@@ -145,7 +145,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obst
   ax.scatter(*v2, color='r', label="v2")
 
   # Cylinder
-  Xc,Yc,Zc = apply_transformation(Cylinder, 0.1, 100)  
+  Xc,Yc,Zc = apply_transformation(Cylinder, 4, 100)  #0.1
   ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
 
   if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin point to final point
@@ -165,10 +165,14 @@ def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obst
   ax.set_zlabel("Z")
   ax.grid(True)
 
-  # Set ax limit
-  ax.set_ylim(-0.1,0.1)
-  ax.set_zlim(-0.2,0)
-  ax.set_xlim(0,0.2)
+  # # Set ax limit
+  # ax.set_ylim(-0.1,0.1)
+  # ax.set_zlim(-0.2,0)
+  # ax.set_xlim(0,0.2)
+  
+  ax.set_xlim(-5,5)
+  ax.set_ylim(-5,5)
+  ax.set_zlim(-5,5)
 
   plt.title("Single Cylinder Wrapping")
   plt.legend()

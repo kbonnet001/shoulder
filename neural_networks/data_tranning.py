@@ -109,25 +109,7 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
 
     return epoch_loss, epoch_acc
 
-# Fonction pour entraîner et évaluer le modèle
-def train_and_evaluate(params, criterion_class, criterion_params):
-    model = Model(input_size, output_size, params['n_layers'], params['n_nodes'], params['activations'],
-                  params['L1_penalty'], params['L2_penalty'], True, 0.5)
-    optimizer = torch.optim.Adam(model.parameters(), params['learning_rate'])
-    criterion = criterion_class(**criterion_params)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8, verbose=True)
-    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
 
-    for epoch in range(n_epochs):
-        train_loss, train_acc = train(model, train_loader, optimizer, criterion)
-        val_loss, val_acc = evaluate(model, val_loader, criterion)
-        print(f'Epoch [{epoch+1}/{n_epochs}], Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}, Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}')
-        scheduler.step(val_loss)
-        early_stopping(val_loss)
-        if early_stopping.early_stop:
-            print("Early stopping at epoch:", epoch+1)
-            break
-    return val_loss, val_acc
 
 
 
