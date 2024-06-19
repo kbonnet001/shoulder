@@ -233,7 +233,8 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
   ax.plot_surface(Xcu, Ycu, Zcu, alpha=0.5)
 
   # 2nd Cylinder
-  # Xcv,Ycv,Zcv = data_cylinder(Cylinder_V.c1, Cylinder_V.c2, Cylinder_V.matrix[0:3, 0:3], Cylinder_V.radius)
+  # Xcv0,Ycv0,Zcv0 = data_cylinder(Cylinder_V.c1, Cylinder_V.c2, Cylinder_V.matrix[0:3, 0:3], Cylinder_V.radius)
+  # ax.plot_surface(Xcv0, Ycv0, Zcv0, alpha=0.5)
   Xcv,Ycv,Zcv = apply_transformation(Cylinder_V, 0.2, 100) # ancienne hauteur 0.1
   ax.plot_surface(Xcv, Ycv, Zcv, alpha=0.5)
 

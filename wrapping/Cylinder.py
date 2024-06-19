@@ -108,12 +108,46 @@ class Cylinder:
         - model : model 
         - q : array 4*2, refer to humerus segment"""
         
+        matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
+        
         gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][self.segment_index]
         self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
         
+        # truc bizarre
+        # # self.matrix = np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial)
+        # self.c1 = switch_frame([0, 0.05, 0], gcs_seg)
+        # self.c2 = switch_frame([0,-0.05, 0], gcs_seg)
+        
+        # # self.c1 = np.dot(matrix_rot_zy[0:3, 0:3], self.c1)
+        # # self.c2 = np.dot(matrix_rot_zy[0:3, 0:3], self.c2)
+        # print("")
+        # frame = find_cylinder_frame([self.c1, self.c2])
+        # midpoint = (self.c1 + self.c2) / 2
+        # self.matrix = find_matrix(frame, midpoint)
+        
+    def compute_new_matrix_segment2(self, model, q) :
+        """ Compute the matrix with new q
+        - model : model 
+        - q : array 4*2, refer to humerus segment"""
+        
+        matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
+        
+        gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][self.segment_index]
+        self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
+        
+        print("Insertion doit être là = ", switch_frame([0.016, -0.0354957, 0.005], gcs_seg)) # oui
+        
+        # truc bizarre
         # self.matrix = np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial)
-        # self.c1 = transpose_switch_frame(self.c1_initial, np.linalg.inv(self.gcs_seg_0))
-        # self.c2 = transpose_switch_frame(self.c2_initial, np.linalg.inv(self.gcs_seg_0))
+        self.c1 = switch_frame([0, -0.05, 0], gcs_seg)
+        self.c2 = switch_frame([0, 0.05, 0], gcs_seg)
+        
+        # self.c1 = np.dot(matrix_rot_zy[0:3, 0:3], self.c1)
+        # self.c2 = np.dot(matrix_rot_zy[0:3, 0:3], self.c2)
+        print("")
+        frame = find_cylinder_frame([self.c1, self.c2])
+        midpoint = (self.c1 + self.c2) / 2
+        self.matrix = find_matrix(frame, midpoint)
     
         
     def compute_matrix_rotation_zy(self, matrix_rot_zy) : 
@@ -155,6 +189,11 @@ class Cylinder:
     #     # else : 
         #     self.side = 1
 
+    def change_raidus(self, new_radius) : 
+        self.raidus = new_radius
+        
+    def change_side(self) : 
+        self.side = self.side * -1
 
     def __str__(self):
         return (f"Cylinder(radius = {self.radius}, "

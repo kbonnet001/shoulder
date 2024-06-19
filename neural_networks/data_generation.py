@@ -8,6 +8,8 @@ import os
 from openpyxl import load_workbook
 from neural_networks.ExcelBatchWriter import ExcelBatchWriter
 
+from wrapping.step_1 import *
+
 def initialisation_generation(model, muscle_selected, cylinders) :
    # Find index of the muscle selected
    muscle_names = [model.muscle(i).name().to_string() for i in range(model.nbMuscles())]
@@ -31,6 +33,10 @@ def update_points_position(model, muscle_index, q) :
    # Find coordinates of origin point (P) and insertion point (S)
    origin_muscle = mus.musclesPointsInGlobal(model, q)[0].to_array() 
    insertion_muscle = mus.musclesPointsInGlobal(model, q)[-1].to_array() 
+   
+   # ces points sont dans le repere global (verifiee)
+   # cela revient à faire :
+   # switch_frame([0.016, -0.0354957, 0.005], gcs_seg))
    
    # correction side humerus
    
@@ -75,6 +81,7 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    OUTPUT : 
    - segment_length : length of muscle path """
 
+   print("on fait l'algo avec celui ci = ", insertion_muscle)
    # First of all, create a rotation matrix (the model have y and not z for ax up) 
    # Single cylinder algo and double cylinders algo don't work without this change
    matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
@@ -84,9 +91,17 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    insertion_muscle_rot = np.dot(matrix_rot_zy[0:3, 0:3], insertion_muscle)
    
    # Compute transformation of cylider matrix
+   # cylinders[0].compute_new_matrix_segment(model, q)
+   # cylinders[0].compute_matrix_rotation_zy(matrix_rot_zy) 
+   # cylinders[1].compute_new_matrix_segment2(model, q)
+   # cylinders[1].compute_matrix_rotation_zy(matrix_rot_zy) 
+   
+   # vrai truc, en haut pas propre
    for cylinder in cylinders :
       cylinder.compute_new_matrix_segment(model, q)
       cylinder.compute_matrix_rotation_zy(matrix_rot_zy) 
+   # cylinders[1].compute_new_matrix_segment(model, q)
+   
 
    if (len(cylinders) == 0) :
       # Muscle path is straight line from origin_point to final_point
@@ -242,15 +257,6 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
             # q = np.array([-0.736696402602619,-2.81278701317883, 1.56632461528205, 0])
             print("q = ", q)
             
-            # # Updates
-            # model.updateMuscles(q) 
-            # mus = model.muscle(muscle_index) 
-            
-            # model.UpdateKinematicsCustom(q)
-
-            # # Find coordinates of origin point (P) and insertion point (S)
-            # origin_muscle = mus.musclesPointsInGlobal(model, q)[0].to_array() 
-            # insertion_muscle = mus.musclesPointsInGlobal(model, q)[-1].to_array() 
             
             origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
             
@@ -287,18 +293,30 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
 
    q_ref = np.array([q_ranges_muscle[0][1], q_ranges_muscle[1][1], q_ranges_muscle[2][1], 0.0]) #
-   # q ref pour le moment, tout au max de range 
+   # q_ref = np.array([0,0,0,0])
+   # # q ref pour le moment, tout au max de range 
+   # matrix_U = np.array([[ 0.96734723,  0.24692246, -0.05693821, -0.02614252],
+   #                      [-0.24253723,  0.96726508,  0.07273017, -0.00298349],
+   #                      [ 0.07339071, -0.05744761,  0.99580371,  0.17122542],
+   #                      [ 0.        ,  0.        ,  0.        ,  1.        ]])
+   
+   # matrix_V = np.array([[ 0.96903113, -0.24650421,  0.01464025, -0.03536606],
+   #                      [ 0.    	, -0.05928701, -0.99824098, -0.03672373],
+   #                      [ 0.24693858,  0.96732659, -0.05745096,  0.1813522 ],
+   #                      [ 0.    	,  0.    	,  0.    	,  1.    	]])
+
+   # point_insertion = switch_frame_UV([0.016, -0.0354957, 0.005], matrix_U, matrix_V)
 
    origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q_ref)
    Q_ref, G_ref, H_ref, T_ref, _, _ , _ = compute_segment_length(model, cylinders, q_ref, origin_muscle, insertion_muscle, [], False)
    # Q, G, H, T ref sont dans le repere global (si j'ai pas fait de betises)
    list_ref = [Q_ref, G_ref, H_ref, T_ref]
    
-   matrix_rot_yz = np.array([[0,1,0,0], [0,0,1,0], [1,0,0,0], [0,0,0,1]])
-   # Homogeneisation
-   for i in range (len(list_ref)) : 
+   matrix_rot_yzc = np.array([[0,1,0,0], [0,0,1,0], [1,0,0,0], [0,0,0,1]])
+   # # Homogeneisation
+   for n in range (len(list_ref)) : 
    #    list_ref[i] = np.append(list_ref[i],1)
-      list_ref[i] = np.dot(matrix_rot_yz[0:3, 0:3], list_ref[i])
+      list_ref[n] = np.dot(matrix_rot_yzc[0:3, 0:3], list_ref[n])
    
    # list_ref = []
    

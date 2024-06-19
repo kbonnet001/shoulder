@@ -1,5 +1,5 @@
 from wrapping.step_1 import switch_frame, transpose_switch_frame
-from wrapping.step_2 import find_tangent_points, find_tangent_points_iterative_method, point_inside_cylinder, segment_length_double_cylinder, point_tangent_inside_cylinder
+from wrapping.step_2 import *
 from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
 from wrapping.step_4 import segment_length_single_cylinder
 from wrapping.plot_cylinder import plot_double_cylinder_obstacle
@@ -105,6 +105,10 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
 
    S_U_cylinder_frame = transpose_switch_frame(S, Cylinder_U.matrix)
    S_V_cylinder_frame = transpose_switch_frame(S, Cylinder_V.matrix)
+   Cylinder_V.change_raidus(S_V_cylinder_frame[0])
+   print("S = ", S)
+   print("S_V_cylinder_frame = ", S_V_cylinder_frame)
+   print("S_V_cylinder_frame re en global = ", switch_frame(S_V_cylinder_frame, Cylinder_V.matrix))
    
    error_wrapping = False
 
@@ -142,16 +146,25 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
    
    if list_ref != [] :
       # Faut mettre Tref dans le local de V
-      T_ref_local = transpose_switch_frame(list_ref[-1], Cylinder_V.matrix)
-      # T_ref_local = np.dot(np.transpose(Cylinder_V.matrix), list_ref[-1])
-      print("T = ", T)
+      # T_ref_local = transpose_switch_frame(list_ref[-1], Cylinder_V.matrix)
+      # # T_ref_local = np.dot(np.transpose(Cylinder_V.matrix), list_ref[-1])
+      # print("T = ", T)
+      # # print("T ref = ", T_ref_local)
       # print("T ref = ", T_ref_local)
-      print("T ref = ", T_ref_local)
+      print("ola")
       
    # utiliser list_ref
    # verifier si ok
    # si pas ok changer side
    # refaire find tangent points ...
+   
+   print("H = ", H) #tout  semble innutile
+   if H == [0,0,0] : 
+      print("ok")
+      Cylinder_V.change_side()
+      Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+      Cylinder_V.change_side()
+      
    
    # ------
    # Step 3
@@ -186,6 +199,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
    # ------
    
    segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
+   # segment_length = segment_length_double_cylinder2(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
 
    # ------
    # Step 5
@@ -196,3 +210,26 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
    To = switch_frame(T, Cylinder_V.matrix)
    
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
+
+def angle_between_points(point1, point2):
+    # Convertir les points en vecteurs à partir de l'origine
+    vec1 = np.array(point1[:2])
+    vec2 = np.array(point2[:2])
+    
+    # Calculer le produit scalaire des deux vecteurs
+    dot_product = np.dot(vec1, vec2)
+    
+    # Calculer les normes des vecteurs
+    norm_vec1 = np.linalg.norm(vec1)
+    norm_vec2 = np.linalg.norm(vec2)
+    
+    # Calculer le cosinus de l'angle entre les vecteurs
+    cos_angle = dot_product / (norm_vec1 * norm_vec2)
+    
+    # Calculer l'angle en radians
+    angle_radians = np.arccos(cos_angle)
+    
+    # Convertir l'angle en degrés
+    angle_degrees = np.degrees(angle_radians)
+    
+    return angle_degrees
