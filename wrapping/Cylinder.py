@@ -1,5 +1,6 @@
 import numpy as np
 from wrapping.step_1 import find_cylinder_frame, find_matrix, switch_frame, transpose_switch_frame
+from scipy.spatial.transform import Rotation as R
 
 class Cylinder:
     def __init__(self, radius, side, c1, c2, matrix, segment = None, segment_index = None, gcs_seg_0 = None):
@@ -113,6 +114,8 @@ class Cylinder:
         gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][self.segment_index]
         self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
         
+        print("Insertion doit être là = ", switch_frame([0.016, -0.0354957, 0.005], gcs_seg)) # oui
+        
         # truc bizarre
         # # self.matrix = np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial)
         # self.c1 = switch_frame([0, 0.05, 0], gcs_seg)
@@ -139,8 +142,23 @@ class Cylinder:
         
         # truc bizarre
         # self.matrix = np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial)
-        self.c1 = switch_frame([0, -0.05, 0], gcs_seg)
-        self.c2 = switch_frame([0, 0.05, 0], gcs_seg)
+        # self.c1 = switch_frame([0, -0.05, 0], gcs_seg)
+        # self.c2 = switch_frame([0, 0.05, 0], gcs_seg)
+        
+        self.c1 = transpose_switch_frame(self.c1_initial, self.gcs_seg_0)
+        self.c2 = transpose_switch_frame(self.c2_initial, self.gcs_seg_0)
+        # ces points, c1 et c2 sont maintenant dans le repere local de humerus (verifie)
+        
+        # print("les points du cylindres en repere local humerus sont : ")
+        # print("self.c1 = ", self.c1)
+        # print("self.c2 = ", self.c2)
+        
+        self.c1 = switch_frame(self.c1, gcs_seg)
+        self.c2 = switch_frame(self.c2, gcs_seg)
+        # pour mettre dans le global avec nouveau gcs seg (ok)
+        # print("les points du cylindres en repere global humerus sont : ")
+        # print("self.c1 = ", self.c1)
+        # print("self.c2 = ", self.c2)
         
         # self.c1 = np.dot(matrix_rot_zy[0:3, 0:3], self.c1)
         # self.c2 = np.dot(matrix_rot_zy[0:3, 0:3], self.c2)
@@ -148,6 +166,11 @@ class Cylinder:
         frame = find_cylinder_frame([self.c1, self.c2])
         midpoint = (self.c1 + self.c2) / 2
         self.matrix = find_matrix(frame, midpoint)
+        
+        # self.change_side2(self.rotation_direction(self.matrix_initial, self.matrix))
+        # self.change_side2(self.rotation_direction(self.gcs_seg_0, gcs_seg))
+        
+        print("radius = ", self.radius)
     
         
     def compute_matrix_rotation_zy(self, matrix_rot_zy) : 
@@ -162,15 +185,15 @@ class Cylinder:
         # self.c1_initial = switch_frame(self.c1_initial, np.transpose(matrix_rot_zy))
         # self.c2_initial = switch_frame(self.c2_initial, np.transpose(matrix_rot_zy))
         
-    def compute_seg_index_and_gcs_seg_0(self, q_inital, model, segment_names) :
+    def compute_seg_index_and_gcs_seg_0(self, q_initial, model, segment_names) :
         """Compute gcs 0 (inital) and index of cylinder(s)
         
         - model : model
-        - q_inital : array 4*2, refer to humerus segment (inital)
+        - q_initial : array 4*2, refer to humerus segment (initial)
         - segment_name : list of all segments name of the model"""
         
         self.segment_index = segment_names.index(self.segment) 
-        self.gcs_seg_0 = [gcs.to_array() for gcs in model.allGlobalJCS(q_inital)][self.segment_index] 
+        self.gcs_seg_0 = [gcs.to_array() for gcs in model.allGlobalJCS(q_initial)][self.segment_index] 
         
     # def correcte_side(self, q) :
         
@@ -193,7 +216,61 @@ class Cylinder:
         self.raidus = new_radius
         
     def change_side(self) : 
+        # self.side = new_side
         self.side = self.side * -1
+        
+    def change_side2(self, new_side) : 
+        self.side = new_side
+        # self.side = self.side * -1
+        
+
+        
+    def extract_angles(self, matrix):
+        """Extract rotation angles around x and y from a 4x4 rotation-translation matrix."""
+        # We assume the matrix is in the form of:
+        # [ R | T ]
+        # [ 0 | 1 ]
+        R = matrix[:3, :3]
+
+        # Extract angles using atan2 for better numerical stability
+        theta_x = np.arctan2(R[2, 1], R[2, 2])
+        theta_y = np.arctan2(-R[2, 0], np.sqrt(R[2, 1]**2 + R[2, 2]**2))
+        theta_z = np.arctan2(R[1, 0], R[0, 0])
+
+        return theta_x, theta_y, theta_z
+
+    def rotation_direction(self, matrix_initial, matrix_update):
+        """Determine the rotation direction around the z-axis between two matrices.
+
+        INPUT:
+        - matrix_initial: 4x4 initial rotation-translation matrix
+        - matrix_update: 4x4 updated rotation-translation matrix
+
+        OUTPUT:
+        - 1 if the rotation is clockwise
+        - -1 if the rotation is counterclockwise
+        """
+        # Extract the rotation angles from both matrices
+        _, _, theta_z_initial = self.extract_angles(matrix_initial)
+        _, _, theta_z_update = self.extract_angles(matrix_update)
+
+        # Calculate the change in the z rotation angle
+        delta_theta_z = theta_z_update - theta_z_initial
+
+        # Normalize the delta_theta_z to be within -pi to pi
+        delta_theta_z = (delta_theta_z + np.pi) % (2 * np.pi) - np.pi
+
+        # Determine the direction
+        if delta_theta_z > 0:
+            direction = 1
+        else:
+            direction = -1
+
+        # If the absolute change is greater than pi, reverse the direction
+        if abs(delta_theta_z) > np.pi:
+            direction *= -1
+
+        return direction
 
     def __str__(self):
         return (f"Cylinder(radius = {self.radius}, "

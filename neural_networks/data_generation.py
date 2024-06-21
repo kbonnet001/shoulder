@@ -17,7 +17,8 @@ def initialisation_generation(model, muscle_selected, cylinders) :
 
    # Find name of segments and matrix of cylinders  
    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
-   q_initial = np.array([0.,-0.01,0.,0.05])
+   # q_initial = np.array([0.,-0.01,0.,0.05])
+   q_initial = np.array([0.0, 0.0, 0.0, 0.0]) 
    for cylinder in cylinders : 
       cylinder.compute_seg_index_and_gcs_seg_0(q_initial, model, segment_names)
    
@@ -90,6 +91,9 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    origin_muscle_rot = np.dot(matrix_rot_zy[0:3, 0:3], origin_muscle)
    insertion_muscle_rot = np.dot(matrix_rot_zy[0:3, 0:3], insertion_muscle)
    
+   # ATTENTION
+   # origin_muscle_rot = np.array([0.08992386,  0.03723667, -0.01454695])
+   
    # Compute transformation of cylider matrix
    # cylinders[0].compute_new_matrix_segment(model, q)
    # cylinders[0].compute_matrix_rotation_zy(matrix_rot_zy) 
@@ -98,11 +102,15 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    
    # vrai truc, en haut pas propre
    for cylinder in cylinders :
-      cylinder.compute_new_matrix_segment(model, q)
+      cylinder.compute_new_matrix_segment2(model, q) # attention ici 2 !!!
       cylinder.compute_matrix_rotation_zy(matrix_rot_zy) 
    # cylinders[1].compute_new_matrix_segment(model, q)
+   Q_rot, G_rot, H_rot, T_rot = [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]
+   Q_G_inactive, H_T_inactive = False, False
    
-
+   # print(origin_muscle_rot, insertion_muscle_rot, cylinders[0].matrix)
+   # ici c'est ok
+   
    if (len(cylinders) == 0) :
       # Muscle path is straight line from origin_point to final_point
       segment_length = norm(np.array(origin_muscle_rot) - np.array(insertion_muscle_rot))
@@ -253,13 +261,15 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
             
             print("i = ", i, " j = ", j, " k = ", k)
             
+            # i, j, k = 0, 0, 2
+            
             q = np.array([q_test_limite[0][i],q_test_limite[1][j], q_test_limite[2][k], 0])
-            # q = np.array([-0.736696402602619,-2.81278701317883, 1.56632461528205, 0])
+            # q = np.array([0.0, 0.0, 0.0, 0.0])
             print("q = ", q)
             
             
             origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
-            
+
             # for cylinder in cylinders : 
             #    if cylinder.segment == "humerus_right" : 
             #       cylinder.correcte_side(q)
@@ -293,6 +303,7 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
 
    q_ref = np.array([q_ranges_muscle[0][1], q_ranges_muscle[1][1], q_ranges_muscle[2][1], 0.0]) #
+   
    # q_ref = np.array([0,0,0,0])
    # # q ref pour le moment, tout au max de range 
    # matrix_U = np.array([[ 0.96734723,  0.24692246, -0.05693821, -0.02614252],
@@ -337,6 +348,8 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
       q[i] = qi
       
       print("q = ", q)
+      # q = np.array([-1.04719755 ,-1.34853086 ,-0.05       , 0.05      ])
+      # q = np.array([ 2.35619449 -1.64598216 , 1.57079633 , 2.3561    ])
       
       origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
       

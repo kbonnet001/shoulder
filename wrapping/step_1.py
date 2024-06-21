@@ -27,7 +27,8 @@ def find_cylinder_frame(center_circle) :
   # Make unit vector perpendicular to v and n1
   n2 = np.cross(n1, unit_vect) # notre x par exemple
 
-  return np.array([n2,n1, unit_vect])
+  # return np.array([n2,n1, unit_vect])
+  return np.transpose(np.array([n2,n1, unit_vect]))
 
 def find_matrix(cylinder_frame, origin) :
   return np.array([[cylinder_frame[0][0], cylinder_frame[0][1], cylinder_frame[0][2], origin[0]],
@@ -53,10 +54,6 @@ def switch_frame(point, matrix) :
    ----------------------------------"""
 
   return (matrix @ np.concatenate((point, [1])))[:3]
-  
-  # vect1 = -np.transpose(matrix[0:3, 0:3]) @ matrix[0:3, 3] + np.dot(np.transpose(matrix[0:3, 0:3]), point)
-  # return vect1
-  return matrix[0:3, 3] + np.dot(np.transpose(matrix[0:3, 0:3]), point)
 
 def transpose_switch_frame(point, matrix) :
 
@@ -77,20 +74,13 @@ def transpose_switch_frame(point, matrix) :
 
 
   # point = np.array(([1, 2, 3, 1], [1, 2, 3, 1],[1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1])).T
-  
-  #ici
   rot = matrix[:3, :3].T  
   rototrans = np.eye(4)
   rototrans[:3, :3] = rot
   rototrans[:3, 3] = -rot @ matrix[:3, 3]
   # rototrans @ point
   return (rototrans @ np.concatenate((point, [1])))[:3]
-  #fin ici
-  
 
-  vect_transition = np.dot(matrix[0:3, 0:3], [0,0,0] - matrix[0:3, 3])
-
-  return vect_transition + np.dot(matrix[0:3, 0:3], point)
 
 def switch_frame_UV(point, matrix_U, matrix_V) : 
   point = switch_frame(point, matrix_U)

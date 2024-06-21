@@ -1,9 +1,10 @@
 from wrapping.step_1 import switch_frame, transpose_switch_frame
 from wrapping.step_2 import *
 from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
-from wrapping.step_4 import segment_length_single_cylinder
+# from wrapping.step_4 import segment_length_single_cylinder
 from wrapping.plot_cylinder import plot_double_cylinder_obstacle
 import numpy as np
+from wrapping.paspropre import determine_if_needed_change_side, determine_if_needed_change_side_2
 
 
 # Algorithm
@@ -105,10 +106,8 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
 
    S_U_cylinder_frame = transpose_switch_frame(S, Cylinder_U.matrix)
    S_V_cylinder_frame = transpose_switch_frame(S, Cylinder_V.matrix)
-   Cylinder_V.change_raidus(S_V_cylinder_frame[0])
-   print("S = ", S)
+   # Cylinder_V.change_raidus(S_V_cylinder_frame[0])
    print("S_V_cylinder_frame = ", S_V_cylinder_frame)
-   print("S_V_cylinder_frame re en global = ", switch_frame(S_V_cylinder_frame, Cylinder_V.matrix))
    
    error_wrapping = False
 
@@ -144,26 +143,52 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
    # ici, Q, G sont dans le local du cylindre U
    # G et H sont dans le repere local du cylindre V
    
-   if list_ref != [] :
-      # Faut mettre Tref dans le local de V
-      # T_ref_local = transpose_switch_frame(list_ref[-1], Cylinder_V.matrix)
-      # # T_ref_local = np.dot(np.transpose(Cylinder_V.matrix), list_ref[-1])
-      # print("T = ", T)
-      # # print("T ref = ", T_ref_local)
-      # print("T ref = ", T_ref_local)
-      print("ola")
+   H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
+   print("HT = ", H_T_inactive)
+   
+   # if H_T_inactive and determine_if_needed_change_side(S_V_cylinder_frame, np.array([0.0246330366, -0.0069265376, -0.0000168612])): 
+   if H_T_inactive and determine_if_needed_change_side(S_V_cylinder_frame, np.array([0.0179188682, -0.0181428819, 0.02])) == True: 
+      print("yop")
+      Cylinder_V.change_side()
+      r_V = Cylinder_V.radius * Cylinder_V.side
+      Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+      Cylinder_V.change_side()
+      # r_V = Cylinder_V.radius * Cylinder_V.side
+      
+   # elif H_T_inactive == False and determine_if_needed_change_side_2(S_V_cylinder_frame, np.array([0.0179188682, -0.0181428819, 0.02])) == True: 
+   #    print("yop")
+   #    Cylinder_V.change_side()
+   #    r_V = Cylinder_V.radius * Cylinder_V.side
+   #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+   #    Cylinder_V.change_side()
+      
+   # if H_T_inactive == False and determine_if_needed_change_side(S_V_cylinder_frame, np.array([0.0246330366, -0.0069265376, -0.0000168612])) == True: 
+   #    Cylinder_V.change_side()
+   #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+   #    Cylinder_V.change_side()
+   
+   
+   
+   # if list_ref != [] :
+   #    # Faut mettre Tref dans le local de V
+   #    # T_ref_local = transpose_switch_frame(list_ref[-1], Cylinder_V.matrix)
+   #    # # T_ref_local = np.dot(np.transpose(Cylinder_V.matrix), list_ref[-1])
+   #    # print("T = ", T)
+   #    # # print("T ref = ", T_ref_local)
+   #    # print("T ref = ", T_ref_local)
+   #    print("ola")
       
    # utiliser list_ref
    # verifier si ok
    # si pas ok changer side
    # refaire find tangent points ...
    
-   print("H = ", H) #tout  semble innutile
-   if H == [0,0,0] : 
-      print("ok")
-      Cylinder_V.change_side()
-      Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
-      Cylinder_V.change_side()
+   # print("H = ", H) #tout  semble innutile
+   # if H == [0,0,0] : 
+   #    print("ok")
+   #    Cylinder_V.change_side()
+   #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
+   #    Cylinder_V.change_side()
       
    
    # ------

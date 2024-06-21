@@ -20,6 +20,15 @@ from neural_networks.data_generation import data_for_learning, data_for_learning
 import biorbd
 import bioviz
 
+import unittest
+
+# Importer les tests
+from wrapping.wrapping_tests.step_1_test import Step_1_test
+
+# unittest.main()
+###############################################
+###############################################
+
 model = biorbd.Model("models/Wu_DeGroote.bioMod")
 # q = np.zeros((model.nbQ(), ))
 q = np.array([0.0,-0.01,0.0,0.05])
@@ -55,8 +64,8 @@ C_T_PECM2_2 = np.array([0.0171218365, -0.0120059285, 0.0748758588])
 
 
 # Datas for cylinder's humerus right (muscle PECM1, PECM2 and PCM3)
-C_H_PECM2_1 = np.array([-0.0468137093, -0.069205313, 0.1748923225]) # 0.02 5000_2
-C_H_PECM2_2 = np.array([-0.0276992818, 0.0056711748, 0.1704452973])
+# C_H_PECM2_1 = np.array([-0.0468137093, -0.069205313, 0.1748923225]) # 0.02 5000_2 
+# C_H_PECM2_2 = np.array([-0.0276992818, 0.0056711748, 0.1704452973])
 
 # C_H_PECM2_1 = np.array([-0.0549820662, -0.0634122725, 0.1813890163])
 # C_H_PECM2_2 = np.array([-0.0398385092, -0.00409078, 0.1778658253]) # 0.0285
@@ -86,10 +95,15 @@ C_H_PECM2_2 = np.array([-0.0276992818, 0.0056711748, 0.1704452973])
 # C_H_PECM2_2 = np.array([-0.0137964 ,  0.04537976,  0.16835304]) # r = 0.016 fait à partir de insertion en ref segment humerus local
 
 C_H_PECM2_1 = np.array([-0.0504468139, -0.0612220954, 0.1875298764])
-C_H_PECM2_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632]) #le mieux avec 0.025
+C_H_PECM2_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632]) #le mieux avec 0.025 0.0243 vrai 0.0255913399
 
-cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_1, C_T_PECM2_2, "thorax")
-cylinder_H_PECM2 = Cylinder.from_points(0.025, 1, C_H_PECM2_1, C_H_PECM2_2, "humerus_right")
+# Presque la fin j'espere ahhhh
+# C_H_PECM2_1 = np.array([-0.0439209708, -0.0622294269, 0.1772302577])
+# C_H_PECM2_2 = np.array([-0.030809488, -0.0108681304, 0.1741798345]) # pas bien, ne pas faire des cylinre avec r trop petit !
+
+#################################################################################################
+cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_2, C_T_PECM2_1, "thorax")
+cylinder_H_PECM2 = Cylinder.from_points(0.0255913399, 1, C_H_PECM2_2, C_H_PECM2_1, "humerus_right")
 
 C_T_PECM3_1 = np.array([0.0191190885, -0.1161524375, 0.0791192319])
 C_T_PECM3_2 = np.array([0.0182587352, -0.0712893992, 0.0772913203])
@@ -98,7 +112,7 @@ C_H_PECM3_1 = np.array([-0.0468137093,-0.069205313,0.1748923225])
 C_H_PECM3_2 = np.array([-0.0273690802, 0.0069646657, 0.1703684749])
 
 cylinder_T_PECM3 = Cylinder.from_points(0.025, -1, C_T_PECM3_1, C_T_PECM3_2, "thorax")
-cylinder_H_PECM3 = Cylinder.from_points(0.016, 1, C_H_PECM3_1, C_H_PECM3_2, "humerus_right")
+cylinder_H_PECM3 = Cylinder.from_points(0.0202946443, 1, C_H_PECM3_1, C_H_PECM3_2, "humerus_right")
 
 # cylinder_H_PECM2.rotate_around_axis(-45)
 
@@ -107,19 +121,6 @@ cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
 
 muscles_selected = ["PECM2", "PECM3"]
-matrix = np.array([[ 0.96734723,  0.24692246, -0.05693821, -0.02614252],
-                    [-0.24253723,  0.96726508,  0.07273017, -0.00298349],
-                    [ 0.07339071, -0.05744761,  0.99580371,  0.17122542],
-                    [ 0.        ,  0.        ,  0.        ,  1.        ]])
-matrix2=np.array([[ 0.47851116, -0.10837634,  0.87135238, -0.02614252],
-       [-0.06281074, -0.99390322, -0.08903323, -0.00298349],
-       [ 0.87607302, -0.01120598, -0.48237117,  0.17122542],
-       [ 0.        ,  0.        ,  0.        ,  1.        ]])
-
-
-point = switch_frame([0.016, -0.0354957, 0.005], matrix)
-point1 = switch_frame([0, 0.05, 0], matrix)
-point2 = switch_frame([0, -0.05, 0], matrix)
 
 
 # test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model, q_ranges, True) 
@@ -138,7 +139,7 @@ q_fixed = np.array([(ranges[0]) for ranges in q_ranges])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
 data_for_learning_plot ("data_test_PECM2_q2_6iuyf.xlsx", muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
-                        1, 20, plot_all=True, plot_limit=False)
+                        0, 100, plot_all=False, plot_limit=False)
 
 P = np.array([-3.78564,-2.53658,0])
 S = np.array([7.0297,1.44896,1.21311])
@@ -159,12 +160,11 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # plot_one_cylinder_obstacle(P, S, cylinder_1, v1o, v2o,obstacle_tangent_point_inactive)
 
 
-
 # Show
-# b = bioviz.Viz(loaded_model=model)
-# b.set_q(q)
-# b.exec()
+b = bioviz.Viz(loaded_model=model)
+b.set_q(q)
+b.exec()
 
-# exit(0)
+exit(0)
 
 #################
