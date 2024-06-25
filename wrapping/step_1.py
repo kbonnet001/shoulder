@@ -40,14 +40,15 @@ def transpose_switch_frame(point, matrix) :
                                   [0, 0, 0, 1]])
   ----------------------------------"""
 
-
+  return (np.linalg.inv(matrix)@ np.concatenate((point, [1])))[:3]
+  
   # point = np.array(([1, 2, 3, 1], [1, 2, 3, 1],[1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1])).T
-  rot = matrix[:3, :3].T  
-  rototrans = np.eye(4)
-  rototrans[:3, :3] = rot
-  rototrans[:3, 3] = -rot @ matrix[:3, 3]
-  # rototrans @ point
-  return (rototrans @ np.concatenate((point, [1])))[:3]
+  # rot = matrix[:3, :3].T  
+  # rototrans = np.eye(4)
+  # rototrans[:3, :3] = rot
+  # rototrans[:3, 3] = -rot @ matrix[:3, 3]
+  # # rototrans @ point
+  # return (rototrans @ np.concatenate((point, [1])))[:3]
 
 
 def switch_frame_UV(point, matrix_U, matrix_V) : 

@@ -23,12 +23,12 @@ class Step_1_test(unittest.TestCase):
 
     def test_switch_frame(self):
         point_global_frame = switch_frame(self.point, self.gcs_seg_0)
-        self.assertTrue(np.allclose(point_global_frame, self.insertion_muscle, atol=1e-4), 
+        self.assertTrue(np.allclose(point_global_frame, self.insertion_muscle), 
                         f"Test_switch_frame\nValue must be equal to {self.insertion_muscle}, got: {point_global_frame}")
 
-    def test_transpose_switch_frame(self): # error if atol=1e-5 ...
+    def test_transpose_switch_frame(self):
         point_local_frame = transpose_switch_frame(self.insertion_muscle, self.gcs_seg_0)
-        self.assertTrue(np.allclose(point_local_frame, self.point, atol=1e-4), 
+        self.assertTrue(np.allclose(point_local_frame, self.point), 
                         f"Test_transpose_switch_frame\nValue must be equal to {self.point}, got: {point_local_frame}")
         
 if __name__ == '__main__':
