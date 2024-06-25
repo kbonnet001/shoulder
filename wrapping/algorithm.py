@@ -65,7 +65,7 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) 
 
    return v1o, v2o, obstacle_tangent_point_inactive, segment_length
 
-def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_ref = []) :
+def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -106,42 +106,12 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
 
    S_U_cylinder_frame = transpose_switch_frame(S, Cylinder_U.matrix)
    S_V_cylinder_frame = transpose_switch_frame(S, Cylinder_V.matrix)
-   # Cylinder_V.change_raidus(S_V_cylinder_frame[0])
-   print("S_V_cylinder_frame = ", S_V_cylinder_frame)
-   
-   error_wrapping = False
 
    # ------
    # Step 2
    # ------
-
-   epsilon = 0.00095
-   #0.0008 #0.00095
-   
-   # P_inside_U = point_inside_cylinder(P_U_cylinder_frame, Cylinder_U.radius, epsilon)
-   # S_inside_V = point_inside_cylinder(S_V_cylinder_frame, Cylinder_V.radius, epsilon)
-   
-   # if P_inside_U and S_inside_V :
-   #    print("You choose P and/or S in the cylinder U and V. Muscle path is straight line")
-   #    Q, G, H, T = [0,0,0], [0,0,0], [0,0,0], [0,0,0]
-
-   # elif P_inside_U :
-   #    print("You choose P in the cylinder U. Muscle path is straight line")
-   #    Q, G = [0,0,0], [0,0,0]
-   #    H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
-
-   # elif S_inside_V:
-   #    print("You choose S in the cylinder V. Muscle path is straight line")
-   #    H, T = [0,0,0], [0,0,0]
-   #    Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
-
-   # else :
-   #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
    
    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
-   
-   # ici, Q, G sont dans le local du cylindre U
-   # G et H sont dans le repere local du cylindre V
    
    H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
    print("HT = ", H_T_inactive)
@@ -166,30 +136,6 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
    #    Cylinder_V.change_side()
    #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
    #    Cylinder_V.change_side()
-   
-   
-   
-   # if list_ref != [] :
-   #    # Faut mettre Tref dans le local de V
-   #    # T_ref_local = transpose_switch_frame(list_ref[-1], Cylinder_V.matrix)
-   #    # # T_ref_local = np.dot(np.transpose(Cylinder_V.matrix), list_ref[-1])
-   #    # print("T = ", T)
-   #    # # print("T ref = ", T_ref_local)
-   #    # print("T ref = ", T_ref_local)
-   #    print("ola")
-      
-   # utiliser list_ref
-   # verifier si ok
-   # si pas ok changer side
-   # refaire find tangent points ...
-   
-   # print("H = ", H) #tout  semble innutile
-   # if H == [0,0,0] : 
-   #    print("ok")
-   #    Cylinder_V.change_side()
-   #    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
-   #    Cylinder_V.change_side()
-      
    
    # ------
    # Step 3
@@ -224,8 +170,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, list_re
    # ------
    
    segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
-   # segment_length = segment_length_double_cylinder2(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
-
+  
    # ------
    # Step 5
    # ------

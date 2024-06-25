@@ -6,7 +6,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.linalg import norm
 from wrapping.plot_cylinder import *
 from wrapping.algorithm import*
-from wrapping.step_1 import find_cylinder_frame, find_matrix
 from wrapping.Cylinder import Cylinder
 
 from sklearn.model_selection import train_test_split
@@ -102,8 +101,8 @@ C_H_PECM2_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632]) #le mieux a
 # C_H_PECM2_2 = np.array([-0.030809488, -0.0108681304, 0.1741798345]) # pas bien, ne pas faire des cylinre avec r trop petit !
 
 #################################################################################################
-cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_2, C_T_PECM2_1, "thorax")
-cylinder_H_PECM2 = Cylinder.from_points(0.0255913399, 1, C_H_PECM2_2, C_H_PECM2_1, "humerus_right")
+cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_2, C_T_PECM2_1, False, "thorax")
+cylinder_H_PECM2 = Cylinder.from_points(0.0255913399, 1, C_H_PECM2_2, C_H_PECM2_1, True, "humerus_right")
 
 C_T_PECM3_1 = np.array([0.0191190885, -0.1161524375, 0.0791192319])
 C_T_PECM3_2 = np.array([0.0182587352, -0.0712893992, 0.0772913203])
@@ -111,21 +110,19 @@ C_T_PECM3_2 = np.array([0.0182587352, -0.0712893992, 0.0772913203])
 C_H_PECM3_1 = np.array([-0.0468137093,-0.069205313,0.1748923225])
 C_H_PECM3_2 = np.array([-0.0273690802, 0.0069646657, 0.1703684749])
 
-cylinder_T_PECM3 = Cylinder.from_points(0.025, -1, C_T_PECM3_1, C_T_PECM3_2, "thorax")
-cylinder_H_PECM3 = Cylinder.from_points(0.0202946443, 1, C_H_PECM3_1, C_H_PECM3_2, "humerus_right")
+cylinder_T_PECM3 = Cylinder.from_points(0.025, -1, C_T_PECM3_1, C_T_PECM3_2, False, "thorax")
+cylinder_H_PECM3 = Cylinder.from_points(0.0202946443, 1, C_H_PECM3_1, C_H_PECM3_2, True, "humerus_right")
 
 # cylinder_H_PECM2.rotate_around_axis(-45)
 
 cylinders_PECM2=[cylinder_T_PECM2, cylinder_H_PECM2]
 cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
-
 muscles_selected = ["PECM2", "PECM3"]
-
 
 # test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model, q_ranges, True) 
 
-# data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges_PECM2, 5000, "df_PECM2_datas_5000_6.xlsx") 
+data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_5000.xlsx", True, False) 
 # ----------------------
 # train_model_supervised_learning("df_PECM2_datas_5000_more.xlsx")
 # print_informations_environment()
@@ -134,12 +131,12 @@ muscles_selected = ["PECM2", "PECM3"]
 
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges])
 # q_fixed = np.array([0.0,0.0,0.0,0.0])
-q_fixed = np.array([(ranges[0]) for ranges in q_ranges])
+q_fixed = np.array([(ranges[1]) for ranges in q_ranges])
 # q_fixed = np.array([q_ranges[0][0], q_ranges[1][1], q_ranges[2][0], 0.0])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
-data_for_learning_plot ("data_test_PECM2_q2_6iuyf.xlsx", muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
-                        0, 100, plot_all=False, plot_limit=False)
+# data_for_learning_plot ("data_test_PECM2_all_q2fsadffd.xlsx", muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
+#                         1, 20, plot_all=True, plot_limit=False)
 
 P = np.array([-3.78564,-2.53658,0])
 S = np.array([7.0297,1.44896,1.21311])
@@ -161,10 +158,10 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 
 
 # Show
-b = bioviz.Viz(loaded_model=model)
-b.set_q(q)
-b.exec()
+# b = bioviz.Viz(loaded_model=model)
+# b.set_q(q)
+# b.exec()
 
-exit(0)
+# exit(0)
 
 #################

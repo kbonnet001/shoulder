@@ -1,9 +1,10 @@
 import numpy as np
-from wrapping.step_1 import find_cylinder_frame, find_matrix, switch_frame, transpose_switch_frame
+from wrapping.step_1 import switch_frame, transpose_switch_frame
 from scipy.spatial.transform import Rotation as R
+from scipy.linalg import norm
 
 class Cylinder:
-    def __init__(self, radius, side, c1, c2, matrix, segment = None, segment_index = None, gcs_seg_0 = None):
+    def __init__(self, radius, side, c1, c2, matrix, point_on_cylinder = False, segment = None, segment_index = None, gcs_seg_0 = None):
         """Initialize a cylinder with a transformation matrix
         
         - radius : radius of the cylinder
@@ -25,12 +26,13 @@ class Cylinder:
         self.c2 = c2
         self.matrix_initial = matrix
         self.matrix = matrix
+        self.point_on_cylinder = point_on_cylinder
         self.segment = segment
         self.segment_index = segment_index
         self.gcs_seg_0 = gcs_seg_0
 
     @classmethod
-    def from_matrix(cls, radius, side, matrix, segment=None, d = 0.1):
+    def from_matrix(cls, radius, side, matrix, point_on_cylinder=False, segment=None, d = 0.1):
         """
         Create a cylinder with a given transformation matrix.
         
@@ -51,10 +53,10 @@ class Cylinder:
         c1 = origin - d * unit_AB
         c2 = origin + d * unit_AB
         
-        return cls(radius, side, c1, c2, matrix, segment)
+        return cls(radius, side, c1, c2, matrix, point_on_cylinder, segment)
     
     @classmethod
-    def from_points(cls, radius, side, c1, c2, segment=None):
+    def from_points(cls, radius, side, c1, c2, point_on_cylinder=False, segment=None):
         """Create a cylinder with two points and create a matrix for this cylinder
         
         - radius : radius of the cylinder
@@ -68,7 +70,7 @@ class Cylinder:
         frame = find_cylinder_frame([c1, c2])
         midpoint = (c1 + c2) / 2
         matrix = find_matrix(frame, midpoint)
-        return cls(radius, side, c1, c2, matrix, segment)
+        return cls(radius, side, c1, c2, matrix, point_on_cylinder, segment)
         
     def rotate_around_axis(self, alpha) :
         """
@@ -88,7 +90,13 @@ class Cylinder:
                                 [ new_rotation_matrix[2,0], new_rotation_matrix[2,1],new_rotation_matrix[2,2], self.matrix[2,3]],
                                  [ 0.        ,  0.        ,  0.        ,  1.        ]])
         return None
-        
+    
+    def compute_new_radius(self, coordinates_points_on_cylinder) : 
+        if self.point_on_cylinder == True : 
+            coordinates_points_on_cylinder_local = transpose_switch_frame(coordinates_points_on_cylinder, self.matrix)
+            self.radius = np.linalg.norm(coordinates_points_on_cylinder_local[:2])
+            print("radius = ", self.radius)
+    
     def find_points(self, d = 0.01):
         
         origin = self.matrix[0:-1,-1]
@@ -103,40 +111,20 @@ class Cylinder:
         print("self.c1 = ", self.c1)
         self.c1, self.c2 =  origin - d * unit_AB, origin + d * unit_AB
         print("self.c1 = ", self.c1)
-    
+        
     def compute_new_matrix_segment(self, model, q) :
         """ Compute the matrix with new q
         - model : model 
         - q : array 4*2, refer to humerus segment"""
         
-        matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
-        
         gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][self.segment_index]
-        self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
+        # self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
+        rot = self.gcs_seg_0[:3, :3].T  
+        rototrans = np.eye(4)
+        rototrans[:3, :3] = rot
+        rototrans[:3, 3] = -rot @ self.gcs_seg_0[:3, 3]
         
-        print("Insertion doit être là = ", switch_frame([0.016, -0.0354957, 0.005], gcs_seg)) # oui
-        
-        # truc bizarre
-        # # self.matrix = np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial)
-        # self.c1 = switch_frame([0, 0.05, 0], gcs_seg)
-        # self.c2 = switch_frame([0,-0.05, 0], gcs_seg)
-        
-        # # self.c1 = np.dot(matrix_rot_zy[0:3, 0:3], self.c1)
-        # # self.c2 = np.dot(matrix_rot_zy[0:3, 0:3], self.c2)
-        # print("")
-        # frame = find_cylinder_frame([self.c1, self.c2])
-        # midpoint = (self.c1 + self.c2) / 2
-        # self.matrix = find_matrix(frame, midpoint)
-        
-    def compute_new_matrix_segment2(self, model, q) :
-        """ Compute the matrix with new q
-        - model : model 
-        - q : array 4*2, refer to humerus segment"""
-        
-        matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
-        
-        gcs_seg = [gcs.to_array() for gcs in model.allGlobalJCS(q)][self.segment_index]
-        self.matrix = np.dot(gcs_seg, np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial))
+        matrice1 = np.dot(gcs_seg, rototrans @ self.matrix_initial)
         
         print("Insertion doit être là = ", switch_frame([0.016, -0.0354957, 0.005], gcs_seg)) # oui
         
@@ -167,10 +155,12 @@ class Cylinder:
         midpoint = (self.c1 + self.c2) / 2
         self.matrix = find_matrix(frame, midpoint)
         
+        matrice2 = self.matrix
+        
+        # assert np.array_equal(matrice1, matrice2), f"matrice 1 = {matrice1} et matrice 2 = {matrice2}"
+        
         # self.change_side2(self.rotation_direction(self.matrix_initial, self.matrix))
         # self.change_side2(self.rotation_direction(self.gcs_seg_0, gcs_seg))
-        
-        print("radius = ", self.radius)
     
         
     def compute_matrix_rotation_zy(self, matrix_rot_zy) : 
@@ -178,12 +168,6 @@ class Cylinder:
         - matrix_rot_zy : rotation matrix z --> y"""
         
         self.matrix = np.dot(matrix_rot_zy, self.matrix)
-        
-        # self.c1 = transpose_switch_frame(self.c1, matrix_rot_zy)
-        # self.c2 = transpose_switch_frame(self.c2, matrix_rot_zy)
-        
-        # self.c1_initial = switch_frame(self.c1_initial, np.transpose(matrix_rot_zy))
-        # self.c2_initial = switch_frame(self.c2_initial, np.transpose(matrix_rot_zy))
         
     def compute_seg_index_and_gcs_seg_0(self, q_initial, model, segment_names) :
         """Compute gcs 0 (inital) and index of cylinder(s)
@@ -194,23 +178,6 @@ class Cylinder:
         
         self.segment_index = segment_names.index(self.segment) 
         self.gcs_seg_0 = [gcs.to_array() for gcs in model.allGlobalJCS(q_initial)][self.segment_index] 
-        
-    # def correcte_side(self, q) :
-        
-    #     # if q0 == 0 : 
-    #     #     self.side = 1
-    #     # else : 
-    #     #     self.side = q0 / abs(q0)
-    #     if q[2] < 0.355 and q[0] < -0.367 and q[1] > -1.497: 
-    #         self.side = -1
-    #     else : 
-    #         self.side = 1
-    #     # if q[1] > -1.49725651 and q[0] != 0 :#and q[2] != 2 :  # -1.49725651
-    #     #     self.side = q[0] / abs(q[0]) #* q[2] / abs(q[2])
-    #     # # elif q[1] < -1.49725651 and q[2] != 0 : # -1.49725651
-    #     # #     self.side = q[2] / abs(q[2])
-    #     # else : 
-        #     self.side = 1
 
     def change_raidus(self, new_radius) : 
         self.raidus = new_radius
@@ -222,8 +189,6 @@ class Cylinder:
     def change_side2(self, new_side) : 
         self.side = new_side
         # self.side = self.side * -1
-        
-
         
     def extract_angles(self, matrix):
         """Extract rotation angles around x and y from a 4x4 rotation-translation matrix."""
@@ -272,6 +237,22 @@ class Cylinder:
 
         return direction
 
+    def compute_if_tangent_point_in_cylinder(self, p1, p2, bool_inactive) :
+        p1_local = transpose_switch_frame(p1, self.matrix)
+        p2_local = transpose_switch_frame(p2, self.matrix)
+        
+        r1 = np.linalg.norm(p1_local[:2])
+        r2 = np.linalg.norm(p2_local[:2])
+        
+        print("r1 = ", r1)
+        print("r2 = ", r2)
+        
+        if (r1 < self.radius or r2 < self.radius) or (
+            bool_inactive == True and does_segment_intersect_cylinder(p1_local, p2_local, self.radius)) : 
+            return True
+        else : 
+            return False
+    
     def __str__(self):
         return (f"Cylinder(radius = {self.radius}, "
                 f"side=\n{self.side}, "
@@ -280,4 +261,71 @@ class Cylinder:
                 f"segment : {self.segment},"
                 f"segment_index=\n{self.segment_index}, "
                 f"gcs_seg_0=\n{self.gcs_seg_0})")
+
+def find_cylinder_frame(center_circle) :
+
+        """Find the frame of the cylinder
         
+        INPUT
+        - center_circle : 2*array 3*1 coordinates of the first and second circles of the cylinder
+        
+        OUTPUT
+        - cylinder_frame : array 3*3 ortonormal frame for the cylinder"""
+
+        vect = center_circle[1] - center_circle[0]
+        unit_vect = vect / norm(vect) # z axis du cylindre
+
+        # Make some vector not in the same direction as vect_U
+        not_unit_vect = np.array([1, 0, 0])
+        if (unit_vect == [1,0,0]).all() or (unit_vect == [-1,0,0]).all():
+            not_unit_vect = np.array([0, 1, 0])
+
+        # Make a normalized vector perpendicular to vect_U
+        n1 = np.cross(unit_vect, not_unit_vect)/norm(np.cross(unit_vect, not_unit_vect)) # notre y par exemple
+
+        # Make unit vector perpendicular to v and n1
+        n2 = np.cross(n1, unit_vect) # notre x par exemple
+
+        # return np.array([n2,n1, unit_vect])
+        return np.transpose(np.array([n2,n1, unit_vect]))
+
+def find_matrix(cylinder_frame, origin) :
+  return np.array([[cylinder_frame[0][0], cylinder_frame[0][1], cylinder_frame[0][2], origin[0]],
+                        [cylinder_frame[1][0], cylinder_frame[1][1], cylinder_frame[1][2], origin[1]],
+                        [cylinder_frame[2][0], cylinder_frame[2][1], cylinder_frame[2][2], origin[2]],
+                        [0, 0, 0, 1]])
+
+
+def does_segment_intersect_cylinder(P1, P2, R, epsilon = 0.0001):
+    
+    R -= epsilon
+    # Extraire les coordonnées x et y des points P1 et P2
+    x1, y1, z1 = P1
+    x2, y2, z2 = P2
+    
+    # Calculer les coefficients de l'équation paramétrique du segment projeté sur le plan xy
+    dx = x2 - x1
+    dy = y2 - y1
+    
+    # Coefficients de l'équation quadratique a*t^2 + b*t + c = 0
+    a = dx**2 + dy**2
+    b = 2 * (x1 * dx + y1 * dy)
+    c = x1**2 + y1**2 - R**2
+    
+    # Résoudre l'équation quadratique pour trouver les valeurs de t
+    discriminant = b**2 - 4 * a * c
+    
+    if discriminant < 0 :
+        # Pas d'intersection avec le cylindre
+        return False
+    
+    # Trouver les racines de l'équation quadratique
+    sqrt_discriminant = np.sqrt(discriminant)
+    t1 = (-b + sqrt_discriminant) / (2 * a)
+    t2 = (-b - sqrt_discriminant) / (2 * a)
+    
+    # Vérifier si l'une des valeurs de t se trouve dans l'intervalle [0, 1]
+    if (0 <= t1 <= 1) or (0 <= t2 <= 1):
+        return True
+    else:
+        return False
