@@ -244,9 +244,6 @@ class Cylinder:
         r1 = np.linalg.norm(p1_local[:2])
         r2 = np.linalg.norm(p2_local[:2])
         
-        print("r1 = ", r1)
-        print("r2 = ", r2)
-        
         if (r1 < self.radius or r2 < self.radius) or (
             bool_inactive == True and does_segment_intersect_cylinder(p1_local, p2_local, self.radius)) : 
             return True

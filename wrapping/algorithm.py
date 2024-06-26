@@ -4,13 +4,14 @@ from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
 # from wrapping.step_4 import segment_length_single_cylinder
 from wrapping.plot_cylinder import plot_double_cylinder_obstacle
 import numpy as np
-from wrapping.paspropre import determine_if_needed_change_side, determine_if_needed_change_side_2
+from wrapping.paspropre import determine_if_needed_change_side
+from wrapping.plot_cylinder import plot_cadran_double_cylinder, plot_cadran_single_cylinder
 
 
 # Algorithm
 #---------------------------
 
-def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) :
+def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder, plot_cadran = False) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -62,10 +63,13 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) 
    # ------
    v1o = switch_frame(v1, Cylinder.matrix)
    v2o = switch_frame(v2, Cylinder.matrix)
+   
+   if plot_cadran == True : 
+      plot_cadran_single_cylinder(P_cylinder_frame[:2], S_cylinder_frame[:2], Cylinder, v1[:2], v2[:2], obstacle_tangent_point_inactive)
 
    return v1o, v2o, obstacle_tangent_point_inactive, segment_length
 
-def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
+def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_cadran = False) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -178,6 +182,11 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
    Go = switch_frame(G, Cylinder_U.matrix)
    Ho = switch_frame(H, Cylinder_V.matrix)
    To = switch_frame(T, Cylinder_V.matrix)
+   
+   if plot_cadran == True : 
+      plot_cadran_double_cylinder([P_U_cylinder_frame[:2], P_V_cylinder_frame[:2]], [S_U_cylinder_frame[:2], 
+        S_V_cylinder_frame[:2]], [Cylinder_U, Cylinder_V], [Q[:2], H[:2]], [G[:2], T[:2]], 
+                                  [Q_G_inactive, H_T_inactive], ["_U", "_V"])
    
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
 
