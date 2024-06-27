@@ -20,22 +20,39 @@ def prepare_data(batch_size, filename, plot=False) :
     dataset_muscle_PECM2 = MuscleDataset(X_tensor, y_tensor)
 
     train_val_size, test_size = compute_samples(dataset_muscle_PECM2, 0.80)
-    train_val_dataset, test_dataset = random_split(dataset_muscle_PECM2, [train_val_size, test_size]) #450 + 50
+    train_val_dataset, test_dataset = random_split(dataset_muscle_PECM2, [train_val_size, test_size]) 
 
     train_size, val_size = compute_samples(train_val_dataset, 0.80)
-    train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size]) #405 + 45
+    train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size]) 
     
     if plot : 
         plot_datas_distribution(X_tensor, y_tensor)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle = True) #13
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle = False) #2
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle = False) #2
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle = True) 
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle = False) 
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle = False) 
     
     input_size = len(train_dataset[0][0])
     output_size = 1 
     
     return train_loader, val_loader, test_loader, input_size, output_size
+
+def prepare_data_from_folder(batch_size, folder_name, plot=False) : 
+
+    data_loaders = []
+    
+    # Parcourir tous les fichiers dans le dossier
+    for filename in os.listdir(folder_name):
+        if filename.endswith(".xlsx") or filename.endswith(".xls"):
+            file_path = os.path.join(folder_name, filename)
+            print(f"Processing file: {file_path}")
+            
+            # Appliquer la fonction prepare_data à chaque fichier
+            train_loader, val_loader, test_loader, input_size, output_size = prepare_data(batch_size, file_path, plot)
+            data_loaders.append((train_loader, val_loader, test_loader, input_size, output_size))
+    
+    return data_loaders
+    
 
 # def train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, activation, n_layers, n_nodes, L1_penalty, L2_penalty, use_batch_norm, dropout_prob, learning_rate, n_epochs, file_path) : 
 

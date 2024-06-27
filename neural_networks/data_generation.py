@@ -1,186 +1,12 @@
 import numpy as np
-from wrapping.algorithm import single_cylinder_obstacle_set_algorithm, double_cylinder_obstacle_set_algorithm
-from wrapping.plot_cylinder import plot_one_cylinder_obstacle, plot_double_cylinder_obstacle
-import pandas as pd
-from scipy.linalg import norm
 import matplotlib.pyplot as plt
-from openpyxl import load_workbook
 from neural_networks.ExcelBatchWriter import ExcelBatchWriter
+from neural_networks.discontinute import *
+from neural_networks.functions_data_generation import *
+import copy
+import pandas as pd
 
-from wrapping.step_1 import *
-
-def initialisation_generation(model, muscle_selected, cylinders) :
-   # Find index of the muscle selected
-   muscle_names = [model.muscle(i).name().to_string() for i in range(model.nbMuscles())]
-   muscle_index = find_index_muscle(muscle_selected, muscle_names)
-
-   # Find name of segments and matrix of cylinders  
-   segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
-   # q_initial = np.array([0.,-0.01,0.,0.05])
-   q_initial = np.array([0.0, 0.0, 0.0, 0.0]) 
-   for cylinder in cylinders : 
-      cylinder.compute_seg_index_and_gcs_seg_0(q_initial, model, segment_names)
-   
-   origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q_initial) # global initial
-   points = [origin_muscle, insertion_muscle]
-   for k in range(2) : 
-      cylinders[k].compute_new_radius(points[k])
-   
-   return muscle_index
-
-def update_points_position(model, muscle_index, q) : 
-   # Updates
-   model.updateMuscles(q) 
-   mus = model.muscle(muscle_index) 
-   
-   model.UpdateKinematicsCustom(q)
-
-   # Find coordinates of origin point (P) and insertion point (S)
-   origin_muscle = mus.musclesPointsInGlobal(model, q)[0].to_array() 
-   insertion_muscle = mus.musclesPointsInGlobal(model, q)[-1].to_array() 
-   
-   # ces points sont dans le repere global (verifiee)
-   # cela revient à faire :
-   # switch_frame([0.016, -0.0354957, 0.005], gcs_seg))
-   
-   return origin_muscle, insertion_muscle
-       
-
-def find_index_muscle(muscle, muscle_names):
-   
-   """ Find index of the muscle selected in the name list
-   
-   INPUT : 
-   - muscle : string, name of the muscle selected
-   - muscle_names : string, list of muscle names
-   
-   OUTPUT : 
-   - position : int, position of the muscle in the list"""
-
-   try:
-      position = muscle_names.index(muscle) 
-      return position
-   except ValueError:
-      valid_muscles = ", ".join(muscle_names)
-      raise ValueError(f"Invalid muscle name '{muscle}'. You must choose a valid muscle from this list: [{valid_muscles}]")
-
-def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot = False) :
-
-   """Compute segment length
-   
-   INPUT : 
-   - model : model
-   - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-   - q : array 4*2, q randomly generated
-   - origin_muscle : array 1*3, coordinate of the origin point
-   - insertion_muscle : array 1*3, coordinate of the insertion point
-   - segment_U_index : int, index of the segment of U cylinder (if it exist)
-   - segment_V_index : int, index of the segment of V cylinder (if it exist)
-   - gcs_seg_U_0 : gcs 0 (inital) of the segment U (if it exist)
-   - gcs_seg_V_0 : gcs 0 (inital) of the segment V (if it exist)
-   - plot = bool, (default = False) plot cylinder(s), points and muscle path
-   
-   OUTPUT : 
-   - segment_length : length of muscle path """
-
-   print("on fait l'algo avec celui ci = ", insertion_muscle)
-   # First of all, create a rotation matrix (the model have y and not z for ax up) 
-   # Single cylinder algo and double cylinders algo don't work without this change
-   matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
-
-   # Rotation
-   origin_muscle_rot = np.dot(matrix_rot_zy[0:3, 0:3], origin_muscle)
-   insertion_muscle_rot = np.dot(matrix_rot_zy[0:3, 0:3], insertion_muscle)
-   points = [origin_muscle_rot, insertion_muscle_rot]
-   
-   for cylinder in cylinders :
-      cylinder.compute_new_matrix_segment(model, q) 
-      cylinder.compute_matrix_rotation_zy(matrix_rot_zy) 
-         
-   for k in range(2) : 
-      cylinders[k].compute_new_radius(points[k])
-   
-   if (len(cylinders) == 0) :
-      # Muscle path is straight line from origin_point to final_point
-      segment_length = norm(np.array(origin_muscle_rot) - np.array(insertion_muscle_rot))
-      points_not_in_cylinder = []
-      bool_inactive = []
-
-   elif (len(cylinders) == 1) :
-
-      Q_rot, T_rot, Q_T_inactive, segment_length = single_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0])
-      points_not_in_cylinder = [origin_muscle_rot, insertion_muscle_rot]
-      bool_inactive = [Q_T_inactive]
-      
-      if plot == True : 
-         plot_one_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0], Q_rot, T_rot, Q_T_inactive)
-
-   else : # (len(cylinders) == 2 ) 
-
-      Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive , segment_length  = double_cylinder_obstacle_set_algorithm(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1])
-      points_not_in_cylinder = [origin_muscle_rot, H_rot, G_rot, insertion_muscle_rot]
-      bool_inactive = [Q_G_inactive, H_T_inactive]
-      
-      if plot == True : 
-         plot_double_cylinder_obstacle(origin_muscle_rot, insertion_muscle_rot, cylinders[0], cylinders[1], Q_rot, G_rot, H_rot, T_rot, Q_G_inactive, H_T_inactive)
-
-   data_ignored = find_if_data_ignored(cylinders, points_not_in_cylinder, bool_inactive)
-   
-   print("data_ignored = ", data_ignored)
-      
-   return segment_length, data_ignored
-
-def find_if_data_ignored(cylinders, points, bool_inactive) : 
-   for k in range (len(cylinders)) : 
-      if cylinders[k].compute_if_tangent_point_in_cylinder(points[2*k], points[2*k+1], bool_inactive[k]) : 
-         return True
-   
-   return False
-
-# def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, plot=False) :
-   
-#    """Create a data frame for prepare datas
-   
-#    INPUT
-#    - muscle_selected : string, name of the muscle selected. 
-#                         Please chose an autorized name in this list : 
-#                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
-#                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
-#    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-#    - model : model 
-#    - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
-#    - dataset_size : int, number of data we would like
-#    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)"""
-   
-#    writer = ExcelBatchWriter(filename, batch_size=100)
-#    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
- 
-#    # Limits of q
-#    min_vals = [row[0] for row in q_ranges_muscle]
-#    max_vals = [row[1] for row in q_ranges_muscle] 
-
-#    for k in range (dataset_size) : 
-#       print("k = ", k)
-
-#       # Generate a random q 
-#       q = np.random.uniform(low=min_vals, high=max_vals)
-      
-#       origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
-      
-#       # ------------------------------------------------
-
-#       segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot)  
-   
-#       # Add line to data frame
-#       # add_line_df(filename, muscle_index, q, origin_muscle, insertion_muscle, segment_length)
-#       writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
-   
-#    # Ensure remaining lines are written to file
-#    writer.close()
-   
-#    return None
-
-def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, data_without_error = False, plot=False) :
+def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas
    
@@ -213,7 +39,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
       
       # ------------------------------------------------
 
-      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot)  
+      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
    
       if (data_ignored == False and data_without_error == True) or (data_without_error == False) : 
          # Add line to data frame
@@ -228,7 +54,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    
    return None
 
-def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, plot=False) :
+def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, plot=False, plot_cadran=False) :
    
    """Test limits of q for the muscle selected
    
@@ -265,12 +91,12 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
             
             # ------------------------------------------------
 
-            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot)  
+            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
             print("segment_length = ", segment_length)
 
    return None
 
-def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, num_points = 100, plot_all = False, plot_limit = False) :
+def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
    """Create a data frame for prepare datas
    
@@ -316,10 +142,10 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
       # ------------------------------------------------
 
       if k in [0,num_points/2, num_points] and plot_limit :
-         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit)  
+         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
          
       else :  
-         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all)  
+         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
       
       print("segment_length = ", segment_length)
       qs.append(qi)
@@ -343,6 +169,99 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
    plt.grid(True)
    plt.show()
    
+   find_discontinute(qs, segment_lengths)
+   
+   writer.close()
+   
+   return None
+
+def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, num_points = 50, data_without_error = False, plot=False, plot_cadran = False) :
+   
+   """Create a data frame for prepare datas
+   
+   INPUT
+   - muscle_selected : string, name of the muscle selected. 
+                        Please chose an autorized name in this list : 
+                        ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
+                        'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
+   - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
+   - model : model 
+   - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
+   - dataset_size : int, number of data we would like
+   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)"""
+   
+   writer = ExcelBatchWriter(filename, batch_size=100)
+   muscle_index = initialisation_generation(model, muscle_selected, cylinders)
+ 
+   # Limits of q
+   min_vals = [row[0] for row in q_ranges_muscle]
+   max_vals = [row[1] for row in q_ranges_muscle] 
+
+   num_line = 0
+   while num_line < dataset_size : 
+      print("num line = ", num_line)
+
+      # Generate a random q 
+      q_ref = np.random.uniform(low=min_vals, high=max_vals)
+      
+      for i in range (3) :
+         print("i = ", i)
+         
+         qs = []
+         segment_lengths = []
+         datas_ignored = []
+         lines = []
+         to_remove = []
+         
+         q = copy.deepcopy(q_ref)
+         
+         for k in range (num_points) : 
+            print("k = ", k)
+            
+            # Incrémenter qi
+            qi = k * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0]
+            print("qi = ", qi)
+            
+            q[i] = qi
+            
+            print("q = ", q)
+         
+            origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
+            
+            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+            
+            qs.append(qi)
+            segment_lengths.append(segment_length)
+            datas_ignored.append(data_ignored)
+            
+            lines.append([muscle_index, q, origin_muscle, insertion_muscle, segment_length])
+            
+         # on a fini de faire la courbe
+         
+         # on cherche maintenant les emplacements de discontinuite
+         discontinuites = find_discontinute(qs, segment_lengths)
+         for discontinuite in discontinuites : 
+            min, max = data_to_remove(discontinuite, num_points, 5)
+            to_remove.extend(range(min, max + 1))
+         position = [n for n, ignored in enumerate(datas_ignored) if ignored]
+         if len(position) != 0 : 
+            min, max = find_discontinuites_from_error_wrapping(position, num_points, range = 5)
+            to_remove.extend(range(min, max + 1))
+         
+         # tri pour ne garder aue les ligne à supprimer et ne pas avoir de doublon
+         to_remove = sorted(set(to_remove), reverse=True)
+         
+         for index in to_remove :
+            del lines[index]
+         
+         # ajouter les lignes dans le sheet
+         for line in lines:
+            writer.add_line(*line)
+            num_line+=1
+            if num_line > dataset_size : 
+               break
+
+   # Ensure remaining lines are written to file
    writer.close()
    
    return None
