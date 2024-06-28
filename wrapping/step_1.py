@@ -1,12 +1,11 @@
 import numpy as np
 
-
 # Functions for Step 1
 #---------------------
 
-def switch_frame(point, matrix) :
+def switch_frame(points, matrix) :
 
-  """ Express point in a new frame
+  """ Express point in a new frame/ global frame
   
    INPUT
    - point : array 3*1 coordinates of the point
@@ -21,11 +20,15 @@ def switch_frame(point, matrix) :
                                      [0, 0, 0, 1]])
    ----------------------------------"""
 
-  return (matrix @ np.concatenate((point, [1])))[:3]
+  # return (matrix @ np.concatenate((point, [1])))[:3]
+  if isinstance(points[0], (list, np.ndarray)):  # Check if points is a list of points
+    return [(matrix @ np.concatenate((point, [1])))[:3] for point in points]
+  else:  # Single point
+      return (matrix @ np.concatenate((points, [1])))[:3]
 
-def transpose_switch_frame(point, matrix) :
+def transpose_switch_frame(points, matrix) :
 
-  """Express point in its previous frame
+  """Express point in its previous frame/ in local frame
   
   INPUT
   - point : array 3*1 coordinates of the point
@@ -40,18 +43,23 @@ def transpose_switch_frame(point, matrix) :
                                   [0, 0, 0, 1]])
   ----------------------------------"""
 
-  return (np.linalg.inv(matrix)@ np.concatenate((point, [1])))[:3]
+  # return (np.linalg.inv(matrix)@ np.concatenate((point, [1])))[:3]
+  if isinstance(points[0], (list, np.ndarray)):  # Check if points is a list of points
+    return [(np.linalg.inv(matrix)@ np.concatenate((point, [1])))[:3] for point in points]
+  else:  # Single point
+      return (np.linalg.inv(matrix)@ np.concatenate((points, [1])))[:3]
+
+def switch_frame_UV(points, matrix_U, matrix_V) : 
+  """Express point, its local frame, to an other local frame
   
-  # point = np.array(([1, 2, 3, 1], [1, 2, 3, 1],[1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 3, 1])).T
-  # rot = matrix[:3, :3].T  
-  # rototrans = np.eye(4)
-  # rototrans[:3, :3] = rot
-  # rototrans[:3, 3] = -rot @ matrix[:3, 3]
-  # # rototrans @ point
-  # return (rototrans @ np.concatenate((point, [1])))[:3]
-
-
-def switch_frame_UV(point, matrix_U, matrix_V) : 
-  point = switch_frame(point, matrix_U)
-  point = transpose_switch_frame(point, matrix_V)
-  return point
+  INPUT
+  - point : array 3*1 coordinates of the point
+  - matrix_U : array 4*4 rotation_matrix and vect, local frame of point
+  - matrix_V : array 4*4 rotation_matrix and vect, new local frame 
+  
+  OUTPUT
+  - point_new_local_frame : array 3*1 coordinates of the point in the new local frame"""
+  
+  points = switch_frame(points, matrix_U)
+  points = transpose_switch_frame(points, matrix_V)
+  return points

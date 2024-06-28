@@ -7,13 +7,14 @@ from scipy.linalg import norm
 from wrapping.plot_cylinder import *
 from wrapping.algorithm import*
 from wrapping.Cylinder import Cylinder
-from neural_networks.discontinute import *
+from neural_networks.discontinuite import *
 
 from sklearn.model_selection import train_test_split
 # from neural_networks.data_preparation import print_informations_environment
 # from neural_networks.main_trainning import main_superised_learning
 
 from neural_networks.data_generation import *
+# from neural_networks.main_trainning import prepare_data_from_folder
 
 #################### 
 # Code des tests
@@ -113,9 +114,9 @@ cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
 muscles_selected = ["PECM2", "PECM3"]
 
-# test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
+test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
 
-# data_for_learning (muscles_selected[1],cylinders_PECM3, model, q_ranges, 5000, "df_PECM3_datas_without_error_5000xvd.xlsx", True, False) 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_part_5000.xlsx", True, False) 
 # ----------------------
 # train_model_supervised_learning("df_PECM2_datas_5000_more.xlsx")
 # print_informations_environment()
@@ -128,10 +129,12 @@ q_fixed = np.array([(ranges[1]) for ranges in q_ranges])
 # q_fixed = np.array([q_ranges[0][0], q_ranges[1][1], q_ranges[2][0], 0.0])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
-# data_for_learning_plot ("data_test_PECM2_all_q2fsadffd.xlsx", muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
-#                         1, 50, plot_all=False, plot_limit=False)
+# data_for_learning_plot (muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
+#                         1, "data_test_PECM2_discontinuity.xlsx", 100, plot_all=False, plot_limit=False)
 
-data_for_learning_without_discontinuites(muscles_selected[0], cylinders_PECM2, model, q_ranges, 5000, "essai3_PECM2_5000.xlsx", num_points = 50, data_without_error = False, plot=False, plot_cadran = False)
+data_for_learning_without_discontinuites(muscles_selected[0], cylinders_PECM2, model, q_ranges, 5000, 
+                "df_PECM2_datas_witfgjgfhout_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
+                plot=False, plot_cadran = False)
    
 
 P = np.array([-3.78564,-2.53658,0])
@@ -166,3 +169,6 @@ p1 = np.array([2.0, 2.0])
 p2 = np.array([3.0, 3.0])
 
 # find_discontinute(p0, p1, p2)
+
+# data_loaders = prepare_data_from_folder(32, "datas", plot=False)
+# print("")

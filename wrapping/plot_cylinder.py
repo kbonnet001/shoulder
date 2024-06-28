@@ -94,8 +94,7 @@ def data_semi_circle(v1, v2, matrix, r, num_points=100) :
   - semi_circle_points : array nm_point*n3 coordinates of points for the representation of the semi-circle"""
 
   # Change frame
-  v1 = transpose_switch_frame(v1, matrix)
-  v2 = transpose_switch_frame(v2, matrix)
+  v1, v2 = transpose_switch_frame([v1, v2], matrix)
   c = np.array([0,0, (v1[2]+v2[2])/2])
 
   # Calculation of the normal vect of plan def by v1, v2 and c1
@@ -112,6 +111,7 @@ def data_semi_circle(v1, v2, matrix, r, num_points=100) :
 
   for i in range (len(semi_circle_points)) :
     semi_circle_points[i] = switch_frame(semi_circle_points[i], matrix)
+  # semi_circle_points = switch_frame(semi_circle_points, matrix)
 
   return semi_circle_points
 
