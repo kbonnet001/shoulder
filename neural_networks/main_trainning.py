@@ -1,5 +1,5 @@
-from neural_networks.data_preparation import data_preparation_create_tensor, compute_samples, plot_datas_distribution
-from neural_networks.data_tranning import plot_loss_and_accuracy, plot_predictions_and_targets, train, evaluate
+from neural_networks.data_preparation import data_preparation_create_tensor, compute_samples
+from neural_networks.data_tranning import train, evaluate
 from neural_networks.Model import Model
 from neural_networks.activation_functions import *
 from neural_networks.MuscleDataset import MuscleDataset
@@ -173,13 +173,13 @@ def main_superised_learning(filename, retrain, file_path) :
     if retrain or os.path.exists(file_path) == False: 
         
         n_layers = 1
-        n_nodes = [10]
+        n_nodes = [12]
         
         activation = nn.ReLU()
         L1_penalty = 0.001
         L2_penalty = 0.001
         use_batch_norm = True
-        dropout_prob = 0.5
+        dropout_prob = 0.2
         learning_rate = 1e-4
 
         n_epochs = 1000

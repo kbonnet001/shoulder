@@ -3,7 +3,7 @@ from wrapping.algorithm import single_cylinder_obstacle_set_algorithm, double_cy
 from wrapping.plot_cylinder import plot_one_cylinder_obstacle, plot_double_cylinder_obstacle
 from scipy.linalg import norm
 from openpyxl import load_workbook
-from neural_networks.discontinute import *
+from neural_networks.discontinuite import *
 
 def initialisation_generation(model, muscle_selected, cylinders) :
    # Find index of the muscle selected

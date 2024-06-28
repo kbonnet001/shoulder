@@ -1,6 +1,7 @@
 import matplotlib as plt
+import matplotlib.pyplot as plt
 import torch
-from data_generation import mean_distance
+from neural_networks.data_tranning import mean_distance
 
 def plot_datas_distribution(X_tensor, y_tensor):
     """To visualise tensors distribution
