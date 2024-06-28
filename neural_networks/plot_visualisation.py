@@ -10,7 +10,7 @@ def plot_datas_distribution(X_tensor, y_tensor):
     - X_tensor : X tensor with all features (columns except the last one)
     - y_tensor : y tensor with the target values (last column) """
     
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10)) 
+    _, axs = plt.subplots(2, 3, figsize=(15, 10)) 
     
     for i in range(4):
         row = i // 3  
@@ -36,10 +36,11 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     - val_losses
     - train_accs
     - val_accs """
-    # Créer une figure avec deux sous-graphiques
+    
+    # Create subplots
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
-    # Tracer les courbes de pertes
+    # Plot loss graph
     axs[0].plot(train_losses, label='Train Loss')
     axs[0].plot(val_losses, label='Validation Loss')
     axs[0].set_xlabel('Epoch')
@@ -47,7 +48,7 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     axs[0].set_title('Train and Validation Loss over Epochs')
     axs[0].legend()
 
-    # Tracer les courbes d'accuracy
+    # Plot accuracy graph
     axs[1].plot(train_accs, label='Train Accuracy')
     axs[1].plot(val_accs, label='Validation Accuracy')
     axs[1].set_xlabel('Epoch')
@@ -55,7 +56,6 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     axs[1].set_title('Train and Validation Accuracy over Epochs')
     axs[1].legend()
 
-    # Afficher la figure
     plt.tight_layout()
     plt.show()
     
@@ -96,26 +96,7 @@ def plot_predictions_and_targets(model, loader, string_loader, num) :
     OUTPUT:
     - None: The function generates a plot showing the true values and predicted values.
     """
-
-    # # Obtain predictions and true values
-    # predictions, targets = get_predictions_and_targets(model, loader)
     
-    # # Convertir les listes en numpy.ndarray
-    # predictions_np = np.array(predictions)
-    # targets_np = np.array(targets)
-
-    # # Convertir les numpy.ndarray en torch.Tensor
-    # predictions_tensor = torch.tensor(predictions_np)
-    # targets_tensor = torch.tensor(targets_np)
-
-    # # Calculer la mean_distance
-    # acc = mean_distance(predictions_tensor, targets_tensor)
-    
-    # # acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
-    # print("acc = ", acc)
-
-
-    # Obtenir les prédictions et les valeurs réelles pour l'ensemble de test
     predictions, targets = get_predictions_and_targets(model, loader)
 
     acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))

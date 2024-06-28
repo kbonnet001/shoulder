@@ -4,11 +4,11 @@ from neural_networks.ExcelBatchWriter import ExcelBatchWriter
 from neural_networks.discontinuite import *
 from neural_networks.functions_data_generation import *
 import copy
-import pandas as pd
 
 def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas
+   Datas are generated ponctually, independantly and uniformly
    
    INPUT
    - muscle_selected : string, name of the muscle selected. 
@@ -19,7 +19,11 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    - model : model 
    - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
    - dataset_size : int, number of data we would like
-   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)"""
+   - filename : string, name of the file to create
+   - num_points : int (default = 50) number of point to generate per mvt
+   - data_without_error : bool (default = False), True to ignore data with error wrapping 
+   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
+   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
@@ -57,6 +61,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
 def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, plot=False, plot_cadran=False) :
    
    """Test limits of q for the muscle selected
+   It's just a way to observe extreme configuations
    
    INPUT
    - muscle_selected : string, name of the muscle selected. 
@@ -65,10 +70,9 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
    - model : model 
-   - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
-   - dataset_size : int, number of data we would like
+   - q_ranges : array 4*2, q ranges limited for the muscle selected 
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
-   - test : bool (default false), True if we just testing (for example, to choose q_ranges_muscle)"""
+   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
 
@@ -96,7 +100,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
 
    return None
 
-def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
+def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
    """Create a data frame for prepare datas
    
@@ -108,13 +112,19 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
    - model : model 
    - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
-   - dataset_size : int, number of data we would like
-   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)"""
+   - q_fixed : array 4*1, q fixed, reference
+   - i : int (0, 1, 2, 3), qi to do variate
+   - filename : string, name of the file to create
+   - num_points : int (default = 50) number of point to generate per mvt
+   - plot_all : bool (default false), True if we want all plots of point P, S (and Q, G, H and T) with cylinder(s)
+   - plot_limit : bool (default = False), True to plot points P, S (and Q, G, H and T) with cylinder(s) 
+                                                                                          (first, middle and last one)
+   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
 
-   q_ref = np.array([q_ranges_muscle[0][1], q_ranges_muscle[1][1], q_ranges_muscle[2][1], 0.0]) #
+   q_ref = np.array([q_ranges_muscle[0][1], q_ranges_muscle[1][1], q_ranges_muscle[2][1], 0.0]) 
 
    origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q_ref) # global
    
@@ -128,10 +138,7 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
    for k in range (num_points+1) : 
       print("k = ", k)
       
-      # Incrémenter qi
       qi = k * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0]
-      print("qi = ", qi)
-      
       q[i] = qi
       
       # q = np.array([ 2.35619449, -1.49725651,  0.76039816 , 1.20305   ])
@@ -142,10 +149,10 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
       # ------------------------------------------------
 
       if k in [0,num_points/2, num_points] and plot_limit :
-         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
          
       else :  
-         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
       
       print("segment_length = ", segment_length)
       qs.append(qi)
@@ -153,31 +160,24 @@ def data_for_learning_plot (filename, muscle_selected, cylinders, model, q_range
       
       writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
 
-   # Création du graphique
    plt.plot(qs, segment_lengths, marker='o', linestyle='-', color='b')
-
-   # Ajout des étiquettes et du titre
    plt.xlabel(f'q{i}')
    plt.ylabel('Muscle_length')
    plt.title(f'Muscle Length as a Function of q{i} Values')
-
-   # Définir les marques sur l'axe x et y de manière espacée
-   plt.xticks(qs[::5])  # Afficher les ticks tous les 5 sur l'axe x
-   plt.yticks(segment_lengths[::5])  # Afficher les ticks tous les 10 sur l'axe y
-   
-   # Affichage de la grille
+   plt.xticks(qs[::5])
+   plt.yticks(segment_lengths[::5]) 
    plt.grid(True)
    plt.show()
    
-   find_discontinute(qs, segment_lengths)
+   # find_discontinuty(qs, segment_lengths)
    
    writer.close()
-   
    return None
 
-def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, num_points = 50, data_without_error = False, plot=False, plot_cadran = False) :
+def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, num_points = 50, plot=False, plot_discontinuities = False, plot_cadran = False) :
    
-   """Create a data frame for prepare datas
+   """Create a data frame for prepare datas without any discontinuities or error wrapping 
+   Generate a mvt and then, remove problematic datas
    
    INPUT
    - muscle_selected : string, name of the muscle selected. 
@@ -188,7 +188,11 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
    - model : model 
    - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
    - dataset_size : int, number of data we would like
-   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)"""
+   - filename : string, name of the file to create
+   - num_points : int (default = 50) number of point to generate per mvt
+   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
+   - plot_discontinuities : bool (default = False), true to show mvt with discontinuity
+   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = initialisation_generation(model, muscle_selected, cylinders)
@@ -215,15 +219,13 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
          
          q = copy.deepcopy(q_ref)
          
+         # Generate points (num_points) of a mvt relatively to qi
          for k in range (num_points) : 
             print("k = ", k)
             
             # Incrémenter qi
             qi = k * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0]
-            print("qi = ", qi)
-            
             q[i] = qi
-            
             print("q = ", q)
          
             origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
@@ -235,33 +237,30 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
             datas_ignored.append(data_ignored)
             
             lines.append([muscle_index, q, origin_muscle, insertion_muscle, segment_length])
-            
-         # on a fini de faire la courbe
          
-         # on cherche maintenant les emplacements de discontinuite
-         discontinuites = find_discontinute(qs, segment_lengths)
-         for discontinuite in discontinuites : 
-            min, max = data_to_remove(discontinuite, num_points, 5)
+         # Find indexes with discontinuties
+         discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
+         for discontinuity in discontinuities : 
+            # min, max = data_to_remove_range(discontinuity, num_points, 5)
+            min, max = data_to_remove_part(discontinuity, qs, num_points, 5)
             to_remove.extend(range(min, max + 1))
-         position = [n for n, ignored in enumerate(datas_ignored) if ignored]
-         if len(position) != 0 : 
-            min, max = find_discontinuites_from_error_wrapping(position, num_points, range = 5)
+         positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
+         if len(positions) != 0 : 
+            min, max = find_discontinuities_from_error_wrapping_range(positions, num_points, range = 5)
             to_remove.extend(range(min, max + 1))
          
-         # tri pour ne garder aue les ligne à supprimer et ne pas avoir de doublon
+         # Sort to keep only one occurancy of each indexes
          to_remove = sorted(set(to_remove), reverse=True)
          
          for index in to_remove :
             del lines[index]
          
-         # ajouter les lignes dans le sheet
+         # Add lines
          for line in lines:
             writer.add_line(*line)
             num_line+=1
             if num_line > dataset_size : 
                break
 
-   # Ensure remaining lines are written to file
    writer.close()
-   
    return None
