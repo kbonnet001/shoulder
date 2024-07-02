@@ -1,4 +1,4 @@
-from neural_networks.data_preparation import data_preparation_create_tensor, compute_samples
+from neural_networks.data_preparation import data_preparation_create_tensor, compute_samples, create_loaders_from_folder
 from neural_networks.data_tranning import train, evaluate
 from neural_networks.Model import Model
 from neural_networks.activation_functions import *
@@ -12,6 +12,8 @@ from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
 
 from neural_networks.Loss import *
+from neural_networks.ModelHyperparameters import ModelHyperparameters
+from neural_networks.jesaispas import create_directory, create_and_save_plot
     
 
 # def train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, activation, n_layers, n_nodes, L1_penalty, L2_penalty, use_batch_norm, dropout_prob, learning_rate, n_epochs, file_path) : 
@@ -82,71 +84,71 @@ from neural_networks.Loss import *
 #         json.dump(config, f)
 #     torch.save(model.state_dict(), file_path)
 
-def train_model_supervised_learning(params, criterion_class, criterion_params, train_loader, val_loader, test_loader, file_path) : 
+# def train_model_supervised_learning(params, criterion_class, criterion_params, train_loader, val_loader, test_loader, file_path) : 
 
-    model, optimizer, criterion, scheduler, early_stopping = configure_parametres(params, criterion_class, criterion_params)
+#     model, optimizer, criterion, scheduler, early_stopping = configure_parametres(params, criterion_class, criterion_params)
 
-    # Entraînement du modèle
-    train_losses = []
-    val_losses = []
-    train_accs = []
-    val_accs = []
+#     # Entraînement du modèle
+#     train_losses = []
+#     val_losses = []
+#     train_accs = []
+#     val_accs = []
 
-    for epoch in range(params['n_epochs']):
-        train_loss, train_acc = train(model, train_loader, optimizer, criterion)
-        val_loss, val_acc = evaluate(model, val_loader, criterion)
+#     for epoch in range(params['n_epochs']):
+#         train_loss, train_acc = train(model, train_loader, optimizer, criterion)
+#         val_loss, val_acc = evaluate(model, val_loader, criterion)
 
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
-        train_accs.append(train_acc)
-        val_accs.append(val_acc)
+#         train_losses.append(train_loss)
+#         val_losses.append(val_loss)
+#         train_accs.append(train_acc)
+#         val_accs.append(val_acc)
 
-        print(f'Epoch [{epoch+1}/{params['n_epochs']}], Train Loss: {train_losses[-1]:.6f}, Val Loss: {val_losses[-1]:.6f}, Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}')
+#         print(f'Epoch [{epoch+1}/{params['n_epochs']}], Train Loss: {train_losses[-1]:.6f}, Val Loss: {val_losses[-1]:.6f}, Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}')
 
-        # Réduire le taux d'apprentissage si nécessaire
-        scheduler.step(val_losses[-1])
+#         # Réduire le taux d'apprentissage si nécessaire
+#         scheduler.step(val_losses[-1])
 
-        # Vérifier l'arrêt précoce
-        early_stopping(val_losses[-1])
-        if early_stopping.early_stop:
-            print("Early stopping at epoch:", epoch+1)
-            break
+#         # Vérifier l'arrêt précoce
+#         early_stopping(val_losses[-1])
+#         if early_stopping.early_stop:
+#             print("Early stopping at epoch:", epoch+1)
+#             break
 
-    # Évaluation du modèle sur l'ensemble de test
-    test_loss, test_acc = evaluate(model, test_loader, criterion)
-    print(f'Test Loss: {test_loss:.6f}, Test Acc: {test_acc:.6f}')
+#     # Évaluation du modèle sur l'ensemble de test
+#     test_loss, test_acc = evaluate(model, test_loader, criterion)
+#     print(f'Test Loss: {test_loss:.6f}, Test Acc: {test_acc:.6f}')
     
-    plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs)
+#     plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs)
     
-    plot_predictions_and_targets(model, train_loader, "Train loader", 100)
-    plot_predictions_and_targets(model, val_loader, "Validation loader", 100)
-    plot_predictions_and_targets(model, test_loader, "Test loader", 100)
+#     plot_predictions_and_targets(model, train_loader, "Train loader", 100)
+#     plot_predictions_and_targets(model, val_loader, "Validation loader", 100)
+#     plot_predictions_and_targets(model, test_loader, "Test loader", 100)
     
-    save_model(params, model, file_path)
+#     save_model(params, model, file_path)
     
     
-def main_superised_learning(filename, retrain, file_path) : 
+# def main_superised_learning(filename, retrain, file_path) : 
 
-    batch_size = 128
-    train_loader, val_loader, test_loader, input_size, output_size = prepare_data(batch_size, filename)
+#     batch_size = 128
+#     train_loader, val_loader, test_loader, input_size, output_size = prepare_data(batch_size, filename)
     
-    if retrain or os.path.exists(file_path) == False: 
+#     if retrain or os.path.exists(file_path) == False: 
         
-        n_layers = 1
-        n_nodes = [12]
+#         n_layers = 1
+#         n_nodes = [12]
         
-        activation = nn.ReLU()
-        L1_penalty = 0.001
-        L2_penalty = 0.001
-        use_batch_norm = True
-        dropout_prob = 0.2
-        learning_rate = 1e-4
+#         activation = nn.ReLU()
+#         L1_penalty = 0.001
+#         L2_penalty = 0.001
+#         use_batch_norm = True
+#         dropout_prob = 0.2
+#         learning_rate = 1e-4
 
-        n_epochs = 1000
+#         n_epochs = 1000
         
-        train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, activation, n_layers, n_nodes, L1_penalty, L2_penalty, use_batch_norm, dropout_prob, learning_rate, n_epochs, file_path)
+#         train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, activation, n_layers, n_nodes, L1_penalty, L2_penalty, use_batch_norm, dropout_prob, learning_rate, n_epochs, file_path)
         
-    visualize_prediction(train_loader, val_loader, test_loader, file_path)
+#     visualize_prediction(train_loader, val_loader, test_loader, file_path)
 
 # En chantier ...
 # ---------------
@@ -218,13 +220,82 @@ def main_superised_learning(filename, retrain, file_path) :
 #     visualize_prediction(train_loader, val_loader, test_loader, file_path)
     
 
-def configure_parametres(params, criterion_class, criterion_params):
-    model = Model(params['input_size'], params['output_size'], params['n_layers'], params['n_nodes'], params['activations'],
-                  params['L1_penalty'], params['L2_penalty'], True, 0.5)
-    optimizer = torch.optim.Adam(model.parameters(), params['learning_rate'])
-    criterion = criterion_class(**criterion_params)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8, verbose=True)
-    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
+# def configure_parametres(params, criterion_class, criterion_params):
+#     model = Model(params['input_size'], params['output_size'], params['n_layers'], params['n_nodes'], params['activations'],
+#                   params['L1_penalty'], params['L2_penalty'], True, 0.5)
+#     optimizer = torch.optim.Adam(model.parameters(), params['learning_rate'])
+#     criterion = criterion_class(**criterion_params)
+#     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8, verbose=True)
+#     early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
     
-    return model, optimizer, criterion, scheduler, early_stopping
+#     return model, optimizer, criterion, scheduler, early_stopping
 
+
+def refonctionpropresansjolinomcarjaipasdinspiration(Hyperparams, folder_name, retrain, file_path, plot_preparation) : 
+    
+    # on creer un nouveau dossier où l'on va mettre nos graph et tout :)
+    create_directory(Hyperparams.model_name)
+    
+    # Hyperparams cest une classe avec tous les Hyperparams mais ya pas input et output car on va les calculer apres
+    train_loader, val_loader, test_loader, input_size, output_size = create_loaders_from_folder(Hyperparams, folder_name, plot_preparation)
+    
+    # si on veut reentainer OU si le fichier n'existe pas = on n,a jamais entrainer encore avec ces parametres (attention relatif)
+    if retrain or os.path.exists(file_path) == False: # file path cest le nom que lon veut donner au modele
+        # pas besoin de redefinir les param car deja fait avec classe
+        train_model_supervised_learning2(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, file_path)
+        
+    visualize_prediction(train_loader, val_loader, test_loader, file_path)
+
+def train_model_supervised_learning2(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
+                                                                                                            file_path) : 
+    model = Model(input_size, output_size, Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, Hyperparams.L1_penalty, Hyperparams.L2_penalty, Hyperparams.use_batch_norm, Hyperparams.dropout_prob)
+
+    Hyperparams.compute_optimiser(model)
+    
+    # Entraînement du modèle
+    train_losses = []
+    val_losses = []
+    train_accs = []
+    val_accs = []
+
+    # Initialiser le planificateur ReduceLROnPlateau
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8, verbose=True)
+    # Initialiser l'arrêt précoce
+    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
+
+    for epoch in range(Hyperparams.num_epochs):
+        train_loss, train_acc = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
+        val_loss, val_acc = evaluate(model, val_loader, Hyperparams.criterion)
+
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
+        train_accs.append(train_acc)
+        val_accs.append(val_acc)
+
+        print(f'Epoch [{epoch+1}/{Hyperparams.num_epochs}], Train Loss: {train_losses[-1]:.6f}, Val Loss: {val_losses[-1]:.6f}, Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}')
+
+        # Réduire le taux d'apprentissage si nécessaire
+        scheduler.step(val_losses[-1])
+
+        # Vérifier l'arrêt précoce
+        early_stopping(val_losses[-1])
+        if early_stopping.early_stop:
+            print("Early stopping at epoch:", epoch+1)
+            break
+
+    # Évaluation du modèle sur l'ensemble de test
+    test_loss, test_acc = evaluate(model, test_loader, Hyperparams.criterion)
+    print(f'Test Loss: {test_loss:.6f}, Test Acc: {test_acc:.6f}')
+    
+    plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs)
+    create_and_save_plot(Hyperparams.model_name, "plot_loss_and_accuracy")
+    
+    plot_predictions_and_targets(model, train_loader, "Train loader", 100)
+    create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_train_loader")
+    plot_predictions_and_targets(model, val_loader, "Validation loader", 100)
+    create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_val_loader")
+    plot_predictions_and_targets(model, test_loader, "Test loader", 100)
+    create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_test_loader")
+    
+    # Save model
+    save_model(model, input_size, output_size, Hyperparams, file_path)

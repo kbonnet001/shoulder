@@ -1,32 +1,9 @@
+from math import ceil
 import matplotlib as plt
 import matplotlib.pyplot as plt
 import torch
 from neural_networks.data_tranning import mean_distance
-
-def plot_datas_distribution(X_tensor, y_tensor):
-    """To visualise tensors distribution
-
-    INPUT : 
-    - X_tensor : X tensor with all features (columns except the last one)
-    - y_tensor : y tensor with the target values (last column) """
-    
-    _, axs = plt.subplots(2, 3, figsize=(15, 10)) 
-    
-    for i in range(4):
-        row = i // 3  
-        col = i % 3   
-        axs[row, col].hist(X_tensor[:, i], bins=20, alpha=0.5)
-        axs[row, col].set_xlabel('Value')
-        axs[row, col].set_ylabel('Frequency')
-        axs[row, col].set_title(f'Distribution of q{i+1}')
-
-    axs[1, 2].hist(y_tensor, bins=20, alpha=0.5)  
-    axs[1, 2].set_xlabel('Value')
-    axs[1, 2].set_ylabel('Frequency')
-    axs[1, 2].set_title('Distribution of muscle length')
-
-    plt.tight_layout()  
-    plt.show()
+from neural_networks.data_preparation import create_data_loader
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     """Plot loss and accuracy (train and validation)
@@ -108,6 +85,30 @@ def plot_predictions_and_targets(model, loader, string_loader, num) :
     plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
     plt.xlabel('Échantillons')
     plt.ylabel('Muscle length')
-    plt.title(f"Predictions and targets - {string_loader}")
+    plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}")
     plt.legend()
     plt.show()
+
+def plot_predictions_and_targets_from_filenames(model, filenames, limits, num):
+
+    loaders = [create_data_loader(filename, limit) for filename, limit in zip(filenames, limits)]
+
+    num_files = len(loaders)
+    rows = ceil(num_files / 2)
+    
+    fig, axs = plt.subplots(rows, 2, figsize=(20, 5 * rows))
+    
+    for idx, loader in enumerate(loaders):
+        row = idx // 2
+        col = idx % 2
+        ax = axs[row, col] if rows > 1 else axs[col]
+        
+        predictions, targets = get_predictions_and_targets(model, loader)
+        acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+        
+        ax.plot(targets[:num], label='True values', marker='o')
+        ax.plot(predictions[:num], label='Predictions', marker='o', linestyle='--')
+        ax.set_title(f"File: {filenames[idx]}, acc = {acc:.6f}")
+        ax.set_xlabel('Échantillons')
+        ax.set_ylabel('Muscle length')
+        ax.legend()

@@ -7,14 +7,18 @@ from scipy.linalg import norm
 from wrapping.plot_cylinder import *
 from wrapping.algorithm import*
 from wrapping.Cylinder import Cylinder
-from neural_networks.discontinuite import *
+from neural_networks.discontinuities import *
+import torch.nn as nn
+import torch
+from neural_networks.Loss import *
 
 from sklearn.model_selection import train_test_split
 # from neural_networks.data_preparation import print_informations_environment
 # from neural_networks.main_trainning import main_superised_learning
 
 from neural_networks.data_generation import *
-# from neural_networks.main_trainning import prepare_data_from_folder
+from neural_networks.main_trainning import refonctionpropresansjolinomcarjaipasdinspiration
+from neural_networks.ModelHyperparameters import ModelHyperparameters
 
 #################### 
 # Code des tests
@@ -114,7 +118,7 @@ cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
 muscles_selected = ["PECM2", "PECM3"]
 
-test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
+# test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
 
 # data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_part_5000.xlsx", True, False) 
 # ----------------------
@@ -129,12 +133,12 @@ q_fixed = np.array([(ranges[1]) for ranges in q_ranges])
 # q_fixed = np.array([q_ranges[0][0], q_ranges[1][1], q_ranges[2][0], 0.0])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
-# data_for_learning_plot (muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
-#                         1, "data_test_PECM2_discontinuity.xlsx", 100, plot_all=False, plot_limit=False)
+# data_for_learning_plot (muscles_selected[1], cylinders_PECM3, model, q_ranges, q_fixed, 
+#                         1, "data_test_PECM3_discontinuities.xlsx", 100, plot_all=False, plot_limit=False)
 
-data_for_learning_without_discontinuites(muscles_selected[0], cylinders_PECM2, model, q_ranges, 5000, 
-                "df_PECM2_datas_witfgjgfhout_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
-                plot=False, plot_cadran = False)
+# data_for_learning_without_discontinuites(muscles_selected[1], cylinders_PECM3, model, q_ranges, 5000, 
+#                 "df_PECM3_datas_without_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
+#                 plot=False, plot_cadran = False)
    
 
 P = np.array([-3.78564,-2.53658,0])
@@ -172,3 +176,23 @@ p2 = np.array([3.0, 3.0])
 
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
+
+model_name = "H_essai_1"
+batch_size = 30
+n_layers = 1
+n_nodes = [12]
+activations = [nn.GELU()]
+activation_names = ["GELU"]
+L1_penalty = 0.01
+L2_penalty = 0.01
+learning_rate = 1e-3
+num_epochs = 1000
+criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+p_dropout = 0.2
+use_batch_norm = True
+
+
+Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, 
+                              L2_penalty, learning_rate, num_epochs, criterion, p_dropout, use_batch_norm)
+
+refonctionpropresansjolinomcarjaipasdinspiration(Hyperparameter_essai1, "datas/error_part", False, "essai1", False) 
