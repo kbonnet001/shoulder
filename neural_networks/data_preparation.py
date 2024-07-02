@@ -1,12 +1,13 @@
 import platform
 import numpy as np
 import pandas as pd
+import matplotlib as plt
 import torch
 import os
 from torch.utils.data import DataLoader, random_split
 import sklearn
 from neural_networks.MuscleDataset import MuscleDataset
-from neural_networks.plot_visualisation import plot_datas_distribution
+from neural_networks.jesaispas import create_and_save_plot
 
 def print_informations_environment() : 
   # Print environment info
@@ -97,7 +98,7 @@ def data_preparation_create_tensor(df_data, limit) :
 
   # Load df
   df_muscle_datas = data_standardization(df_data, limit)
-  df_muscle_datas = df_muscle_datas.iloc[:, 1:] # on enleve la premiere colonne
+  df_muscle_datas = df_muscle_datas.iloc[:, :] # on enleve la premiere colonne
 
   # Separate inputs from targets
   X = df_muscle_datas.iloc[:, 0:-1].values
@@ -115,7 +116,7 @@ def data_preparation_create_tensor(df_data, limit) :
 
   return X_tensor, y_tensor
 
-def create_loaders_from_folder(batch_size, folder_name, plot=False):
+def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
   """Create loaders : 
     80 % : train (80%) + validation (20%)
     20% : test
@@ -138,7 +139,7 @@ def create_loaders_from_folder(batch_size, folder_name, plot=False):
         file_path = os.path.join(folder_name, filename)
         print(f"Processing file: {file_path}")
 
-        X_tensor, y_tensor = data_preparation_create_tensor(filename, 0)
+        X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0)
         dataset = MuscleDataset(X_tensor, y_tensor)
 
         train_val_size, test_size = compute_samples(dataset, 0.80)
@@ -151,18 +152,50 @@ def create_loaders_from_folder(batch_size, folder_name, plot=False):
 
         if plot : 
           plot_datas_distribution(X_tensor, y_tensor)
+          create_and_save_plot(Hyperparams.model_name, f"plot_datas_distribution_{filename.replace(".xlsx", "")}")
 
   # Merge dataset
   train_dataset = torch.utils.data.ConcatDataset([datasets[k][0] for k in range (len(datasets))])
   val_dataset = torch.utils.data.ConcatDataset([datasets[k][1] for k in range (len(datasets))])
   test_dataset = torch.utils.data.ConcatDataset([datasets[k][2] for k in range (len(datasets))])
 
-  train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-  val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-  test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+  train_loader = DataLoader(train_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
+  val_loader = DataLoader(val_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
+  test_loader = DataLoader(test_dataset, batch_size=Hyperparams.batch_size, shuffle=False)
 
   input_size = len(X_tensor[0])
   output_size = 1 # warning if y tensor change
 
   return train_loader, val_loader, test_loader, input_size, output_size
 
+def create_data_loader(filename, limit) : 
+  X_tensor, y_tensor = data_preparation_create_tensor(filename, limit)
+  dataset = MuscleDataset(X_tensor, y_tensor)
+  loader = DataLoader(dataset, 32, shuffle = False)
+  return loader 
+
+def plot_datas_distribution(X_tensor, y_tensor):
+    """To visualise tensors distribution
+    Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
+
+    INPUT : 
+    - X_tensor : X tensor with all features (columns except the last one)
+    - y_tensor : y tensor with the target values (last column) """
+    
+    _, axs = plt.subplots(2, 3, figsize=(15, 10)) 
+    
+    for i in range(4):
+        row = i // 3  
+        col = i % 3   
+        axs[row, col].hist(X_tensor[:, i], bins=20, alpha=0.5)
+        axs[row, col].set_xlabel('Value')
+        axs[row, col].set_ylabel('Frequency')
+        axs[row, col].set_title(f'Distribution of q{i+1}')
+
+    axs[1, 2].hist(y_tensor, bins=20, alpha=0.5)  
+    axs[1, 2].set_xlabel('Value')
+    axs[1, 2].set_ylabel('Frequency')
+    axs[1, 2].set_title('Distribution of muscle length')
+
+    plt.tight_layout()  
+    plt.show()

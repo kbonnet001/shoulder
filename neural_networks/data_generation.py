@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from neural_networks.ExcelBatchWriter import ExcelBatchWriter
-from neural_networks.discontinuite import *
+from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 import copy
 
