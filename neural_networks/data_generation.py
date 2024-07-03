@@ -169,7 +169,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    plt.grid(True)
    plt.show()
    
-   # find_discontinuty(qs, segment_lengths)
+   find_discontinuty(qs, segment_lengths, plot_discontinuities=True)
    
    writer.close()
    return None

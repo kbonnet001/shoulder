@@ -5,7 +5,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         layers = []
         in_features = input_size
-        for i in range(n_layers):
+        for i in range(len(n_nodes)):
             layers.append(nn.Linear(in_features, n_nodes[i]))
             if use_batch_norm:
                 layers.append(nn.BatchNorm1d(n_nodes[i]))

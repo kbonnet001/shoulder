@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 # from neural_networks.main_trainning import main_superised_learning
 
 from neural_networks.data_generation import *
-from neural_networks.main_trainning import refonctionpropresansjolinomcarjaipasdinspiration
+from neural_networks.main_trainning import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 
 #################### 
@@ -133,8 +133,8 @@ q_fixed = np.array([(ranges[1]) for ranges in q_ranges])
 # q_fixed = np.array([q_ranges[0][0], q_ranges[1][1], q_ranges[2][0], 0.0])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
-# data_for_learning_plot (muscles_selected[1], cylinders_PECM3, model, q_ranges, q_fixed, 
-#                         1, "data_test_PECM3_discontinuities.xlsx", 100, plot_all=False, plot_limit=False)
+# data_for_learning_plot (muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
+#                         1, "data_test_PECM3_discontinuitiesjuytrn.xlsx", 100, plot_all=False, plot_limit=False)
 
 # data_for_learning_without_discontinuites(muscles_selected[1], cylinders_PECM3, model, q_ranges, 5000, 
 #                 "df_PECM3_datas_without_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
@@ -179,20 +179,28 @@ p2 = np.array([3.0, 3.0])
 
 model_name = "H_essai_1"
 batch_size = 30
-n_layers = 1
-n_nodes = [12]
-activations = [nn.GELU()]
-activation_names = ["GELU"]
-L1_penalty = 0.01
-L2_penalty = 0.01
-learning_rate = 1e-3
+n_layers = [2]
+n_nodes = [[12, 10], [12, 8]]
+activations = [[nn.GELU(), nn.GELU()]]
+activation_names = [["GELU", "GELU"]]
+L1_penalty = [0.01, 0.001]
+L2_penalty = [0.01]
+learning_rate = [1e-3]
 num_epochs = 1000
-criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-p_dropout = 0.2
+# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+criterion = [
+    (LogCoshLoss, {'factor': [1.0]}),
+    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
+    (ExponentialLoss, {'alpha': [0.5]})]
+p_dropout = [0.2]
 use_batch_norm = True
 
 
 Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, 
                               L2_penalty, learning_rate, num_epochs, criterion, p_dropout, use_batch_norm)
 
-refonctionpropresansjolinomcarjaipasdinspiration(Hyperparameter_essai1, "datas/error_part", False, "essai1", False) 
+find_best_hyperparameters(Hyperparameter_essai1, "datas/error_part")
+
+# main_superised_learning(Hyperparameter_essai1, "datas/error_part", False, "essai1", False) 
+
+# find_best_hyperparameters(Hyperparameter_essai1)
