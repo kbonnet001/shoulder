@@ -2,12 +2,14 @@ import platform
 import numpy as np
 import pandas as pd
 import matplotlib as plt
+import matplotlib.pyplot as plt
 import torch
 import os
+from sklearn.preprocessing import OneHotEncoder
 from torch.utils.data import DataLoader, random_split
 import sklearn
 from neural_networks.MuscleDataset import MuscleDataset
-from neural_networks.jesaispas import create_and_save_plot
+from neural_networks.file_directory_operations import create_and_save_plot
 
 def print_informations_environment() : 
   # Print environment info
@@ -84,37 +86,41 @@ def data_standardization(filename, limit = 0):
 
   return df2
 
-def data_preparation_create_tensor(df_data, limit) :
+def data_preparation_create_tensor(df_data, limit, all_possible_categories):
+    """
+    Load data from df and create X and y tensors for PyTorch
+    NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
+    
+    INPUT:
+    - df_data: DataFrame (.xlsx) with all data. The last column must be y
+    - limit: Placeholder parameter for standardization
+    - all_possible_categories: List of all possible categories for the 'index_muscle' column
+    
+    OUTPUT:
+    - X_tensor: X tensor with all features (columns except the last one)
+    - y_tensor: y tensor with the target values (last column)
+    """
 
-  """ Load datas of df and create X and y tensors PyTorch
-  NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
-  
-  INPUT
-  - df_data : data frame (.xlsx) with all datas. The last column must be y
-  
-  OUTPUT
-  - X_tensor : X tensor with all features (columns except the last one)
-  - y_tensor : y tensor with the target values (last column) """
+    # Load and standardize df
+    df_muscle_datas = data_standardization(df_data, limit)
+    df_muscle_datas = df_muscle_datas.iloc[:, :]  # Adjust as necessary
 
-  # Load df
-  df_muscle_datas = data_standardization(df_data, limit)
-  df_muscle_datas = df_muscle_datas.iloc[:, :] # on enleve la premiere colonne
+    # Separate inputs from targets
+    X = df_muscle_datas.iloc[:, :-1].values
+    y = df_muscle_datas.iloc[:, -1].values
 
-  # Separate inputs from targets
-  X = df_muscle_datas.iloc[:, 0:-1].values
-  y = df_muscle_datas.iloc[:, -1].values
+    # One-hot encoding for the 'index_muscle' column
+    encoder = OneHotEncoder(sparse_output=False, categories=[all_possible_categories])
+    index_muscle_encoded = encoder.fit_transform(X[:, 0].reshape(-1, 1))
 
-  # Normalisation
-  # scaler = StandardScaler()
-  # X_scaled = scaler.fit_transform(X)
+    # Concatenate the encoded index_muscle with the rest of the features
+    X = np.hstack((index_muscle_encoded, X[:, 1:]))
 
-  # # Convertir en tensors PyTorch
-  # X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
-  
-  X_tensor = torch.tensor(X, dtype=torch.float32)
-  y_tensor = torch.tensor(y, dtype=torch.float32)
+    # Convert to PyTorch tensors
+    X_tensor = torch.tensor(X, dtype=torch.float32)
+    y_tensor = torch.tensor(y, dtype=torch.float32)
 
-  return X_tensor, y_tensor
+    return X_tensor, y_tensor
 
 def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
   """Create loaders : 
@@ -139,7 +145,8 @@ def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
         file_path = os.path.join(folder_name, filename)
         print(f"Processing file: {file_path}")
 
-        X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0)
+        all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
+        X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0, all_possible_categories)
         dataset = MuscleDataset(X_tensor, y_tensor)
 
         train_val_size, test_size = compute_samples(dataset, 0.80)
@@ -168,8 +175,8 @@ def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
 
   return train_loader, val_loader, test_loader, input_size, output_size
 
-def create_data_loader(filename, limit) : 
-  X_tensor, y_tensor = data_preparation_create_tensor(filename, limit)
+def create_data_loader(filename, limit, all_possible_categories) : 
+  X_tensor, y_tensor = data_preparation_create_tensor(filename, limit, all_possible_categories)
   dataset = MuscleDataset(X_tensor, y_tensor)
   loader = DataLoader(dataset, 32, shuffle = False)
   return loader 

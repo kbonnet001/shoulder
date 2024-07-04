@@ -5,6 +5,20 @@ from scipy.linalg import norm
 from openpyxl import load_workbook
 from neural_networks.discontinuities import *
 
+def compute_q_ranges_segment(model, segment_selected) : 
+    # segment_names
+    # ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 'scapula_right', 
+    # 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 'radius_right', 'hand_right']
+    
+    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
+    segment_index = segment_names.index(segment_selected) 
+
+    # humerus_dof_names = [model.segment(humerus_index).nameDof(i).to_string() for i in 
+    #                     range(model.segment(humerus_index).nbQ())]
+    
+    q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(segment_index).QRanges()]
+    return q_ranges
+
 def initialisation_generation(model, muscle_selected, cylinders) :
    # Find index of the muscle selected
    muscle_names = [model.muscle(i).name().to_string() for i in range(model.nbMuscles())]
