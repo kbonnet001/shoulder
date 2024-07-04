@@ -1,8 +1,3 @@
-# on debute de la meme faon pour avoir les loder, mais avec une fonction differentes pour faire les k folk
-# puis boucle avec model, on fait le truc, on garde la perfaormance de cote et on recommence
-# puis on fai oyenne de la performace et on garde de cote
-# on fait ca pour tous les modele a tester,  le decoupage des loader ne change pas
-# on donne un classement des meilleur (list) et on retourne le meilleur hyperparams
 from sklearn.model_selection import KFold
 import os
 from neural_networks.data_preparation import data_preparation_create_tensor, compute_samples
@@ -118,3 +113,20 @@ def cross_validation(folder_name, Hyperparams, num_folds) :
 
     print(f'Mean Test Loss: {mean_test_loss:.6f} ± {std_test_loss:.6f}')
     print(f'Mean Test Acc: {mean_test_acc:.6f} ± {std_test_acc:.6f}')
+    
+    return mean_test_loss, std_test_loss,mean_test_acc, std_test_acc
+
+def try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation, num_folds) : 
+    
+    all_cross_val_test = []
+    
+    for n in range(num_try_cross_validation) : 
+        
+        all_cross_val_test.append([cross_validation(folder_name, list_simulation[n][1], num_folds)]) 
+    
+    print(f"Results of {num_try_cross_validation} cross validation : \n")
+    for n in range (num_try_cross_validation) :
+          print(f"n: {n} Mean Test Loss: {all_cross_val_test[n][0][0]:.6f} ± {all_cross_val_test[n][0][1]:.6f}\n", 
+                f"Mean Test Acc: {all_cross_val_test[n][0][2]:.6f} ± {all_cross_val_test[n][0][3]:.6f}\n")
+          
+    return all_cross_val_test

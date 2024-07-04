@@ -37,9 +37,6 @@ def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_seconde
     
     return total_time_estimated_secondes, total_time_estimated_minutes, total_time_estimated_hours
 
-
-
-    
 def main_superised_learning(Hyperparams, folder_name, retrain, file_path, plot_preparation, plot, save) : 
     
     """Main fonction for prepare, train-val-test and save a model 
@@ -186,9 +183,11 @@ def find_best_hyperparameters(Hyperparams, folder_name) :
                                                 try_hyperparams.dropout_prob, Hyperparams.use_batch_norm)
                     best_hyperparameters_acc.save_results_parameters(val_loss, val_acc)
 
-                list_simulation.append(f"{num_try}: val_loss = {val_loss} and val acc = {val_acc} - Training with hyperparameters : {try_hyperparams} \ncriterion: {criterion_class.__name__} with parameters: {criterion_params}")
+                list_simulation.append([val_loss, try_hyperparams, f"{num_try}: val_loss = {val_loss} and val acc = {val_acc} - Training with hyperparameters : {try_hyperparams} \ncriterion: {criterion_class.__name__} with parameters: {criterion_params}"])
                 num_try+=1
 
+    list_simulation.sort(key=lambda x: x[0]) # sort list to have val_loss in croissant order 
+    
     print(f"Best hyperparameters loss found : {best_hyperparameters_loss}")
     print(f'Best criterion: {best_criterion_class_loss.__name__} with parameters: {best_criterion_params_loss}')
     print("list_simulation = ", list_simulation)

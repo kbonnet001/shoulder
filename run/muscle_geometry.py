@@ -11,6 +11,7 @@ from neural_networks.discontinuities import *
 import torch.nn as nn
 import torch
 from neural_networks.Loss import *
+from pyorerun import LiveModelAnimation
 
 from sklearn.model_selection import train_test_split
 # from neural_networks.data_preparation import print_informations_environment
@@ -20,7 +21,7 @@ from neural_networks.data_generation import *
 from neural_networks.main_trainning import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 from neural_networks.data_generation_ddl import data_for_learning_ddl
-from neural_networks.k_cross_validation import cross_validation
+from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 
 #################### 
 # Code des tests
@@ -168,13 +169,19 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # plot_one_cylinder_obstacle(P, S, cylinder_1, v1o, v2o,obstacle_tangent_point_inactive)
 
 
-# Show
+# Show biorbd
 # q = np.zeros((model.nbQ(), ))
 # b = bioviz.Viz(loaded_model=model)
 # b.set_q(q)
 # b.exec()
 
 # exit(0)
+
+# pour voir pyorerun
+# model_path = "/home/lim/Documents/kloe/shoulder/run/models/Wu_DeGroote.bioMod"
+# animation = LiveModelAnimation(model_path, with_q_charts=True)
+# animation.rerun()
+
 
 #################
 p0 = np.array([1.0, 1.0])
@@ -186,50 +193,57 @@ p2 = np.array([3.0, 3.0])
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-# model_name = "H_essai_1"
-# batch_size = 32
-# n_layers = [2]
-# n_nodes = [[12, 8], [12, 10], [20, 10], [30, 20]]
-# activations = [[nn.GELU(), nn.GELU()]]
-# activation_names = [["GELU", "GELU"]]
-# L1_penalty = [0.01, 0.001]
-# L2_penalty = [0.01, 0.001]
-# learning_rate = [1e-3]
-# num_epochs = 1000
-# # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-# criterion = [
-#     (LogCoshLoss, {'factor': [1.0, 1.5, 1.8]}),
-#     (ModifiedHuberLoss, {'delta': [0.2, 1.0, 2.0], 'factor': [1.0, 2, 3.0]}),
-#     (ExponentialLoss, {'alpha': [0.5, 0.8, 1.0]})
-# ]
-# p_dropout = [0.2, 0.5]
-# use_batch_norm = True
+model_name = "H_essai_1"
+batch_size = 32
+n_layers = [1]
+n_nodes = [[8], [10], [15], [20], [25], [30]]
+activations = [[nn.GELU()]]
+activation_names = [["GELU"]]
+L1_penalty = [0.01, 0.001]
+L2_penalty = [0.01, 0.001]
+learning_rate = [1e-3]
+num_epochs = 1000
+# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+criterion= [
+    (LogCoshLoss, {'factor': [1.0, 1.8]}),
+    (ModifiedHuberLoss, {'delta': [0.2, 1.0, 2.0], 'factor': [1.0, 2.0, 3.0]}),
+    (ExponentialLoss, {'alpha': [0.5, 1.0]})
+]
+p_dropout = [0.2, 0.5]
+use_batch_norm = True
 
 
-model_name="essai"
-batch_size=64
-n_layers=1
-n_nodes=[12]
-activations=[nn.GELU()]
-activation_names = ["GELU"]
-L1_penalty=0.01
-L2_penalty=0.01
-learning_rate=0.001
-num_epochs=1000
-optimizer=0.0
-criterion=ExponentialLoss(alpha=1.0)
-p_dropout=0.2
-use_batch_norm=True
+# model_name="essai"
+# batch_size=64
+# n_layers=1
+# n_nodes=[12]
+# activations=[nn.GELU()]
+# activation_names = ["GELU"]
+# L1_penalty=0.01
+# L2_penalty=0.01
+# learning_rate=0.001
+# num_epochs=1000 
+# optimizer=0.0
+# criterion=ExponentialLoss(alpha=1.0)
+# p_dropout=0.2
+# use_batch_norm=True
 
+folder_name = "datas/error_part"
+num_folds = 10
+num_try_cross_validation = 10
 
 Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, 
                               L2_penalty, learning_rate, num_epochs, criterion, p_dropout, use_batch_norm)
 
-# find_best_hyperparameters(Hyperparameter_essai1, "datas/error_part")
+# main_superised_learning(Hyperparameter_essai1, "datas/error_part", True, "essai_bestparameter_1",False, True, True) 
 
-main_superised_learning(Hyperparameter_essai1, "datas/error_part", True, "essai_bestparameter_1",False, True, True) 
+list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, folder_name)
+all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
-# list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, "datas/error_part")
+print("")
 
-num_folds = 5
-# cross_validation("datas/error_part", Hyperparameter_essai1, num_folds)
+# # cross_validation("datas/error_part", Hyperparameter_essai1, num_folds)
+
+
+
+
