@@ -2,8 +2,21 @@ from math import ceil
 import matplotlib as plt
 import matplotlib.pyplot as plt
 import torch
-from neural_networks.data_tranning import mean_distance
 from neural_networks.data_preparation import create_data_loader
+
+def mean_distance(predictions, targets):
+    """
+    Compute mean distance beetween predictions and targets
+
+    INPUTS :
+    - predictions (torch.Tensor): Model's predictions 
+    - targets (torch.Tensor): Targets
+
+    OUPUT : 
+        float: mean distance
+    """
+    distance = torch.mean(torch.abs(predictions - targets))
+    return distance.item()
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     """Plot loss and accuracy (train and validation)

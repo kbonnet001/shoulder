@@ -19,6 +19,8 @@ from sklearn.model_selection import train_test_split
 from neural_networks.data_generation import *
 from neural_networks.main_trainning import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
+from neural_networks.data_generation_ddl import data_for_learning_ddl
+from neural_networks.k_cross_validation import cross_validation
 
 #################### 
 # Code des tests
@@ -36,22 +38,24 @@ from wrapping.wrapping_tests.step_1_test import Step_1_test
 ###############################################
 
 model = biorbd.Model("models/Wu_DeGroote.bioMod")
-# q = np.zeros((model.nbQ(), ))
-q = np.array([0.0,-0.01,0.0,0.05])
+
+def compute_q_ranges_segment(model, segment_selected) : 
+    # segment_names
+    # ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 'scapula_right', 
+    # 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 'radius_right', 'hand_right']
+    
+    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
+    humerus_index = segment_names.index(segment_selected) 
+
+    # humerus_dof_names = [model.segment(humerus_index).nameDof(i).to_string() for i in 
+    #                     range(model.segment(humerus_index).nbQ())]
+    
+    q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(humerus_index).QRanges()]
+    return q_ranges
 
 
-# Noms de tous les segments (= les os) du modèle
-segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
-humerus_index = segment_names.index("humerus_right") # pour trouver où est humerus_index --» 6
-
-humerus_dof_names = [model.segment(humerus_index).nameDof(i).to_string() for i in 
-                     range(model.segment(humerus_index).nbQ())]
-q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(humerus_index).QRanges()]
-q_ranges.append([0.05, 2.3561])
-
-# segment_names
-# ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 'scapula_right', 
-# 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 'radius_right', 'hand_right']
+q_ranges = compute_q_ranges_segment(model, "humerus_right")
+q_ranges.append([0.05,  2.356194490192345])
 
 # INPUTS :  
 # --------
@@ -117,10 +121,14 @@ cylinders_PECM2=[cylinder_T_PECM2, cylinder_H_PECM2]
 cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
 muscles_selected = ["PECM2", "PECM3"]
+segments_selected = ["thorax", "humerus_right"] # pour le moment, on change rien
 
 # test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
 
 # data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_part_5000.xlsx", True, False) 
+
+# data_for_learning_ddl (muscles_selected[0], segments_selected, cylinders_PECM2, model, 10, "hdhdds.xlsx", data_without_error = True, plot=True, plot_cadran = True)
+   
 # ----------------------
 # train_model_supervised_learning("df_PECM2_datas_5000_more.xlsx")
 # print_informations_environment()
@@ -161,6 +169,7 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 
 
 # Show
+# q = np.zeros((model.nbQ(), ))
 # b = bioviz.Viz(loaded_model=model)
 # b.set_q(q)
 # b.exec()
@@ -177,30 +186,50 @@ p2 = np.array([3.0, 3.0])
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "H_essai_1"
-batch_size = 30
-n_layers = [2]
-n_nodes = [[12, 10], [12, 8]]
-activations = [[nn.GELU(), nn.GELU()]]
-activation_names = [["GELU", "GELU"]]
-L1_penalty = [0.01, 0.001]
-L2_penalty = [0.01]
-learning_rate = [1e-3]
-num_epochs = 1000
-# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-criterion = [
-    (LogCoshLoss, {'factor': [1.0]}),
-    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
-    (ExponentialLoss, {'alpha': [0.5]})]
-p_dropout = [0.2]
-use_batch_norm = True
+# model_name = "H_essai_1"
+# batch_size = 32
+# n_layers = [2]
+# n_nodes = [[12, 8], [12, 10], [20, 10], [30, 20]]
+# activations = [[nn.GELU(), nn.GELU()]]
+# activation_names = [["GELU", "GELU"]]
+# L1_penalty = [0.01, 0.001]
+# L2_penalty = [0.01, 0.001]
+# learning_rate = [1e-3]
+# num_epochs = 1000
+# # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+# criterion = [
+#     (LogCoshLoss, {'factor': [1.0, 1.5, 1.8]}),
+#     (ModifiedHuberLoss, {'delta': [0.2, 1.0, 2.0], 'factor': [1.0, 2, 3.0]}),
+#     (ExponentialLoss, {'alpha': [0.5, 0.8, 1.0]})
+# ]
+# p_dropout = [0.2, 0.5]
+# use_batch_norm = True
+
+
+model_name="essai"
+batch_size=64
+n_layers=1
+n_nodes=[12]
+activations=[nn.GELU()]
+activation_names = ["GELU"]
+L1_penalty=0.01
+L2_penalty=0.01
+learning_rate=0.001
+num_epochs=1000
+optimizer=0.0
+criterion=ExponentialLoss(alpha=1.0)
+p_dropout=0.2
+use_batch_norm=True
 
 
 Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, 
                               L2_penalty, learning_rate, num_epochs, criterion, p_dropout, use_batch_norm)
 
-find_best_hyperparameters(Hyperparameter_essai1, "datas/error_part")
+# find_best_hyperparameters(Hyperparameter_essai1, "datas/error_part")
 
-# main_superised_learning(Hyperparameter_essai1, "datas/error_part", False, "essai1", False) 
+main_superised_learning(Hyperparameter_essai1, "datas/error_part", True, "essai_bestparameter_1",False, True, True) 
 
-# find_best_hyperparameters(Hyperparameter_essai1)
+# list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, "datas/error_part")
+
+num_folds = 5
+# cross_validation("datas/error_part", Hyperparameter_essai1, num_folds)

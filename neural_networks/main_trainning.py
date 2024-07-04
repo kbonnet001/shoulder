@@ -1,19 +1,15 @@
-from neural_networks.data_preparation import data_preparation_create_tensor, compute_samples, create_loaders_from_folder
-from neural_networks.data_tranning import train, evaluate
-from neural_networks.Model import Model
+from neural_networks.data_preparation import create_loaders_from_folder
+from neural_networks.data_tranning import train_model_supervised_learning
 from neural_networks.activation_functions import *
-from neural_networks.MuscleDataset import MuscleDataset
-import torch
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from neural_networks.EarlyStopping import EarlyStopping
-import torch.optim as optim
 import os
 from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
 from itertools import product
 from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.file_directory_operations import create_directory, create_and_save_plot
+from neural_networks.file_directory_operations import create_directory
 import time
 
 def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes = 60) : 
@@ -42,82 +38,7 @@ def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_seconde
     return total_time_estimated_secondes, total_time_estimated_minutes, total_time_estimated_hours
 
 
-def train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
-                                    file_path, plot = False, save = False) : 
-    """Train and evaluate a model
-    
-    INPUTS : 
-    - train_loader : DataLoader, data trainning (80% of 80%)
-    - val_loader : DataLoader, data validation (20% of 80%)
-    - test_loader : DataLoader, data testing (20%)
-    - input_size : int, size of input X
-    - output_size : int, size of output y (WARNING, always 1)
-    - Hyperparams : (ModelHyperparameters) all hyperparameters choosen by user
-    - file_path : string, path for saving model
-    - plot : (default False) bool, True to show and save plots
-    - save : (default False) bool, True to save the model
-    
-    OUTPUTS : 
-    - val_loss : float, loss validation
-    - val_acc : float, accuracy (mean distance) validation"""
-    
-    model = Model(input_size, output_size, Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, 
-                  Hyperparams.L1_penalty, Hyperparams.L2_penalty, Hyperparams.use_batch_norm, Hyperparams.dropout_prob)
-    
-    Hyperparams.compute_optimiser(model)
-    
-    if plot : 
-        train_losses = []
-        val_losses = []
-        train_accs = []
-        val_accs = []
 
-    # Initialization of ReduceLROnPlateau
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8, verbose=True)
-    # Initialization of EarlyStopping
-    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
-
-    for epoch in range(Hyperparams.num_epochs):
-        train_loss, train_acc = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
-        val_loss, val_acc = evaluate(model, val_loader, Hyperparams.criterion)
-        
-        if plot : 
-            train_losses.append(train_loss)
-            val_losses.append(val_loss)
-            train_accs.append(train_acc)
-            val_accs.append(val_acc)
-
-        print(f'Epoch [{epoch+1}/{Hyperparams.num_epochs}], Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}, Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}')
-
-        # Réduire le taux d'apprentissage si nécessaire
-        scheduler.step(val_loss)
-
-        # Vérifier l'arrêt précoce
-        early_stopping(val_loss)
-        if early_stopping.early_stop:
-            print("Early stopping at epoch:", epoch+1)
-            break
-
-    # Évaluation du modèle sur l'ensemble de test
-    test_loss, test_acc = evaluate(model, test_loader, Hyperparams.criterion)
-    print(f'Test Loss: {test_loss:.6f}, Test Acc: {test_acc:.6f}')
-    
-    if plot : 
-        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs)
-        create_and_save_plot(Hyperparams.model_name, "plot_loss_and_accuracy")
-        
-        plot_predictions_and_targets(model, train_loader, "Train loader", 100)
-        create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_train_loader")
-        plot_predictions_and_targets(model, val_loader, "Validation loader", 100)
-        create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_val_loader")
-        plot_predictions_and_targets(model, test_loader, "Test loader", 100)
-        create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_test_loader")
-    
-    # Save model
-    if save : 
-        save_model(model, input_size, output_size, Hyperparams, file_path)
-    
-    return val_loss, val_acc
     
 def main_superised_learning(Hyperparams, folder_name, retrain, file_path, plot_preparation, plot, save) : 
     
@@ -153,7 +74,7 @@ def main_superised_learning(Hyperparams, folder_name, retrain, file_path, plot_p
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(file_path) == False: 
         
-        train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, file_path, plot, save)
+        model, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, file_path, plot, save)
         
     visualize_prediction(train_loader, val_loader, test_loader, file_path)
     
@@ -238,7 +159,7 @@ def find_best_hyperparameters(Hyperparams, folder_name) :
                 print(try_hyperparams)
                 
                 # Train-Evaluate model
-                val_loss, val_acc = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, try_hyperparams, 
+                model, val_loss, val_acc = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, try_hyperparams, 
                                                                                                             file_path="", plot = False)
                 
                 if val_loss < best_val_loss:
