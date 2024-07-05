@@ -94,8 +94,7 @@ def data_semi_circle(v1, v2, matrix, r, num_points=100) :
   - semi_circle_points : array nm_point*n3 coordinates of points for the representation of the semi-circle"""
 
   # Change frame
-  v1 = transpose_switch_frame(v1, matrix)
-  v2 = transpose_switch_frame(v2, matrix)
+  v1, v2 = transpose_switch_frame([v1, v2], matrix)
   c = np.array([0,0, (v1[2]+v2[2])/2])
 
   # Calculation of the normal vect of plan def by v1, v2 and c1
@@ -112,6 +111,7 @@ def data_semi_circle(v1, v2, matrix, r, num_points=100) :
 
   for i in range (len(semi_circle_points)) :
     semi_circle_points[i] = switch_frame(semi_circle_points[i], matrix)
+  # semi_circle_points = switch_frame(semi_circle_points, matrix)
 
   return semi_circle_points
 
@@ -166,20 +166,20 @@ def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obst
   ax.grid(True)
 
   # Set ax limit
-  ax.set_ylim(-0.1,0.1)
-  ax.set_zlim(-0.2,0)
-  ax.set_xlim(0,0.2)
+  # ax.set_ylim(-0.1,0.1)
+  # ax.set_zlim(-0.2,0)
+  # ax.set_xlim(0,0.2)
   
-  # ax.set_xlim(-5,5)
-  # ax.set_ylim(-5,5)
-  # ax.set_zlim(-5,5)
+  ax.set_xlim(-5,5)
+  ax.set_ylim(-5,5)
+  ax.set_zlim(-5,5)
 
   plt.title("Single Cylinder Wrapping")
   plt.legend()
 
   plt.show()
 
-def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_inactive, H_T_inactive ) :
+def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_inactive, H_T_inactive) :
 
   """Plot the representation of the double-cylinder obstacle-set algorithm
   
@@ -298,3 +298,83 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
   plt.legend()
 
   plt.show()
+  
+def plot_cadran_single_cylinder(P, S, Cylinder, p1, p2, points_tangent_inactif, name_cylinder="") : 
+  fig, ax = plt.subplots()
+  ax.grid(True)
+
+  ax.plot(P[0], P[1], 'go', label='origin')
+  ax.plot(S[0], S[1], 'bo', label='insertion')
+  ax.plot(p1[0], p1[1], 'mo', label='p1')
+  ax.plot(p2[0], p2[1], 'ro', label='p2')
+  
+  if points_tangent_inactif == False : 
+    ax.plot(*zip(P, p1), color='g')
+    ax.plot(*zip(p2, S), color='b')
+    semi_circle_points = data_semi_circle(np.concatenate((p1, [1])), np.concatenate((p2, [1])), np.eye(4), Cylinder.radius, 100)
+    ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], color="r")
+  else : 
+    ax.plot(*zip(P, S), color='r')
+  
+  circle = plt.Circle([0, 0], Cylinder.radius, color='k', fill=False, linestyle='--', linewidth=2, label=f'Cylinder')
+  ax.add_artist(circle)
+  
+  ax.set_xlabel('X')
+  ax.set_ylabel('Y')
+  
+  ax.set_xlim(min(P[0], S[0], P[1], S[1]) - Cylinder.radius - 0.01, max(P[0], S[0], P[1], S[1]) + Cylinder.radius + 0.01)
+  ax.set_ylim(min(P[0], S[0], P[1], S[1]) - Cylinder.radius - 0.01, max(P[0], S[0], P[1], S[1]) + Cylinder.radius + 0.01)
+  
+  # ax.set_xlim(-0.1, 0.1)
+  # ax.set_ylim(-0.1, 0.1)
+  
+  ax.legend()
+
+  # Afficher le plot
+  plt.title(f"Cylinder{name_cylinder} local frame")
+  plt.show()
+
+
+def plot_cadran_double_cylinder(P, S, Cylinders, p1, p2, points_tangent_inactif, names_cylinder = ["", ""]):
+    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+    
+    for k in range (2) : 
+      
+      ax = axs[k]
+      ax.grid(True)
+      
+      ax.plot(P[k][0], P[k][1], 'go', label='Origin')
+      ax.plot(S[k][0], S[k][1], 'bo', label='Insertion')
+      ax.plot(p1[k][0], p1[k][1], 'mo', label='p1')
+      ax.plot(p2[k][0], p2[k][1], 'ro', label='p2')
+    
+      if points_tangent_inactif[k] == False : 
+        ax.plot(*zip(P[k], p1[k]), color='g')
+        ax.plot(*zip(p2[k], S[k]), color='b')
+        semi_circle_points = data_semi_circle(np.concatenate((p1[k], [1])), np.concatenate((p2[k], [1])), np.eye(4), Cylinders[k].radius, 100)
+        ax.plot(semi_circle_points[:, 0], semi_circle_points[:, 1], color="r")
+      else : 
+        ax.plot(*zip(P[k], S[k]), color='r')
+      
+      circle = plt.Circle((0, 0), Cylinders[k].radius, color='k', fill=False, linestyle='--', linewidth=2, label='Cylinder')
+      ax.add_artist(circle)
+      
+      ax.set_xlabel('X')
+      ax.set_ylabel('Y')
+      ax.set_xlim(min(P[k][0], S[k][0], P[k][1], S[k][1]) - Cylinders[k].radius - 0.01, 
+                  max(P[k][0], S[k][0], P[k][1], S[k][1]) + Cylinders[k].radius + 0.01)
+      ax.set_ylim(min(P[k][0], S[k][0], P[k][1], S[k][1]) - Cylinders[k].radius - 0.01, 
+                  max(P[k][0], S[k][0], P[k][1], S[k][1]) + Cylinders[k].radius + 0.01)
+      ax.legend()
+      ax.set_title(f"Cylinder {names_cylinder[k]} local frame")
+      
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
+      
+
+    
+
+
+
+

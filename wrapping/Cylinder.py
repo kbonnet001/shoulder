@@ -126,23 +126,21 @@ class Cylinder:
         
         matrice1 = np.dot(gcs_seg, rototrans @ self.matrix_initial)
         
-        print("Insertion doit être là = ", switch_frame([0.016, -0.0354957, 0.005], gcs_seg)) # oui
+        print("Insertion doit être là = ", switch_frame([[0.016, -0.0354957, 0.005]], gcs_seg)) # oui
         
         # truc bizarre
         # self.matrix = np.dot(np.linalg.inv(self.gcs_seg_0), self.matrix_initial)
         # self.c1 = switch_frame([0, -0.05, 0], gcs_seg)
         # self.c2 = switch_frame([0, 0.05, 0], gcs_seg)
         
-        self.c1 = transpose_switch_frame(self.c1_initial, self.gcs_seg_0)
-        self.c2 = transpose_switch_frame(self.c2_initial, self.gcs_seg_0)
+        self.c1, self.c2 = transpose_switch_frame([self.c1_initial, self.c2_initial], self.gcs_seg_0)
         # ces points, c1 et c2 sont maintenant dans le repere local de humerus (verifie)
         
         # print("les points du cylindres en repere local humerus sont : ")
         # print("self.c1 = ", self.c1)
         # print("self.c2 = ", self.c2)
         
-        self.c1 = switch_frame(self.c1, gcs_seg)
-        self.c2 = switch_frame(self.c2, gcs_seg)
+        self.c1, self.c2 = switch_frame([self.c1, self.c2], gcs_seg)
         # pour mettre dans le global avec nouveau gcs seg (ok)
         # print("les points du cylindres en repere global humerus sont : ")
         # print("self.c1 = ", self.c1)
@@ -238,14 +236,10 @@ class Cylinder:
         return direction
 
     def compute_if_tangent_point_in_cylinder(self, p1, p2, bool_inactive) :
-        p1_local = transpose_switch_frame(p1, self.matrix)
-        p2_local = transpose_switch_frame(p2, self.matrix)
+        p1_local, p2_local = transpose_switch_frame([p1, p2], self.matrix)
         
         r1 = np.linalg.norm(p1_local[:2])
         r2 = np.linalg.norm(p2_local[:2])
-        
-        print("r1 = ", r1)
-        print("r2 = ", r2)
         
         if (r1 < self.radius or r2 < self.radius) or (
             bool_inactive == True and does_segment_intersect_cylinder(p1_local, p2_local, self.radius)) : 

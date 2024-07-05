@@ -7,12 +7,18 @@ from scipy.linalg import norm
 from wrapping.plot_cylinder import *
 from wrapping.algorithm import*
 from wrapping.Cylinder import Cylinder
+from neural_networks.discontinuities import *
+import torch.nn as nn
+import torch
+from neural_networks.Loss import *
 
 from sklearn.model_selection import train_test_split
 # from neural_networks.data_preparation import print_informations_environment
 # from neural_networks.main_trainning import main_superised_learning
 
-from neural_networks.data_generation import data_for_learning, data_for_learning_plot, test_limit_data_for_learning
+from neural_networks.data_generation import *
+from neural_networks.main_trainning import *
+from neural_networks.ModelHyperparameters import ModelHyperparameters
 
 #################### 
 # Code des tests
@@ -23,6 +29,7 @@ import unittest
 
 # Importer les tests
 from wrapping.wrapping_tests.step_1_test import Step_1_test
+# from wrapping.wrapping_tests.step_2_test import Step_2_test
 
 # unittest.main()
 ###############################################
@@ -42,13 +49,6 @@ humerus_dof_names = [model.segment(humerus_index).nameDof(i).to_string() for i i
 q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(humerus_index).QRanges()]
 q_ranges.append([0.05, 2.3561])
 
-# Create q range for PECM2
-q_ranges_PECM2 = copy.deepcopy(q_ranges)
-# Limite q range to avoid problematic configurations
-q_ranges_PECM2[0][0] =  (0.65449847 -1.04719755 ) / 2 # 1/4 -> 4/4
-q_ranges_PECM2[1][0] = -1.8690706375000001  # 1/2 -> 4/4
-q_ranges_PECM2[2][0] = (0.76039816 -0.05) / 2 # 1/4 -> 4/4
-
 # segment_names
 # ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 'scapula_right', 
 # 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 'radius_right', 'hand_right']
@@ -59,8 +59,6 @@ q_ranges_PECM2[2][0] = (0.76039816 -0.05) / 2 # 1/4 -> 4/4
 # Datas pour le cylindre (à priori) du thorax pour PECM2 et PECM3 (à partir de deux points)
 C_T_PECM2_1 = np.array([0.0183539873, -0.0762563082, 0.0774936934])
 C_T_PECM2_2 = np.array([0.0171218365, -0.0120059285, 0.0748758588])
-
-
 
 # Datas for cylinder's humerus right (muscle PECM1, PECM2 and PCM3)
 # C_H_PECM2_1 = np.array([-0.0468137093, -0.069205313, 0.1748923225]) # 0.02 5000_2 
@@ -104,11 +102,11 @@ C_H_PECM2_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632]) #le mieux a
 cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_2, C_T_PECM2_1, False, "thorax")
 cylinder_H_PECM2 = Cylinder.from_points(0.0255913399, 1, C_H_PECM2_2, C_H_PECM2_1, True, "humerus_right")
 
-C_T_PECM3_1 = np.array([0.0191190885, -0.1161524375, 0.0791192319])
+C_T_PECM3_1 = np.array([-0.0504468139, -0.0612220954, 0.1875298764])
 C_T_PECM3_2 = np.array([0.0182587352, -0.0712893992, 0.0772913203])
 
 C_H_PECM3_1 = np.array([-0.0468137093,-0.069205313,0.1748923225])
-C_H_PECM3_2 = np.array([-0.0273690802, 0.0069646657, 0.1703684749])
+C_H_PECM3_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632])
 
 cylinder_T_PECM3 = Cylinder.from_points(0.025, -1, C_T_PECM3_1, C_T_PECM3_2, False, "thorax")
 cylinder_H_PECM3 = Cylinder.from_points(0.0202946443, 1, C_H_PECM3_1, C_H_PECM3_2, True, "humerus_right")
@@ -120,9 +118,9 @@ cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
 muscles_selected = ["PECM2", "PECM3"]
 
-# test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model, q_ranges, True) 
+# test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
 
-data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_5000.xlsx", True, False) 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_part_5000.xlsx", True, False) 
 # ----------------------
 # train_model_supervised_learning("df_PECM2_datas_5000_more.xlsx")
 # print_informations_environment()
@@ -135,8 +133,13 @@ q_fixed = np.array([(ranges[1]) for ranges in q_ranges])
 # q_fixed = np.array([q_ranges[0][0], q_ranges[1][1], q_ranges[2][0], 0.0])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
-# data_for_learning_plot ("data_test_PECM2_all_q2fsadffd.xlsx", muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
-#                         1, 20, plot_all=True, plot_limit=False)
+# data_for_learning_plot (muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
+#                         1, "data_test_PECM3_discontinuitiesjuytrn.xlsx", 100, plot_all=False, plot_limit=False)
+
+# data_for_learning_without_discontinuites(muscles_selected[1], cylinders_PECM3, model, q_ranges, 5000, 
+#                 "df_PECM3_datas_without_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
+#                 plot=False, plot_cadran = False)
+   
 
 P = np.array([-3.78564,-2.53658,0])
 S = np.array([7.0297,1.44896,1.21311])
@@ -165,3 +168,39 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # exit(0)
 
 #################
+p0 = np.array([1.0, 1.0])
+p1 = np.array([2.0, 2.0])
+p2 = np.array([3.0, 3.0])
+
+# find_discontinute(p0, p1, p2)
+
+# data_loaders = prepare_data_from_folder(32, "datas", plot=False)
+# print("")
+
+model_name = "H_essai_1"
+batch_size = 30
+n_layers = [2]
+n_nodes = [[12, 10], [12, 8]]
+activations = [[nn.GELU(), nn.GELU()]]
+activation_names = [["GELU", "GELU"]]
+L1_penalty = [0.01, 0.001]
+L2_penalty = [0.01]
+learning_rate = [1e-3]
+num_epochs = 1000
+# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+criterion = [
+    (LogCoshLoss, {'factor': [1.0]}),
+    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
+    (ExponentialLoss, {'alpha': [0.5]})]
+p_dropout = [0.2]
+use_batch_norm = True
+
+
+Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, 
+                              L2_penalty, learning_rate, num_epochs, criterion, p_dropout, use_batch_norm)
+
+find_best_hyperparameters(Hyperparameter_essai1, "datas/error_part")
+
+# main_superised_learning(Hyperparameter_essai1, "datas/error_part", False, "essai1", False) 
+
+# find_best_hyperparameters(Hyperparameter_essai1)

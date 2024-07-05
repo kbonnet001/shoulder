@@ -4,13 +4,14 @@ from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
 # from wrapping.step_4 import segment_length_single_cylinder
 from wrapping.plot_cylinder import plot_double_cylinder_obstacle
 import numpy as np
-from wrapping.paspropre import determine_if_needed_change_side, determine_if_needed_change_side_2
+from wrapping.paspropre import determine_if_needed_change_side
+from wrapping.plot_cylinder import plot_cadran_double_cylinder, plot_cadran_single_cylinder
 
 
 # Algorithm
 #---------------------------
 
-def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) :
+def single_cylinder_obstacle_set_algorithm(origin_point, insertion_point, Cylinder, plot_cadran = False) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -21,7 +22,7 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) 
    
    INPUT
    - origin_point : array 3*1 position of the first point
-   - final_point : array 3*1 position of the second point
+   - insertion_point : array 3*1 position of the second point
    - radius : radius of the cylinder
    - side : side of the wrapping, -1 for the left side, 1 for the right side
    - matrix : array 4*4 rotation_matrix and vect
@@ -38,8 +39,7 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) 
    r = Cylinder.radius * Cylinder.side
 
    # Express P and S in the cylinder frame
-   P_cylinder_frame = transpose_switch_frame(origin_point, Cylinder.matrix)
-   S_cylinder_frame = transpose_switch_frame(final_point, Cylinder.matrix)
+   P_cylinder_frame, S_cylinder_frame = transpose_switch_frame([origin_point, insertion_point], Cylinder.matrix)
 
    # ------
    # Step 2
@@ -60,12 +60,14 @@ def single_cylinder_obstacle_set_algorithm(origin_point, final_point, Cylinder) 
    # ------
    # Step 5
    # ------
-   v1o = switch_frame(v1, Cylinder.matrix)
-   v2o = switch_frame(v2, Cylinder.matrix)
+   v1o, v2o = switch_frame([v1, v2], Cylinder.matrix)
+   
+   if plot_cadran == True : 
+      plot_cadran_single_cylinder(P_cylinder_frame[:2], S_cylinder_frame[:2], Cylinder, v1[:2], v2[:2], obstacle_tangent_point_inactive)
 
    return v1o, v2o, obstacle_tangent_point_inactive, segment_length
 
-def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
+def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_cadran = False) :
 
    """Provide the length wrapping around a cylinder
     Based on:
@@ -101,11 +103,8 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
    r_V = Cylinder_V.radius * Cylinder_V.side
 
    # Express P (S) in U (V) cylinder frame
-   P_U_cylinder_frame = transpose_switch_frame(P, Cylinder_U.matrix)
-   P_V_cylinder_frame = transpose_switch_frame(P, Cylinder_V.matrix)
-
-   S_U_cylinder_frame = transpose_switch_frame(S, Cylinder_U.matrix)
-   S_V_cylinder_frame = transpose_switch_frame(S, Cylinder_V.matrix)
+   P_U_cylinder_frame, S_U_cylinder_frame = transpose_switch_frame([P, S], Cylinder_U.matrix)
+   P_V_cylinder_frame, S_V_cylinder_frame = transpose_switch_frame([P, S], Cylinder_V.matrix)
 
    # ------
    # Step 2
@@ -114,8 +113,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
    
    H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
-   print("HT = ", H_T_inactive)
-   
+
    # if H_T_inactive and determine_if_needed_change_side(S_V_cylinder_frame, np.array([0.0246330366, -0.0069265376, -0.0000168612])): 
    if H_T_inactive and determine_if_needed_change_side(S_V_cylinder_frame, np.array([0.0179188682, -0.0181428819, 0.02])) == True: 
       print("yop")
@@ -174,10 +172,13 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V) :
    # ------
    # Step 5
    # ------
-   Qo = switch_frame(Q, Cylinder_U.matrix)
-   Go = switch_frame(G, Cylinder_U.matrix)
-   Ho = switch_frame(H, Cylinder_V.matrix)
-   To = switch_frame(T, Cylinder_V.matrix)
+   Qo, Go = switch_frame([Q, G], Cylinder_U.matrix)
+   Ho, To = switch_frame([H, T], Cylinder_V.matrix)
+   
+   if plot_cadran == True : 
+      plot_cadran_double_cylinder([P_U_cylinder_frame[:2], P_V_cylinder_frame[:2]], [S_U_cylinder_frame[:2], 
+        S_V_cylinder_frame[:2]], [Cylinder_U, Cylinder_V], [Q[:2], H[:2]], [G[:2], T[:2]], 
+                                  [Q_G_inactive, H_T_inactive], ["_U", "_V"])
    
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
 

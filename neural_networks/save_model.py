@@ -3,19 +3,29 @@ import torch.nn as nn
 from neural_networks.Model import Model
 from neural_networks.plot_visualisation import plot_predictions_and_targets
 import json
-
-def save_model(params, model, file_path) : 
-    # Sauvegarder la configuration du modèle
+   
+    
+def save_model(model, input_size, output_size, Hyperparams, file_path) : 
+    """Save a model with its parameters and hyperparameters
+    
+    INPUTS : 
+    - model : model to save
+    - input_size : int, size of input X
+    - output_size : int, size of output y
+    - Hyperparams : ModelHyperparameters, all hyperparameter 
+    - file_path : string, path """
+    
+    # Save model configuation
     config = {
-        'input_shape': params['input_size'],
-        'output_shape': params['output_size'],
-        'activation': 'ReLU',  # Sauvegarder le nom de l'activation
-        'n_layers' : params['n_layers'],
-        'n_nodes' : params['n_nodes'],
-        'L1_penalty': params['L1_penalty'],
-        'L2_penalty': params['L2_penalty'],
-        'use_batch_norm': params['use_batch_norm'],
-        'dropout_prob': params['dropout_prob']
+        'input_size': input_size,
+        'output_size': output_size,
+        'activation': Hyperparams.activation_names, 
+        'n_layers': Hyperparams.n_layers,
+        'n_nodes': Hyperparams.n_nodes,
+        'L1_penalty': Hyperparams.L1_penalty,
+        'L2_penalty': Hyperparams.L2_penalty,
+        'use_batch_norm': Hyperparams.use_batch_norm,
+        'dropout_prob': Hyperparams.dropout_prob
     }
 
     with open('model_config.json', 'w') as f:
@@ -29,13 +39,13 @@ def visualize_prediction(train_loader, val_loader, test_loader, file_path) :
         config = json.load(f)
 
     # Recréer l'activation
-    activation = getattr(nn, config['activation'])()
+    activations = [getattr(nn, activation)() for activation in config['activation']]
 
     # Recréer le modèle avec la configuration chargée
     model = Model(
-        input_shape=config['input_shape'],
-        output_shape=config['output_shape'],
-        activation=activation,
+        input_size=config['input_size'],
+        output_size=config['output_size'],
+        activations=activations,
         n_layers=config['n_layers'], 
         n_nodes=config['n_nodes'],
         L1_penalty=config['L1_penalty'],
