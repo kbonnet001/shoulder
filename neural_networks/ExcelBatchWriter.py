@@ -2,8 +2,9 @@ import os
 import pandas as pd
 
 class ExcelBatchWriter:
-    def __init__(self, filename, batch_size=100):
+    def __init__(self, filename, q_ranges_names_with_dofs, batch_size=100):
         self.filename = filename
+        self.q_ranges_names_with_dofs = q_ranges_names_with_dofs
         self.batch_size = batch_size
         self.buffer = []
         
@@ -11,10 +12,7 @@ class ExcelBatchWriter:
         if not os.path.exists(filename):
             data = {
                 "muscle_selected": [],
-                "humerus_right_RotY": [],
-                "humerus_right_RotX": [],
-                "humerus_right_RotY2": [],
-                "ulna_effector_right_RotZ": [],
+                **{self.q_ranges_names_with_dofs[k]: [] for k in range(len(self.q_ranges_names_with_dofs))},
                 "origin_muscle_x": [],
                 "origin_muscle_y": [],
                 "origin_muscle_z": [],
@@ -29,10 +27,7 @@ class ExcelBatchWriter:
         # Create a new line with the provided data
         new_line = {
             "muscle_selected": muscle_selected_index,
-            "humerus_right_RotY": q[0],
-            "humerus_right_RotX": q[1],
-            "humerus_right_RotY2": q[2],
-            "ulna_effector_right_RotZ": q[3],
+            **{self.q_ranges_names_with_dofs[k]: q[k] for k in range(len(q))},
             "origin_muscle_x": origin_muscle[0],
             "origin_muscle_y": origin_muscle[1],
             "origin_muscle_z": origin_muscle[2],

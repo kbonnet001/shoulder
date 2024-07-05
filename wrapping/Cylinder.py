@@ -175,6 +175,8 @@ class Cylinder:
         - segment_name : list of all segments name of the model"""
         
         self.segment_index = segment_names.index(self.segment) 
+        # compute all gcs (matrix 4*4) in regard of q_initial
+        # then, keep only the gcs of the segment
         self.gcs_seg_0 = [gcs.to_array() for gcs in model.allGlobalJCS(q_initial)][self.segment_index] 
 
     def change_raidus(self, new_radius) : 

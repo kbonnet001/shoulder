@@ -20,8 +20,9 @@ from sklearn.model_selection import train_test_split
 from neural_networks.data_generation import *
 from neural_networks.main_trainning import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.data_generation_ddl import data_for_learning_ddl
+from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
+from neural_networks.functions_data_generation import compute_q_ranges
 
 #################### 
 # Code des tests
@@ -40,23 +41,26 @@ from wrapping.wrapping_tests.step_1_test import Step_1_test
 
 model = biorbd.Model("models/Wu_DeGroote.bioMod")
 
-def compute_q_ranges_segment(model, segment_selected) : 
-    # segment_names
-    # ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 'scapula_right', 
-    # 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 'radius_right', 'hand_right']
+# def compute_q_ranges_segment(model, segment_selected) : 
+#     # segment_names
+#     # ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 'scapula_right', 
+#     # 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 'radius_right', 'hand_right']
     
-    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
-    humerus_index = segment_names.index(segment_selected) 
+#     segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
+#     humerus_index = segment_names.index(segment_selected) 
 
-    # humerus_dof_names = [model.segment(humerus_index).nameDof(i).to_string() for i in 
-    #                     range(model.segment(humerus_index).nbQ())]
+#     # humerus_dof_names = [model.segment(humerus_index).nameDof(i).to_string() for i in 
+#     #                     range(model.segment(humerus_index).nbQ())]
     
-    q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(humerus_index).QRanges()]
-    return q_ranges
+#     q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(humerus_index).QRanges()]
+#     return q_ranges
 
 
-q_ranges = compute_q_ranges_segment(model, "humerus_right")
-q_ranges.append([0.05,  2.356194490192345])
+# q_ranges = compute_q_ranges_segment(model, "humerus_right")
+# q_ranges.append([0.05,  2.356194490192345])
+
+q_ranges, _ = compute_q_ranges(model)
+
 
 # INPUTS :  
 # --------
@@ -126,9 +130,9 @@ segments_selected = ["thorax", "humerus_right"] # pour le moment, on change rien
 
 # test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
 
-# data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_part_5000.xlsx", True, False) 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.xlsx", False, False) 
 
-# data_for_learning_ddl (muscles_selected[0], segments_selected, cylinders_PECM2, model, 10, "hdhdds.xlsx", data_without_error = True, plot=True, plot_cadran = True)
+# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model, 10, "rgtrsfdd.xlsx", data_without_error = True, plot=False, plot_cadran = False)
    
 # ----------------------
 # train_model_supervised_learning("df_PECM2_datas_5000_more.xlsx")
@@ -136,14 +140,18 @@ segments_selected = ["thorax", "humerus_right"] # pour le moment, on change rien
 # main_superised_learning("df_PECM2_datas_25000.xlsx", True, "model_weights.pth")
 # ----------------------
 
-# q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges])
+q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges])
 # q_fixed = np.array([0.0,0.0,0.0,0.0])
-q_fixed = np.array([(ranges[1]) for ranges in q_ranges])
+# q_fixed = np.array([(ranges[1]) for ranges in q_ranges])
 # q_fixed = np.array([q_ranges[0][0], q_ranges[1][1], q_ranges[2][0], 0.0])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
-# data_for_learning_plot (muscles_selected[0], cylinders_PECM2, model, q_ranges, q_fixed, 
+# plot_one_q_variation(muscles_selected[0], cylinders_PECM2, model, q_fixed, 
 #                         1, "data_test_PECM3_discontinuitiesjuytrn.xlsx", 100, plot_all=False, plot_limit=False)
+
+plot_all_q_variation(muscles_selected[0], cylinders_PECM2, model, q_fixed, "ngafs.xlsx", num_points = 100, 
+                     plot_all = False, plot_limit = False, plot_cadran=False)
+   
 
 # data_for_learning_without_discontinuites(muscles_selected[1], cylinders_PECM3, model, q_ranges, 5000, 
 #                 "df_PECM3_datas_without_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
@@ -229,7 +237,7 @@ use_batch_norm = True
 # use_batch_norm=True
 
 folder_name = "datas/error_part"
-num_folds = 10
+num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 
 Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, 
@@ -237,8 +245,8 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n
 
 # main_superised_learning(Hyperparameter_essai1, "datas/error_part", True, "essai_bestparameter_1",False, True, True) 
 
-list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, folder_name)
-all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
+# list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, folder_name)
+# all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
 print("")
 

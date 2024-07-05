@@ -5,7 +5,7 @@ from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 import copy
 
-def data_for_learning_ddl (muscle_selected, segments_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
+def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas
    Datas are generated ponctually, independantly and uniformly
@@ -25,17 +25,14 @@ def data_for_learning_ddl (muscle_selected, segments_selected, cylinders, model,
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   # on calcule tous les q ranges de chaque muscle
-   q_ranges = []
-   for segment in segments_selected : 
-       q_ranges.append(compute_q_ranges_segment(model, segment))
+   q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+   muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
        
-    # Limits of q
+   # Limits of q
    min_vals = [row[0] for row in q_ranges]
    max_vals = [row[1] for row in q_ranges] 
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
-   muscle_index = initialisation_generation(model, muscle_selected, cylinders)
+   writer = ExcelBatchWriter(filename, q_ranges_names_with_dofs, batch_size=100)
 
    k = 0
    while k < dataset_size : 
@@ -63,49 +60,7 @@ def data_for_learning_ddl (muscle_selected, segments_selected, cylinders, model,
    
    return None
 
-def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, plot=False, plot_cadran=False) :
-   
-   """Test limits of q for the muscle selected
-   It's just a way to observe extreme configuations
-   
-   INPUT
-   - muscle_selected : string, name of the muscle selected. 
-                        Please chose an autorized name in this list : 
-                        ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
-                        'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
-   - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-   - model : model 
-   - q_ranges : array 4*2, q ranges limited for the muscle selected 
-   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
-   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
-   
-   muscle_index = initialisation_generation(model, muscle_selected, cylinders)
-
-   q_test_limite = [[0.,0.,0.],[0.,0.,0.],[0.,0.,0.]]
-   for k in range (3) :
-      q_test_limite[k][0]  = q_ranges [k][0] 
-      q_test_limite[k][1]  = (q_ranges [k][0]  + q_ranges[k][1] ) /2
-      q_test_limite[k][2]  = q_ranges[k][1] 
-
-   for i in range (3) :
-      for j in range (3) :
-         for k in range (3) :
-            
-            print("i = ", i, " j = ", j, " k = ", k)
-            
-            q = np.array([q_test_limite[0][i],q_test_limite[1][j], q_test_limite[2][k], 0])
-            print("q = ", q)
-            
-            origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
-            
-            # ------------------------------------------------
-
-            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
-            print("segment_length = ", segment_length)
-
-   return None
-
-def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
+def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
    """Create a data frame for prepare datas
    
@@ -126,27 +81,23 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
                                                                                           (first, middle and last one)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
-   muscle_index = initialisation_generation(model, muscle_selected, cylinders)
+   q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+   muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   writer = ExcelBatchWriter(filename, q_ranges_names_with_dofs, batch_size=100)
 
-   q_ref = np.array([q_ranges_muscle[0][1], q_ranges_muscle[1][1], q_ranges_muscle[2][1], 0.0]) 
-
-   origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q_ref) # global
-   
    q = q_fixed
    
    segment_lengths = []
    qs = []
    
-   print("q range = ", q_ranges_muscle)
+   print("q range = ", q_ranges)
 
    for k in range (num_points+1) : 
       print("k = ", k)
       
-      qi = k * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0]
+      qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
       q[i] = qi
       
-      # q = np.array([ 2.35619449, -1.49725651,  0.76039816 , 1.20305   ])
       print("q = ", q)
       
       origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
@@ -179,9 +130,95 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    writer.close()
    return None
 
-def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, num_points = 50, plot=False, plot_discontinuities = False, plot_cadran = False) :
+def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
-   """Create a data frame for prepare datas without any discontinuities or error wrapping 
+   """Create a data frame for prepare datas
+   
+   INPUT
+   - muscle_selected : string, name of the muscle selected. 
+                        Please chose an autorized name in this list : 
+                        ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
+                        'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
+   - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
+   - model : model 
+   - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
+   - q_fixed : array 4*1, q fixed, reference
+   - i : int (0, 1, 2, 3), qi to do variate
+   - filename : string, name of the file to create
+   - num_points : int (default = 50) number of point to generate per mvt
+   - plot_all : bool (default false), True if we want all plots of point P, S (and Q, G, H and T) with cylinder(s)
+   - plot_limit : bool (default = False), True to plot points P, S (and Q, G, H and T) with cylinder(s) 
+                                                                                          (first, middle and last one)
+   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
+   
+   q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+   muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+
+   q = q_fixed
+   
+   print("q range = ", q_ranges)
+
+   fig, axs = plt.subplots(2, (len(q_ranges)+1)//2, figsize=(15, 10))
+
+   for q_index in range (len(q_ranges)) : 
+      segment_lengths = []
+      qs = []
+      writer = ExcelBatchWriter(f"_{q_index}" + filename, q_ranges_names_with_dofs, batch_size=100)
+      
+      for k in range (num_points+1) : 
+         print("k = ", k)
+         
+         qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
+         q[q_index] = qi
+         
+         print("q = ", q)
+         
+         origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
+
+         # ------------------------------------------------
+
+         if k in [0,num_points/2, num_points] and plot_limit :
+            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
+            
+         else :  
+            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
+         
+         print("segment_length = ", segment_length)
+         qs.append(qi)
+         segment_lengths.append(segment_length)
+         
+         writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
+      
+      discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities=False)
+      
+      row = q_index // ((len(q_ranges) + 1) // 2)
+      col = q_index % ((len(q_ranges) + 1) // 2)
+
+      axs[row, col].plot(qs, segment_lengths, marker='o', linestyle='-', color='b', markersize=3)
+      for idx in discontinuities:
+         axs[row, col].plot(qs[idx:idx+2], segment_lengths[idx:idx+2], 'r', linewidth=2)  # Discontinuities are in red
+      axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+      axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
+      axs[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
+      axs[row, col].set_xticks(qs[::5])
+      axs[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
+
+      axs[row, col].set_yticks(segment_lengths[::5])
+      axs[row, col].set_yticklabels([f'{y:.4f}' for y in segment_lengths[::5]],fontsize='smaller')
+   
+   writer.close()
+   
+   fig.suptitle(f'Muscle Length as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
+   plt.tight_layout()  
+   plt.show()
+   
+   return None
+
+def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, model, dataset_size, filename, num_points = 50, plot=False, plot_discontinuities = False, plot_cadran = False) :
+   
+   """
+   NON FONCTIONNELLE
+   Create a data frame for prepare datas without any discontinuities or error wrapping 
    Generate a mvt and then, remove problematic datas
    
    INPUT
@@ -199,12 +236,13 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
    - plot_discontinuities : bool (default = False), true to show mvt with discontinuity
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
-   muscle_index = initialisation_generation(model, muscle_selected, cylinders)
+   q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+   muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   writer = ExcelBatchWriter(filename, q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
-   min_vals = [row[0] for row in q_ranges_muscle]
-   max_vals = [row[1] for row in q_ranges_muscle] 
+   min_vals = [row[0] for row in q_ranges]
+   max_vals = [row[1] for row in q_ranges] 
 
    num_line = 0
    while num_line < dataset_size : 
@@ -229,7 +267,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
             print("k = ", k)
             
             # Incrémenter qi
-            qi = k * ((q_ranges_muscle[i][1] - q_ranges_muscle[i][0]) / num_points) + q_ranges_muscle[i][0]
+            qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
             q[i] = qi
             print("q = ", q)
          

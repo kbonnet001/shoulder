@@ -140,7 +140,7 @@ endsegment
 
 segment radius_effector_right
     parent ulna_right
-    // rotations y
+    rotations y
 	ranges
 	    -pi/2 pi/2
     RTinmatrix 1

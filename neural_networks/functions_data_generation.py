@@ -19,27 +19,67 @@ def compute_q_ranges_segment(model, segment_selected) :
     q_ranges = [[ranges.min(), ranges.max()] for ranges in model.segment(segment_index).QRanges()]
     return q_ranges
 
-def initialisation_generation(model, muscle_selected, cylinders) :
+def ensure_unique_column_names(dofs_list) : 
+
+   # Utilisation d'un dictionnaire pour compter les occurrences et générer les noms uniques
+   name_counts = {}
+   unique_names = []
+
+   for name in dofs_list:
+      if name in name_counts:
+         name_counts[name] += 1
+         unique_name = f"{name}_{name_counts[name]}"
+      else:
+         name_counts[name] = 0
+         unique_name = name
+      
+      unique_names.append(unique_name)
+
+   return unique_names
+
+
+def compute_q_ranges(model):
+   segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
+   # on calcule tous les q ranges de chaque articulation (2, 4, 6, 7)
+   q_ranges = []
+   q_ranges_names_with_dofs = []
+   # Find name of segments and matrix of cylinders  
+   
+   for segment_index in range(len(segment_names)) :
+      q_ranges_segment = [[ranges.min(), ranges.max()] for ranges in model.segment(segment_index).QRanges()]
+      q_ranges+= q_ranges_segment
+      humerus_dof_names = [model.segment(segment_index).nameDof(i).to_string() for i in 
+                     range(model.segment(segment_index).nbQ())]
+      q_ranges_names_with_dofs += [f"{segment_names[segment_index]}_{dof}" for dof in humerus_dof_names]
+   q_ranges_names_with_dofs = ensure_unique_column_names(q_ranges_names_with_dofs)
+   
+   return q_ranges, q_ranges_names_with_dofs
+
+def initialisation_generation(model, q_ranges, muscle_selected, cylinders) :
+   
+   segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
+
    # Find index of the muscle selected
    muscle_names = [model.muscle(i).name().to_string() for i in range(model.nbMuscles())]
    muscle_index = find_index_muscle(muscle_selected, muscle_names)
 
-   # Find name of segments and matrix of cylinders  
-   segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
    # q_initial = np.array([0.,-0.01,0.,0.05])
-   q_initial = np.array([0.0, 0.0, 0.0, 0.0]) 
+   # q_initial = np.array([0.0, 0.0, 0.0, 0.0]) 
+   q_initial = np.array([0.0 for i in range (len(q_ranges))])
+   
    for cylinder in cylinders : 
       cylinder.compute_seg_index_and_gcs_seg_0(q_initial, model, segment_names)
    
    origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q_initial) # global initial
    points = [origin_muscle, insertion_muscle]
-   for k in range(2) : 
+   for k in range(len(cylinders)) : 
       cylinders[k].compute_new_radius(points[k])
    
    return muscle_index
 
 def update_points_position(model, muscle_index, q) : 
    # Updates
+   # en gros, on fait un update par rapport à un muscle avec muscle index et le q doit correspondre
    model.updateMuscles(q) 
    mus = model.muscle(muscle_index) 
    
@@ -93,7 +133,7 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    OUTPUT : 
    - segment_length : length of muscle path """
 
-   print("on fait l'algo avec celui ci = ", insertion_muscle)
+   print("on fait l'algo avec celui ci insertion_muscle = ", insertion_muscle)
    # First of all, create a rotation matrix (the model have y and not z for ax up) 
    # Single cylinder algo and double cylinders algo don't work without this change
    matrix_rot_zy = np.array([[0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1]])
