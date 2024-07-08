@@ -125,3 +125,21 @@ def plot_predictions_and_targets_from_filenames(model, filenames, limits, num):
         ax.set_xlabel('Échantillons')
         ax.set_ylabel('Muscle length')
         ax.legend()
+
+def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) : 
+    
+    plt.plot(qs, segment_lengths, linestyle='-', color='b')
+    qs_plot = [qs[idx] for idx in range(len(qs)) if idx not in to_remove]
+    segment_lengths_plot = [segment_lengths[idx] for idx in range(len(segment_lengths)) if idx not in to_remove]
+    plt.plot(qs_plot, segment_lengths_plot, marker='o', color='b')
+    for idx in to_remove:
+        plt.plot(qs[idx:idx+1], segment_lengths[idx:idx+1], marker='x', color='r')  # Discontinuities are in red
+    plt.xlabel(f'q{i}')
+    plt.ylabel('Muscle_length')
+    plt.title(f'Muscle Length as a Function of q{i} Values')
+    plt.xticks(qs[::5])
+    plt.yticks(segment_lengths[::5]) 
+    plt.grid(True)
+    plt.show()
+    
+
