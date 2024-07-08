@@ -25,7 +25,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = ExcelBatchWriter(filename+".xlsx", batch_size=100)
    muscle_index = initialisation_generation(model, q_ranges_muscle, muscle_selected, cylinders)
  
    # Limits of q
@@ -121,7 +121,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
                                                                                           (first, middle and last one)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = ExcelBatchWriter(filename+".xlsx", batch_size=100)
    muscle_index = initialisation_generation(model, q_ranges_muscle,muscle_selected, cylinders)
 
    q_ref = np.array([q_ranges_muscle[0][1], q_ranges_muscle[1][1], q_ranges_muscle[2][1], 0.0]) 
@@ -194,7 +194,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
    - plot_discontinuities : bool (default = False), true to show mvt with discontinuity
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = ExcelBatchWriter(filename+".xlsx", batch_size=100)
    muscle_index= initialisation_generation(model, q_ranges_muscle, muscle_selected, cylinders)
  
    # Limits of q

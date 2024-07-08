@@ -35,7 +35,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    min_vals = [row[0] for row in q_ranges]
    max_vals = [row[1] for row in q_ranges] 
    
-   writer = ExcelBatchWriter(filename, q_ranges_names_with_dofs, batch_size=100)
+   writer = ExcelBatchWriter(filename+"xlsx", q_ranges_names_with_dofs, batch_size=100)
 
    k = 0
    while k < dataset_size : 
@@ -224,7 +224,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    
    return None
 
-def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, model, dataset_size, filename, num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph = False) :
+def data_for_learning_without_discontinuites_ddl(muscles_selected, cylinders, model, dataset_size, filename, num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph = False) :
    
    """
    NON FONCTIONNELLE
@@ -247,8 +247,10 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-   muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
-   writer = ExcelBatchWriter(filename, q_ranges_names_with_dofs, batch_size=100)
+   muscles_index = []
+   for idx in range (len(muscles_selected)) : 
+      muscles_index.append(initialisation_generation(model, q_ranges, muscles_selected[idx], cylinders[idx]))
+   writer = ExcelBatchWriter(filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
    min_vals = [row[0] for row in q_ranges]
@@ -266,6 +268,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          
          qs = []
          segment_lengths = []
+         origin_muscles = [0 for n in range(len(muscles_index))]
+         insertion_muscles = [0 for n in range(len(muscles_index))]
          datas_ignored = []
          lines = []
          to_remove = []
@@ -273,23 +277,25 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          q = copy.deepcopy(q_ref)
          
          # Generate points (num_points) of a mvt relatively to qi
-         for k in range (num_points) : 
-            print("k = ", k)
+         for j in range (num_points) : 
+            print("j = ", j)
             
             # Incrémenter qi
-            qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
+            qi = j * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
             q[i] = qi
             print("q = ", q)
+            
+            for k in range(len(muscles_index)) : 
          
-            origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
-            
-            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
-            
-            qs.append(qi)
-            segment_lengths.append(segment_length)
-            datas_ignored.append(data_ignored)
-            
-            lines.append([muscle_index, q, origin_muscle, insertion_muscle, segment_length])
+               origin_muscles[k], insertion_muscles[k] = update_points_position(model, muscles_index[k], q)
+               
+               segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscles[k], insertion_muscles[k], plot_cylinder_3D, plot_cadran)  
+               
+               qs.append(qi)
+               segment_lengths.append(segment_length)
+               datas_ignored.append(data_ignored)
+               
+               lines.append([muscle_index, q, origin_muscle, insertion_muscle, segment_length])
          
          # Find indexes with discontinuties
          discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
