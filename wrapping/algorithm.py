@@ -178,7 +178,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    if plot_cadran == True : 
       plot_cadran_double_cylinder([P_U_cylinder_frame[:2], P_V_cylinder_frame[:2]], [S_U_cylinder_frame[:2], 
         S_V_cylinder_frame[:2]], [Cylinder_U, Cylinder_V], [Q[:2], H[:2]], [G[:2], T[:2]], 
-                                  [Q_G_inactive, H_T_inactive], ["_U", "_V"])
+                                  [Q_G_inactive, H_T_inactive])
    
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
 
