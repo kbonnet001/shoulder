@@ -4,7 +4,7 @@ from scipy.spatial.transform import Rotation as R
 from scipy.linalg import norm
 
 class Cylinder:
-    def __init__(self, radius, side, c1, c2, matrix, point_on_cylinder = False, segment = None, segment_index = None, gcs_seg_0 = None):
+    def __init__(self, radius, side, c1, c2, matrix, point_on_cylinder = False, segment = None, muscle = None, segment_index = None, gcs_seg_0 = None):
         """Initialize a cylinder with a transformation matrix
         
         - radius : radius of the cylinder
@@ -28,11 +28,12 @@ class Cylinder:
         self.matrix = matrix
         self.point_on_cylinder = point_on_cylinder
         self.segment = segment
+        self.muscle = muscle
         self.segment_index = segment_index
         self.gcs_seg_0 = gcs_seg_0
 
     @classmethod
-    def from_matrix(cls, radius, side, matrix, point_on_cylinder=False, segment=None, d = 0.1):
+    def from_matrix(cls, radius, side, matrix, point_on_cylinder=False, segment=None, muscle = None, d = 0.1):
         """
         Create a cylinder with a given transformation matrix.
         
@@ -53,10 +54,10 @@ class Cylinder:
         c1 = origin - d * unit_AB
         c2 = origin + d * unit_AB
         
-        return cls(radius, side, c1, c2, matrix, point_on_cylinder, segment)
+        return cls(radius, side, c1, c2, matrix, point_on_cylinder, segment, muscle)
     
     @classmethod
-    def from_points(cls, radius, side, c1, c2, point_on_cylinder=False, segment=None):
+    def from_points(cls, radius, side, c1, c2, point_on_cylinder=False, segment=None, muscle=None):
         """Create a cylinder with two points and create a matrix for this cylinder
         
         - radius : radius of the cylinder
@@ -70,7 +71,7 @@ class Cylinder:
         frame = find_cylinder_frame([c1, c2])
         midpoint = (c1 + c2) / 2
         matrix = find_matrix(frame, midpoint)
-        return cls(radius, side, c1, c2, matrix, point_on_cylinder, segment)
+        return cls(radius, side, c1, c2, matrix, point_on_cylinder, segment, muscle)
         
     def rotate_around_axis(self, alpha) :
         """

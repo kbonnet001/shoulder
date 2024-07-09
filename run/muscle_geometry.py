@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 from neural_networks.data_generation import *
 from neural_networks.main_trainning import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation
+from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
 
@@ -108,8 +108,8 @@ C_H_PECM2_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632]) #le mieux a
 # C_H_PECM2_2 = np.array([-0.030809488, -0.0108681304, 0.1741798345]) # pas bien, ne pas faire des cylinre avec r trop petit !
 
 #################################################################################################
-cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_2, C_T_PECM2_1, False, "thorax")
-cylinder_H_PECM2 = Cylinder.from_points(0.0255913399, 1, C_H_PECM2_2, C_H_PECM2_1, True, "humerus_right")
+cylinder_T_PECM2 = Cylinder.from_points(0.025, -1, C_T_PECM2_2, C_T_PECM2_1, False, "thorax", "PECM2")
+cylinder_H_PECM2 = Cylinder.from_points(0.0255913399, 1, C_H_PECM2_2, C_H_PECM2_1, True, "humerus_right", "PECM2")
 
 C_T_PECM3_1 = np.array([-0.0504468139, -0.0612220954, 0.1875298764])
 C_T_PECM3_2 = np.array([0.0182587352, -0.0712893992, 0.0772913203])
@@ -117,18 +117,20 @@ C_T_PECM3_2 = np.array([0.0182587352, -0.0712893992, 0.0772913203])
 C_H_PECM3_1 = np.array([-0.0468137093,-0.069205313,0.1748923225])
 C_H_PECM3_2 = np.array([-0.0367284615, -0.0074835226, 0.1843382632])
 
-cylinder_T_PECM3 = Cylinder.from_points(0.025, -1, C_T_PECM3_1, C_T_PECM3_2, False, "thorax")
-cylinder_H_PECM3 = Cylinder.from_points(0.0202946443, 1, C_H_PECM3_1, C_H_PECM3_2, True, "humerus_right")
+cylinder_T_PECM3 = Cylinder.from_points(0.025, -1, C_T_PECM3_1, C_T_PECM3_2, False, "thorax","PECM3")
+cylinder_H_PECM3 = Cylinder.from_points(0.0202946443, 1, C_H_PECM3_1, C_H_PECM3_2, True, "humerus_right", "PECM3")
 
 # cylinder_H_PECM2.rotate_around_axis(-45)
 
 cylinders_PECM2=[cylinder_T_PECM2, cylinder_H_PECM2]
 cylinders_PECM3=[cylinder_T_PECM3, cylinder_H_PECM3]
 
+cylinders = [cylinders_PECM2, cylinders_PECM3]
+
 muscles_selected = ["PECM2", "PECM3"]
 segments_selected = ["thorax", "humerus_right"] # pour le moment, on change rien
 
-# test_limit_data_for_learning(muscles_selected[1],cylinders_PECM2, model, q_ranges, True, False) 
+# test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model, q_ranges, True, False) 
 
 # data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.xlsx", False, False) 
 
@@ -147,13 +149,16 @@ q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
 # plot_one_q_variation(muscles_selected[0], cylinders_PECM2, model, q_fixed, 
-#                         1, "data_test_PECM3_discontinuitiesjuytrn.xlsx", 100, plot_all=False, plot_limit=False)
+#                         1, "essai2", 100, plot_all=False, plot_limit=False)
 
-plot_all_q_variation(muscles_selected[0], cylinders_PECM2, model, q_fixed, "ngafs.xlsx", num_points = 100, 
-                     plot_all = False, plot_limit = False, plot_cadran=False)
-   
+# plot_all_q_variation(muscles_selected[0], cylinders_PECM2, model, q_fixed, "ngafsdhgf", num_points = 100, 
+#                      plot_all = False, plot_limit = False, plot_cadran=False)
 
-# data_for_learning_without_discontinuites(muscles_selected[1], cylinders_PECM3, model, q_ranges, 5000, 
+# data_for_learning_without_discontinuites_ddl(muscles_selected[1], cylinders[1], model, 5000, "data_testfraszfdsc", num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
+
+data_generation_muscles(muscles_selected, cylinders, model, 5000, "data_more_ddl", num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+
+# data_for_learning_without_discontinuites(muscles_selected, cylinders, model, q_ranges, 5000, 
 #                 "df_PECM3_datas_without_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
 #                 plot=False, plot_cadran = False)
    
@@ -201,40 +206,40 @@ p2 = np.array([3.0, 3.0])
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "H_essai_1"
-batch_size = 32
-n_layers = [1]
-n_nodes = [[8], [10], [15], [20], [25], [30]]
-activations = [[nn.GELU()]]
-activation_names = [["GELU"]]
-L1_penalty = [0.01, 0.001]
-L2_penalty = [0.01, 0.001]
-learning_rate = [1e-3]
-num_epochs = 1000
-# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-criterion= [
-    (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss, {'delta': [0.2, 1.0, 2.0], 'factor': [1.0, 2.0, 3.0]}),
-    (ExponentialLoss, {'alpha': [0.5, 1.0]})
-]
-p_dropout = [0.2, 0.5]
-use_batch_norm = True
+# model_name = "H_essai_1"
+# batch_size = 32
+# n_layers = [1]
+# n_nodes = [[8], [10], [15], [20], [25], [30]]
+# activations = [[nn.GELU()]]
+# activation_names = [["GELU"]]
+# L1_penalty = [0.01, 0.001]
+# L2_penalty = [0.01, 0.001]
+# learning_rate = [1e-3]
+# num_epochs = 1000
+# # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+# criterion= [
+#     (LogCoshLoss, {'factor': [1.0, 1.8]}),
+#     (ModifiedHuberLoss, {'delta': [0.2, 1.0, 2.0], 'factor': [1.0, 2.0, 3.0]}),
+#     (ExponentialLoss, {'alpha': [0.5, 1.0]})
+# ]
+# p_dropout = [0.2, 0.5]
+# use_batch_norm = True
 
 
-# model_name="essai"
-# batch_size=64
-# n_layers=1
-# n_nodes=[12]
-# activations=[nn.GELU()]
-# activation_names = ["GELU"]
-# L1_penalty=0.01
-# L2_penalty=0.01
-# learning_rate=0.001
-# num_epochs=1000 
-# optimizer=0.0
-# criterion=ExponentialLoss(alpha=1.0)
-# p_dropout=0.2
-# use_batch_norm=True
+model_name="essai"
+batch_size=128
+n_layers=1
+n_nodes=[50]
+activations=[nn.GELU()]
+activation_names = ["GELU"]
+L1_penalty=0.01
+L2_penalty=0.01
+learning_rate=0.00001
+num_epochs=1000 
+optimizer=0.0
+criterion = ModifiedHuberLoss(delta=2.0, factor=2.0)
+p_dropout=0.2
+use_batch_norm=True
 
 folder_name = "datas/error_part"
 num_folds = 5 # for 80% - 20%
@@ -243,7 +248,7 @@ num_try_cross_validation = 10
 Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, 
                               L2_penalty, learning_rate, num_epochs, criterion, p_dropout, use_batch_norm)
 
-# main_superised_learning(Hyperparameter_essai1, "datas/error_part", True, "essai_bestparameter_1",False, True, True) 
+# main_superised_learning(Hyperparameter_essai1, "data_generation_data_more_ddl", True, "essai_bestparameter_1",False, True, True) 
 
 # list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, folder_name)
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
