@@ -61,6 +61,19 @@ class ExcelBatchWriter:
         # Clear the buffer
         self.buffer = []
 
+    def del_lines(self, n):
+        # Check current number of lines in the Excel file
+        df = pd.read_excel(self.filename)
+        current_lines = df.shape[0]
+        
+        # If there are more than n lines, delete the surplus
+        if current_lines > n:
+            df.drop(df.tail(current_lines - n).index, inplace=True)
+            
+            # Write the updated DataFrame back to the Excel file
+            with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
+                df.to_excel(writer, index=False)
+
     def close(self):
         # Flush any remaining lines in the buffer when closing
         self._flush()

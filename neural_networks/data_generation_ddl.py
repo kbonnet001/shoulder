@@ -35,7 +35,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    min_vals = [row[0] for row in q_ranges]
    max_vals = [row[1] for row in q_ranges] 
    
-   writer = ExcelBatchWriter(filename, q_ranges_names_with_dofs, batch_size=100)
+   writer = ExcelBatchWriter(filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
 
    k = 0
    while k < dataset_size : 
@@ -248,7 +248,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
-   writer = ExcelBatchWriter(filename, q_ranges_names_with_dofs, batch_size=100)
+   writer = ExcelBatchWriter(filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
    min_vals = [row[0] for row in q_ranges]
@@ -279,6 +279,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
             # Incrémenter qi
             qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
             q[i] = qi
+   
+            
             print("q = ", q)
          
             origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
@@ -313,11 +315,30 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
             plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove)
          
          # Add lines
+         
+         if lines == [] : 
+            print("")
          for line in lines:
-            writer.add_line(*line)
-            num_line+=1
+            if not any(np.any(np.isnan(item)) for item in line if isinstance(item, np.ndarray)):
+               writer.add_line(*line)
+               num_line+=1
+            else : 
+               print("ayaya")
             if num_line > dataset_size : 
                break
 
    writer.close()
+   
+   writer.del_lines(dataset_size)
    return None
+
+def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, filename, num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph = False ) : 
+   
+   # Create a folder for save excel files and plots
+   directory = "data_generation_" + filename
+   create_directory(directory)
+   
+   for k in range(len(muscles_selected)) : 
+      data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
+                                                   f"{directory}/{cylinders[k][0].muscle}", num_points, 
+                                                   plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)

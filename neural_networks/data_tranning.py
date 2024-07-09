@@ -129,7 +129,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
         val_accs = []
 
     # Initialization of ReduceLROnPlateau
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8, verbose=True)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8)
     # Initialization of EarlyStopping
     early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
 
