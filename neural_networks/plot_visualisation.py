@@ -3,6 +3,7 @@ import matplotlib as plt
 import matplotlib.pyplot as plt
 import torch
 from neural_networks.data_preparation import create_data_loader
+from neural_networks.file_directory_operations import create_and_save_plot
 
 def mean_distance(predictions, targets):
     """
@@ -18,7 +19,7 @@ def mean_distance(predictions, targets):
     distance = torch.mean(torch.abs(predictions - targets))
     return distance.item()
 
-def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
+def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path):
     """Plot loss and accuracy (train and validation)
 
     INPUT :
@@ -48,7 +49,7 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
 
     plt.tight_layout()
     
-    
+    create_and_save_plot(file_path, "plot_loss_and_accuracy")
     plt.show()
     
 def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
@@ -77,7 +78,7 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
     return predictions, targets
 
     
-def plot_predictions_and_targets(model, loader, string_loader, num) :
+def plot_predictions_and_targets(model, loader, string_loader, num, directory_path, loader_name) :
     
     """Plot the true values and predicted values for a given model and data loader.
     INPUT:
@@ -102,6 +103,7 @@ def plot_predictions_and_targets(model, loader, string_loader, num) :
     plt.ylabel('Muscle length')
     plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}")
     plt.legend()
+    create_and_save_plot(directory_path, f"plot_predictions_and_targets_{loader_name}")
     plt.show()
 
 def plot_predictions_and_targets_from_filenames(model, filenames, limits, num):

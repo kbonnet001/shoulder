@@ -34,7 +34,7 @@ def save_model(model, input_size, output_size, Hyperparams, file_path) :
         json.dump(config, f)
     torch.save(model.state_dict(), file_path)
     
-def visualize_prediction(Hyperparams, train_loader, val_loader, test_loader, file_path) : 
+def visualize_prediction(train_loader, val_loader, test_loader, file_path) : 
     
     """Load saved model and plot-save visualisation 
     
@@ -61,12 +61,9 @@ def visualize_prediction(Hyperparams, train_loader, val_loader, test_loader, fil
         dropout_prob=config['dropout_prob']
     )
 
-    model.load_state_dict(torch.load(file_path))
+    model.load_state_dict(torch.load(f"{file_path}/model"))
     model.eval()
     
-    plot_predictions_and_targets(model, train_loader, "Train loader", 100)
-    create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_train_loader")
-    plot_predictions_and_targets(model, val_loader, "Validation loader", 100)
-    create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_val_loader")
-    plot_predictions_and_targets(model, test_loader, "Test loader", 100)
-    create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_test_loader")
+    plot_predictions_and_targets(model, train_loader, "Train loader", 100, file_path, "train_loader")
+    plot_predictions_and_targets(model, val_loader, "Validation loader", 100, file_path, "val_loader")
+    plot_predictions_and_targets(model, test_loader, "Test loader", 100, file_path, "test_loader")

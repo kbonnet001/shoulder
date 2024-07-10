@@ -159,12 +159,12 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     print(f'Test Loss: {test_loss:.6f}, Test Acc: {test_acc:.6f}')
     
     if plot : 
-        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs)
-        create_and_save_plot(Hyperparams.model_name, "plot_loss_and_accuracy")
+        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path)
+        
         
     # Save model
     if save : 
-        save_model(model, input_size, output_size, Hyperparams, file_path)
+        save_model(model, input_size, output_size, Hyperparams, f"{file_path}/model")
     
     return model, val_loss, val_acc
 
