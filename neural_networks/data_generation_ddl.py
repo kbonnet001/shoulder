@@ -230,6 +230,13 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    Create a data frame for prepare datas without any discontinuities or error wrapping 
    Generate a mvt and then, remove problematic datas
    
+   This function is used in "data_generation_muscles" but you can use it if you want to generate datas for one muscle
+   Please, paid attention of "filename" you selected ... 
+   You can not re generate datas for one muscle if files already exist, you need to delete files before !
+   
+   You can also use this function to add more lines (choose a bigger "dataset_size" value)
+   If you choose a smaller "dataset_size" value, nothing will happen 
+   
    INPUTS
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
@@ -246,8 +253,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
-   writer = ExcelBatchWriter(filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
-   writer_datas_ignored = ExcelBatchWriter(filename+"datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
+   writer = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}.xlsx", q_ranges_names_with_dofs, batch_size=100)
+   writer_datas_ignored = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
    min_vals = [row[0] for row in q_ranges]
@@ -317,25 +324,6 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
                num_line+=1
                if num_line > dataset_size : 
                   break
-               
-         
-         # for index in to_remove :
-         #    del lines[index]
-         
-         # # Add lines
-         
-         # if lines == [] : 
-         #    print("")
-         # for line in lines:
-         #    writer.add_line(*line)
-         #    num_line+=1
-         #    # if not any(np.any(np.isnan(item)) for item in line if isinstance(item, np.ndarray)):
-         #    #    writer.add_line(*line)
-         #    #    num_line+=1
-         #    # else : 
-         #    #    print("Nan detected :/")
-         #    if num_line > dataset_size : 
-         #       break
 
    writer.close()
    writer_datas_ignored.close()
@@ -367,6 +355,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
    create_directory(directory)
    
    for k in range(len(muscles_selected)) : 
+      create_directory(f"{directory}/{cylinders[k][0].muscle}")
       data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
                                                    f"{directory}/{cylinders[k][0].muscle}", num_points, 
                                                    plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
