@@ -13,7 +13,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    """Create a data frame for prepare datas
    Datas are generated ponctually, independantly and uniformly
    
-   INPUT
+   INPUTS
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -23,7 +23,6 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
    - dataset_size : int, number of data we would like
    - filename : string, name of the file to create
-   - num_points : int (default = 50) number of point to generate per mvt
    - data_without_error : bool (default = False), True to ignore data with error wrapping 
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
@@ -67,7 +66,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    
    """Create a directory with an excel file for one q and png of mvt
    
-   INPUT
+   INPUTS
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -141,7 +140,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    
    """Create a directory with all excel files and png of mvt for all q
    
-   INPUT
+   INPUTS
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -162,7 +161,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
-   q = q_fixed
+   q = copy.deepcopy(q_fixed)
    
    print("q range = ", q_ranges)
 
@@ -172,6 +171,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
       segment_lengths = []
       qs = []
       writer = ExcelBatchWriter(f"{directory}/{q_index}_" + filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
+      q = copy.deepcopy(q_fixed)
       
       for k in range (num_points+1) : 
          print("k = ", k)
@@ -195,7 +195,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
          qs.append(qi)
          segment_lengths.append(segment_length)
          
-
+         print("c ce q aue l'on met : ", q)
          writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
       
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities=False)
@@ -227,18 +227,16 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
 def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, model, dataset_size, filename, num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph = False) :
    
    """
-   NON FONCTIONNELLE
    Create a data frame for prepare datas without any discontinuities or error wrapping 
    Generate a mvt and then, remove problematic datas
    
-   INPUT
+   INPUTS
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
    - model : model 
-   - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
    - dataset_size : int, number of data we would like
    - filename : string, name of the file to create
    - num_points : int (default = 50) number of point to generate per mvt
@@ -249,12 +247,13 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
    writer = ExcelBatchWriter(filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
+   writer_datas_ignored = ExcelBatchWriter(filename+"datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
    min_vals = [row[0] for row in q_ranges]
    max_vals = [row[1] for row in q_ranges] 
 
-   num_line = 0
+   num_line = writer.get_num_line()
    while num_line < dataset_size : 
       print("num line = ", num_line)
 
@@ -280,7 +279,6 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
             qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
             q[i] = qi
    
-            
             print("q = ", q)
          
             origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
@@ -297,43 +295,73 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
          for discontinuity in discontinuities : 
             # min, max = data_to_remove_range(discontinuity, num_points, 5)
-            min, max = data_to_remove_part(discontinuity, qs, num_points, 5)
+            min, max = data_to_remove_part(discontinuity, qs, num_points, 3)
             to_remove.extend(range(min, max + 1))
          positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
          if len(positions) != 0 : 
-            min, max = find_discontinuities_from_error_wrapping_range(positions, num_points, range = 5)
+            min, max = find_discontinuities_from_error_wrapping_range(positions, num_points, range = 3)
             to_remove.extend(range(min, max + 1))
          
          # Sort to keep only one occurancy of each indexes
          to_remove = sorted(set(to_remove), reverse=True)
          
-         for index in to_remove :
-            del lines[index]
-         
          if len(to_remove) != 0 and plot_graph : 
             # To check points removed (in red)
             plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove)
          
-         # Add lines
-         
-         if lines == [] : 
-            print("")
-         for line in lines:
-            if not any(np.any(np.isnan(item)) for item in line if isinstance(item, np.ndarray)):
-               writer.add_line(*line)
-               num_line+=1
+         for l_idx in range (len(lines)) :
+            if l_idx in to_remove : 
+               writer_datas_ignored.add_line(*lines[l_idx])
             else : 
-               print("ayaya")
-            if num_line > dataset_size : 
-               break
+               writer.add_line(*lines[l_idx])
+               num_line+=1
+               if num_line > dataset_size : 
+                  break
+               
+         
+         # for index in to_remove :
+         #    del lines[index]
+         
+         # # Add lines
+         
+         # if lines == [] : 
+         #    print("")
+         # for line in lines:
+         #    writer.add_line(*line)
+         #    num_line+=1
+         #    # if not any(np.any(np.isnan(item)) for item in line if isinstance(item, np.ndarray)):
+         #    #    writer.add_line(*line)
+         #    #    num_line+=1
+         #    # else : 
+         #    #    print("Nan detected :/")
+         #    if num_line > dataset_size : 
+         #       break
 
    writer.close()
+   writer_datas_ignored.close()
    
    writer.del_lines(dataset_size)
    return None
 
 def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, filename, num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph = False ) : 
    
+   """Generate datas for all muscles selected, one file of "dataset_size" lines per muscle
+   
+   INPUTS
+   - muscles_selected : [string], names of muscles selected. 
+                        Please chose autorized names in this list : 
+                        ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
+                        'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
+   - cylinders : List of list of muscle's cylinder (0, 1 or 2 cylinders)
+   - model : model 
+   - dataset_size : int, number of data we would like
+   - filename : string, name of the file to create
+   - num_points : int (default = 50) number of point to generate per mvt
+   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
+   - plot_discontinuities : bool (default = False), true to show mvt with discontinuity
+   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping
+   
+   """
    # Create a folder for save excel files and plots
    directory = "data_generation_" + filename
    create_directory(directory)

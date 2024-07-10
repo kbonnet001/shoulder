@@ -37,7 +37,7 @@ def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_seconde
     
     return total_time_estimated_secondes, total_time_estimated_minutes, total_time_estimated_hours
 
-def main_superised_learning(Hyperparams, folder_name, retrain, file_path, plot_preparation, plot, save) : 
+def main_superised_learning(Hyperparams, q_ranges, folder_name, retrain, file_path, plot_preparation, plot, save) : 
     
     """Main fonction for prepare, train-val-test and save a model 
     
@@ -66,14 +66,14 @@ def main_superised_learning(Hyperparams, folder_name, retrain, file_path, plot_p
     # Create a folder for save plots
     create_directory(Hyperparams.model_name)
 
-    train_loader, val_loader, test_loader, input_size, output_size = create_loaders_from_folder(Hyperparams, folder_name, plot_preparation)
+    train_loader, val_loader, test_loader, input_size, output_size = create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot_preparation)
     
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(file_path) == False: 
         
         model, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, file_path, plot, save)
         
-    visualize_prediction(train_loader, val_loader, test_loader, file_path)
+    visualize_prediction(Hyperparams,train_loader, val_loader, test_loader, file_path)
     
     
 def find_best_hyperparameters(Hyperparams, folder_name) : 

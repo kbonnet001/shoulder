@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader, random_split
 import sklearn
 from neural_networks.MuscleDataset import MuscleDataset
 from neural_networks.file_directory_operations import create_and_save_plot
+from neural_networks.other import compute_row_col
 
 def print_informations_environment() : 
   # Print environment info
@@ -122,7 +123,7 @@ def data_preparation_create_tensor(df_data, limit, all_possible_categories):
 
     return X_tensor, y_tensor
 
-def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
+def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
   """Create loaders : 
     80 % : train (80%) + validation (20%)
     20% : test
@@ -158,8 +159,8 @@ def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
         datasets.append((train_dataset, val_dataset, test_dataset))
 
         if plot : 
-          plot_datas_distribution(X_tensor, y_tensor)
-          create_and_save_plot(Hyperparams.model_name, f"plot_datas_distribution_{filename.replace(".xlsx", "")}")
+          plot_datas_distribution(Hyperparams, filename, file_path, q_ranges, X_tensor, y_tensor)
+          
 
   # Merge dataset
   train_dataset = torch.utils.data.ConcatDataset([datasets[k][0] for k in range (len(datasets))])
@@ -181,7 +182,7 @@ def create_data_loader(filename, limit, all_possible_categories) :
   loader = DataLoader(dataset, 32, shuffle = False)
   return loader 
 
-def plot_datas_distribution(X_tensor, y_tensor):
+def plot_datas_distribution(Hyperparams, filename, file_path, q_ranges, X_tensor, y_tensor):
     """To visualise tensors distribution
     Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
 
@@ -189,20 +190,24 @@ def plot_datas_distribution(X_tensor, y_tensor):
     - X_tensor : X tensor with all features (columns except the last one)
     - y_tensor : y tensor with the target values (last column) """
     
-    _, axs = plt.subplots(2, 3, figsize=(15, 10)) 
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 1)
     
-    for i in range(4):
-        row = i // 3  
-        col = i % 3   
-        axs[row, col].hist(X_tensor[:, i], bins=20, alpha=0.5)
+    fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
+    
+    for i in range(len(q_ranges)):
+        row = i // 4  
+        col = i % 4   
+        axs[row, col].hist(X_tensor[:, i+12], bins=20, alpha=0.5)
         axs[row, col].set_xlabel('Value')
         axs[row, col].set_ylabel('Frequency')
         axs[row, col].set_title(f'Distribution of q{i+1}')
 
-    axs[1, 2].hist(y_tensor, bins=20, alpha=0.5)  
-    axs[1, 2].set_xlabel('Value')
-    axs[1, 2].set_ylabel('Frequency')
-    axs[1, 2].set_title('Distribution of muscle length')
+    axs[row_fixed-1, col_fixed-1].hist(y_tensor, bins=20, alpha=0.5)  
+    axs[row_fixed-1, col_fixed-1].set_xlabel('Value')
+    axs[row_fixed-1, col_fixed-1].set_ylabel('Frequency')
+    axs[row_fixed-1, col_fixed-1].set_title(f'Distribution of muscle length')
 
+    fig.suptitle(f'Distribution of q and muscle length - {file_path}', fontweight='bold')
     plt.tight_layout()  
+    create_and_save_plot(Hyperparams.model_name, f"plot_datas_distribution_{filename.replace(".xlsx", "")}")
     plt.show()

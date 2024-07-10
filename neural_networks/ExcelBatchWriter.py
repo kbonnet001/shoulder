@@ -74,6 +74,14 @@ class ExcelBatchWriter:
             with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
                 df.to_excel(writer, index=False)
 
+    def get_num_line(self) : 
+        if os.path.exists(self.filename):
+            df = pd.read_excel(self.filename)
+            return len(df)
+        else:
+            return 0
+        
+
     def close(self):
         # Flush any remaining lines in the buffer when closing
         self._flush()

@@ -47,6 +47,8 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs):
     axs[1].legend()
 
     plt.tight_layout()
+    
+    
     plt.show()
     
 def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):

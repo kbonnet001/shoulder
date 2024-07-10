@@ -162,13 +162,6 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
         plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs)
         create_and_save_plot(Hyperparams.model_name, "plot_loss_and_accuracy")
         
-        plot_predictions_and_targets(model, train_loader, "Train loader", 100)
-        create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_train_loader")
-        plot_predictions_and_targets(model, val_loader, "Validation loader", 100)
-        create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_val_loader")
-        plot_predictions_and_targets(model, test_loader, "Test loader", 100)
-        create_and_save_plot(Hyperparams.model_name, "plot_predictions_and_targets_test_loader")
-    
     # Save model
     if save : 
         save_model(model, input_size, output_size, Hyperparams, file_path)
