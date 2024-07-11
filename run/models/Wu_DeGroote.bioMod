@@ -38,7 +38,7 @@ endsegment
 segment clavicle_effector_right
     parent thorax
     // rotations xyz  // This correspond to a YXZ sequence
-    // rotations xy
+    rotations xy
     ranges
         -0.1 0.1
         -0.15 0.3
@@ -68,11 +68,11 @@ endsegment
 
 segment scapula_effector_right
     parent clavicle_right
-    // rotations xyz  // This correspond to a ZYX sequence
-    // rotations xz
+    rotations xyz  // This correspond to a ZYX sequence
     ranges
         -0.5  0.1
         -0.05 0.5
+		-0.05 0.1
     RT -0.52 0.52 0 xyz -0.01433 0.02007 0.135535
 endsegment
 segment scapula_right
@@ -140,7 +140,7 @@ endsegment
 
 segment radius_effector_right
     parent ulna_right
-    // rotations y
+    rotations y
 	ranges
 	    -pi/2 pi/2
     RTinmatrix 1

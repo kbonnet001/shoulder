@@ -31,5 +31,4 @@ def create_and_save_plot(directory_path, file_name):
     # Enregistre la figure
     file_path = os.path.join(directory_path, file_name)
     plt.savefig(file_path)
-    plt.close()
 

@@ -1,22 +1,11 @@
-import numpy as np
 import torch
-import matplotlib as plt
 import matplotlib.pyplot as plt
-
-def mean_distance(predictions, targets):
-    """
-    Compute mean distance beetween predictions and targets
-
-    INPUTS :
-    - predictions (torch.Tensor): Model's predictions 
-    - targets (torch.Tensor): Targets
-
-    OUPUT : 
-        float: mean distance
-    """
-    distance = torch.mean(torch.abs(predictions - targets))
-    return distance.item()
-
+from neural_networks.Model import Model
+import torch.optim as optim
+from neural_networks.EarlyStopping import EarlyStopping
+from neural_networks.save_model import *
+from neural_networks.plot_visualisation import *
+from neural_networks.file_directory_operations import create_and_save_plot
 
 def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     """
@@ -109,7 +98,74 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
 
     return epoch_loss, epoch_acc
 
+def train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
+                                    file_path, plot = False, save = False) : 
+    """Train and evaluate a model
+    
+    INPUTS : 
+    - train_loader : DataLoader, data trainning (80% of 80%)
+    - val_loader : DataLoader, data validation (20% of 80%)
+    - test_loader : DataLoader, data testing (20%)
+    - input_size : int, size of input X
+    - output_size : int, size of output y (WARNING, always 1)
+    - Hyperparams : (ModelHyperparameters) all hyperparameters choosen by user
+    - file_path : string, path for saving model
+    - plot : (default False) bool, True to show and save plots
+    - save : (default False) bool, True to save the model
+    
+    OUTPUTS : 
+    - val_loss : float, loss validation
+    - val_acc : float, accuracy (mean distance) validation"""
+    
+    model = Model(input_size, output_size, Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, 
+                  Hyperparams.L1_penalty, Hyperparams.L2_penalty, Hyperparams.use_batch_norm, Hyperparams.dropout_prob)
+    
+    Hyperparams.compute_optimiser(model)
+    
+    if plot : 
+        train_losses = []
+        val_losses = []
+        train_accs = []
+        val_accs = []
 
+    # Initialization of ReduceLROnPlateau
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8)
+    # Initialization of EarlyStopping
+    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
+
+    for epoch in range(Hyperparams.num_epochs):
+        train_loss, train_acc = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
+        val_loss, val_acc = evaluate(model, val_loader, Hyperparams.criterion)
+        
+        if plot : 
+            train_losses.append(train_loss)
+            val_losses.append(val_loss)
+            train_accs.append(train_acc)
+            val_accs.append(val_acc)
+
+        print(f'Epoch [{epoch+1}/{Hyperparams.num_epochs}], Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}, Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}')
+
+        # Réduire le taux d'apprentissage si nécessaire
+        scheduler.step(val_loss)
+
+        # Vérifier l'arrêt précoce
+        early_stopping(val_loss)
+        if early_stopping.early_stop:
+            print("Early stopping at epoch:", epoch+1)
+            break
+
+    # Évaluation du modèle sur l'ensemble de test
+    test_loss, test_acc = evaluate(model, test_loader, Hyperparams.criterion)
+    print(f'Test Loss: {test_loss:.6f}, Test Acc: {test_acc:.6f}')
+    
+    if plot : 
+        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path)
+        
+    # Save model
+    if save : 
+        save_model(model, input_size, output_size, Hyperparams, f"{file_path}/model")
+    
+    return model, val_loss, val_acc
 
 
 

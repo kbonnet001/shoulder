@@ -2,8 +2,9 @@ import os
 import pandas as pd
 
 class ExcelBatchWriter:
-    def __init__(self, filename, batch_size=100):
+    def __init__(self, filename, q_ranges_names_with_dofs, batch_size=100):
         self.filename = filename
+        self.q_ranges_names_with_dofs = q_ranges_names_with_dofs
         self.batch_size = batch_size
         self.buffer = []
         
@@ -11,10 +12,7 @@ class ExcelBatchWriter:
         if not os.path.exists(filename):
             data = {
                 "muscle_selected": [],
-                "humerus_right_RotY": [],
-                "humerus_right_RotX": [],
-                "humerus_right_RotY2": [],
-                "ulna_effector_right_RotZ": [],
+                **{self.q_ranges_names_with_dofs[k]: [] for k in range(len(self.q_ranges_names_with_dofs))},
                 "origin_muscle_x": [],
                 "origin_muscle_y": [],
                 "origin_muscle_z": [],
@@ -29,10 +27,7 @@ class ExcelBatchWriter:
         # Create a new line with the provided data
         new_line = {
             "muscle_selected": muscle_selected_index,
-            "humerus_right_RotY": q[0],
-            "humerus_right_RotX": q[1],
-            "humerus_right_RotY2": q[2],
-            "ulna_effector_right_RotZ": q[3],
+            **{self.q_ranges_names_with_dofs[k]: q[k] for k in range(len(q))},
             "origin_muscle_x": origin_muscle[0],
             "origin_muscle_y": origin_muscle[1],
             "origin_muscle_z": origin_muscle[2],
@@ -53,18 +48,44 @@ class ExcelBatchWriter:
         if not self.buffer:
             return
         
-        # Read the existing data from the Excel file
+        # Lire les données existantes du fichier Excel
         df = pd.read_excel(self.filename)
         
-        # Append the buffered lines to the DataFrame
-        df = pd.concat([df, pd.DataFrame(self.buffer)], ignore_index=True)
+        # Convertir le buffer en DataFrame
+        buffer_df = pd.DataFrame(self.buffer)
         
-        # Write the updated DataFrame back to the Excel file
-        with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
-            df.to_excel(writer, index=False)
+        # Vérifier si le DataFrame n'est pas vide ou entièrement NaN
+        if not buffer_df.empty and not buffer_df.isna().all().all():
+            # Concaténer le DataFrame existant avec le buffer
+            df = pd.concat([df, buffer_df], ignore_index=True)
         
-        # Clear the buffer
+            # Écrire le DataFrame mis à jour dans le fichier Excel
+            with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
+                df.to_excel(writer, index=False)
+        
+        # Vider le buffer
         self.buffer = []
+
+    def del_lines(self, n):
+        # Check current number of lines in the Excel file
+        df = pd.read_excel(self.filename)
+        current_lines = df.shape[0]
+        
+        # If there are more than n lines, delete the surplus
+        if current_lines > n:
+            df.drop(df.tail(current_lines - n).index, inplace=True)
+            
+            # Write the updated DataFrame back to the Excel file
+            with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
+                df.to_excel(writer, index=False)
+
+    def get_num_line(self) : 
+        if os.path.exists(self.filename):
+            df = pd.read_excel(self.filename)
+            return len(df)
+        else:
+            return 0
+        
 
     def close(self):
         # Flush any remaining lines in the buffer when closing

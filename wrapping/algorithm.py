@@ -155,6 +155,10 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    if H_T_inactive==True :
       Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
       Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
+      # security to avoid bug in step 4, don't worry, this data will be ignored because of tangent point in the cylinder
+      if np.isnan(Q[-1]) or np.isnan(G[-1]) : 
+         Q[-1] = 0.0
+         G[-1] = 0.0
       # if point_tangent_inside_cylinder(G, Cylinder_U, Cylinder_V, epsilon=0.0) : 
       #    error_wrapping = True
       #    print("error = ", error_wrapping)
@@ -162,11 +166,15 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    elif Q_G_inactive==True :
       H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
       H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
+      # security to avoid bug in step 4, don't worry, this data will be ignored because of tangent point in the cylinder
+      if np.isnan(Q[-1]) or np.isnan(G[-1]) : 
+         Q[-1] = 0.0
+         G[-1] = 0.0
 
    # ------
    # Step 4
    # ------
-   
+
    segment_length = segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q, G, H, T, r_U, r_V, Cylinder_U.matrix, Cylinder_V.matrix)
   
    # ------
@@ -178,7 +186,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    if plot_cadran == True : 
       plot_cadran_double_cylinder([P_U_cylinder_frame[:2], P_V_cylinder_frame[:2]], [S_U_cylinder_frame[:2], 
         S_V_cylinder_frame[:2]], [Cylinder_U, Cylinder_V], [Q[:2], H[:2]], [G[:2], T[:2]], 
-                                  [Q_G_inactive, H_T_inactive], ["_U", "_V"])
+                                  [Q_G_inactive, H_T_inactive])
    
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
 

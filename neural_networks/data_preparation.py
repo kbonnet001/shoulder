@@ -2,12 +2,16 @@ import platform
 import numpy as np
 import pandas as pd
 import matplotlib as plt
+import matplotlib.pyplot as plt
 import torch
 import os
+import sys
+from sklearn.preprocessing import OneHotEncoder
 from torch.utils.data import DataLoader, random_split
 import sklearn
 from neural_networks.MuscleDataset import MuscleDataset
-from neural_networks.jesaispas import create_and_save_plot
+from neural_networks.file_directory_operations import create_and_save_plot
+from neural_networks.other import compute_row_col
 
 def print_informations_environment() : 
   # Print environment info
@@ -84,40 +88,107 @@ def data_standardization(filename, limit = 0):
 
   return df2
 
-def data_preparation_create_tensor(df_data, limit) :
+# -------------------------------------------------------------------------
 
-  """ Load datas of df and create X and y tensors PyTorch
-  NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
-  
-  INPUT
-  - df_data : data frame (.xlsx) with all datas. The last column must be y
-  
-  OUTPUT
-  - X_tensor : X tensor with all features (columns except the last one)
-  - y_tensor : y tensor with the target values (last column) """
+def data_preparation_create_tensor(df_data, limit, all_possible_categories):
+    """
+    Load data from df and create X and y tensors for PyTorch
+    NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
+    
+    INPUT:
+    - df_data: DataFrame (.xlsx) with all data. The last column must be y
+    - limit: Placeholder parameter for standardization
+    - all_possible_categories: List of all possible categories for the 'index_muscle' column
+    
+    OUTPUT:
+    - X_tensor: X tensor with all features (columns except the last one)
+    - y_tensor: y tensor with the target values (last column)
+    """
 
-  # Load df
-  df_muscle_datas = data_standardization(df_data, limit)
-  df_muscle_datas = df_muscle_datas.iloc[:, :] # on enleve la premiere colonne
+    # Load and standardize df
+    df_muscle_datas = data_standardization(df_data, limit)
+    df_muscle_datas = df_muscle_datas.iloc[:, :]  # Adjust as necessary
 
-  # Separate inputs from targets
-  X = df_muscle_datas.iloc[:, 0:-1].values
-  y = df_muscle_datas.iloc[:, -1].values
+    # Separate inputs from targets
+    X = df_muscle_datas.iloc[:, :-1].values
+    y = df_muscle_datas.iloc[:, -1].values
 
-  # Normalisation
-  # scaler = StandardScaler()
-  # X_scaled = scaler.fit_transform(X)
+    # One-hot encoding for the 'index_muscle' column
+    encoder = OneHotEncoder(sparse_output=False, categories=[all_possible_categories])
+    index_muscle_encoded = encoder.fit_transform(X[:, 0].reshape(-1, 1))
 
-  # # Convertir en tensors PyTorch
-  # X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
-  
-  X_tensor = torch.tensor(X, dtype=torch.float32)
-  y_tensor = torch.tensor(y, dtype=torch.float32)
+    # Concatenate the encoded index_muscle with the rest of the features
+    X = np.hstack((index_muscle_encoded, X[:, 1:]))
 
-  return X_tensor, y_tensor
+    # Convert to PyTorch tensors
+    X_tensor = torch.tensor(X, dtype=torch.float32)
+    y_tensor = torch.tensor(y, dtype=torch.float32)
 
-def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
+    return X_tensor, y_tensor
+
+def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
   """Create loaders : 
+    80 % : train (80%) + validation (20%)
+    20% : test
+    INPUTS : 
+    - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user
+    - q_ranges : [q] q ranges of all q selected
+    - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
+    - plot : (default = False) bool, True to show datas distribution
+    
+    OUTPUTS : 
+    - train_loader : DataLoader, data trainning (80% of 80%)
+    - val_loader : DataLoader, data validation (20% of 80%)
+    - test_loader : DataLoader, data testing (20%)
+    - input_size : int, size of input X
+    - output_size : int, size of output y (WARNING, always 1)"""
+  
+  filenames = sorted([filename for filename in os.listdir(folder_name)])
+  # filenames[0] --> muscle
+  # filenames[1] --> muscle datas ignored (could not exist...)
+    
+  if not (filenames[0].endswith(".xlsx") or filenames[0].endswith(".xls")):
+      print("Erreur : Le fichier doit avoir une extension .xlsx ou .xls")
+      sys.exit(1)
+  else : 
+      file_path = os.path.join(folder_name, filenames[0])
+      print(f"Processing file: {file_path}")
+
+      all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
+      X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0, all_possible_categories)
+      X_tensors=[X_tensor]
+      y_tensors=[y_tensor]
+
+      dataset = MuscleDataset(X_tensor, y_tensor)
+
+      train_val_size, test_size = compute_samples(dataset, 0.80)
+      train_val_dataset, test_dataset = random_split(dataset, [train_val_size, test_size]) 
+
+      train_size, val_size = compute_samples(train_val_dataset, 0.80)
+      train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size])
+
+      if plot : 
+        if os.path.exists(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx"):
+          X_tensor_ignored, y_tensor_ignored = data_preparation_create_tensor(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx", 0, all_possible_categories)
+          X_tensors.append(X_tensor_ignored)
+          y_tensors.append(y_tensor_ignored)
+        plot_datas_distribution(filenames[0],folder_name, q_ranges, X_tensors, y_tensors)
+             
+      train_loader = DataLoader(train_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
+      val_loader = DataLoader(val_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
+      test_loader = DataLoader(test_dataset, batch_size=Hyperparams.batch_size, shuffle=False)
+
+      input_size = len(X_tensor[0])
+      output_size = 1 # warning if y tensor change
+
+      return train_loader, val_loader, test_loader, input_size, output_size
+
+
+def create_loaders_from_folder_group_muscle(Hyperparams, q_ranges, folder_name, plot=False):
+  """
+  NOT USED 
+  
+  Create loaders : 
     80 % : train (80%) + validation (20%)
     20% : test
     INPUTS : 
@@ -139,7 +210,8 @@ def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
         file_path = os.path.join(folder_name, filename)
         print(f"Processing file: {file_path}")
 
-        X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0)
+        all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
+        X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0, all_possible_categories)
         dataset = MuscleDataset(X_tensor, y_tensor)
 
         train_val_size, test_size = compute_samples(dataset, 0.80)
@@ -151,8 +223,8 @@ def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
         datasets.append((train_dataset, val_dataset, test_dataset))
 
         if plot : 
-          plot_datas_distribution(X_tensor, y_tensor)
-          create_and_save_plot(Hyperparams.model_name, f"plot_datas_distribution_{filename.replace(".xlsx", "")}")
+          plot_datas_distribution(Hyperparams, filename, file_path, q_ranges, X_tensor, y_tensor)
+          
 
   # Merge dataset
   train_dataset = torch.utils.data.ConcatDataset([datasets[k][0] for k in range (len(datasets))])
@@ -168,34 +240,47 @@ def create_loaders_from_folder(Hyperparams, folder_name, plot=False):
 
   return train_loader, val_loader, test_loader, input_size, output_size
 
-def create_data_loader(filename, limit) : 
-  X_tensor, y_tensor = data_preparation_create_tensor(filename, limit)
+# ----------------------------------------------------------------------------------------------
+
+def create_data_loader(filename, limit, all_possible_categories) : 
+  X_tensor, y_tensor = data_preparation_create_tensor(filename, limit, all_possible_categories)
   dataset = MuscleDataset(X_tensor, y_tensor)
   loader = DataLoader(dataset, 32, shuffle = False)
   return loader 
 
-def plot_datas_distribution(X_tensor, y_tensor):
+def plot_datas_distribution(filename, files_path, q_ranges, X_tensors, y_tensors):
     """To visualise tensors distribution
     Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
 
     INPUT : 
-    - X_tensor : X tensor with all features (columns except the last one)
-    - y_tensor : y tensor with the target values (last column) """
+    - filename : name of the excel file with datas of the muscle (good datas) 
+    - files_path : file_path to save the plot
+    - q_ranges : [q], all q to see distribution 
+    - X_tensors : [X tensor], X tensor with all features (columns except the last one)
+    - y_tensors : [y tensor], y tensor with the target values (last column) """
     
-    _, axs = plt.subplots(2, 3, figsize=(15, 10)) 
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 1)
     
-    for i in range(4):
-        row = i // 3  
-        col = i % 3   
-        axs[row, col].hist(X_tensor[:, i], bins=20, alpha=0.5)
+    fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
+    
+    for i in range(len(q_ranges)):
+        row = i // 4  
+        col = i % 4   
+        axs[row, col].hist([X_tensors[k][:, i+12] for k in range (len(X_tensors))], bins=20, alpha=0.5, stacked=True, 
+                           label=["datas for learning", "datas ignored"])
         axs[row, col].set_xlabel('Value')
         axs[row, col].set_ylabel('Frequency')
-        axs[row, col].set_title(f'Distribution of q{i+1}')
+        axs[row, col].set_title(f'Distribution of q{i}')
+        axs[row, col].legend()
 
-    axs[1, 2].hist(y_tensor, bins=20, alpha=0.5)  
-    axs[1, 2].set_xlabel('Value')
-    axs[1, 2].set_ylabel('Frequency')
-    axs[1, 2].set_title('Distribution of muscle length')
+    axs[row_fixed-1, col_fixed-1].hist([y_tensors[k] for k in range (len(y_tensors))], bins=20, alpha=0.5, stacked=True,
+                                       label=["datas for learning", "datas ignored"])
+    axs[row_fixed-1, col_fixed-1].set_xlabel('Value')
+    axs[row_fixed-1, col_fixed-1].set_ylabel('Frequency')
+    axs[row_fixed-1, col_fixed-1].set_title(f'Distribution of muscle length')
+    axs[row_fixed-1, col_fixed-1].legend()
 
+    fig.suptitle(f'Distribution of q and muscle length - {filename.replace(".xlsx", "")}', fontweight='bold')
     plt.tight_layout()  
+    create_and_save_plot(files_path, f"_plot_datas_distribution_{filename.replace(".xlsx", "")}")
     plt.show()

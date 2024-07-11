@@ -299,7 +299,8 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
 
   plt.show()
   
-def plot_cadran_single_cylinder(P, S, Cylinder, p1, p2, points_tangent_inactif, name_cylinder="") : 
+def plot_cadran_single_cylinder(P, S, Cylinder, p1, p2, points_tangent_inactif) : 
+  
   fig, ax = plt.subplots()
   ax.grid(True)
 
@@ -331,11 +332,12 @@ def plot_cadran_single_cylinder(P, S, Cylinder, p1, p2, points_tangent_inactif, 
   ax.legend()
 
   # Afficher le plot
-  plt.title(f"Cylinder{name_cylinder} local frame")
+  plt.title(f"Cylinder{Cylinder.segment} local frame")
   plt.show()
 
 
 def plot_cadran_double_cylinder(P, S, Cylinders, p1, p2, points_tangent_inactif, names_cylinder = ["", ""]):
+        
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
     
     for k in range (2) : 
@@ -366,7 +368,7 @@ def plot_cadran_double_cylinder(P, S, Cylinders, p1, p2, points_tangent_inactif,
       ax.set_ylim(min(P[k][0], S[k][0], P[k][1], S[k][1]) - Cylinders[k].radius - 0.01, 
                   max(P[k][0], S[k][0], P[k][1], S[k][1]) + Cylinders[k].radius + 0.01)
       ax.legend()
-      ax.set_title(f"Cylinder {names_cylinder[k]} local frame")
+      ax.set_title(f"Cylinder {Cylinders[k].segment} local frame")
       
     # Display the plot
     plt.tight_layout()
