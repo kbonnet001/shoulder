@@ -44,7 +44,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
       # Generate a random q 
       q = np.random.uniform(low=min_vals, high=max_vals)
       
-      origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
+      origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
       
       # ------------------------------------------------
 
@@ -106,7 +106,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
       
       print("q = ", q)
       
-      origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
+      origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
 
       # ------------------------------------------------
 
@@ -183,7 +183,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
          
          print("q = ", q)
          
-         origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
+         origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
 
          # ------------------------------------------------
 
@@ -292,7 +292,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
 
          print("q = ", q)
       
-         origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
+         origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
          
          segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
          
