@@ -73,7 +73,8 @@ def main_superised_learning(Hyperparams, q_ranges, folder_name, muscle_name, ret
         
         model, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", plot, save)
         
-    visualize_prediction(train_loader, val_loader, test_loader, f"{folder_name}/{muscle_name}/_Model/{file_path}")
+    visualize_prediction(q_ranges, train_loader, val_loader, test_loader, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
+                         f"{folder_name}/{muscle_name}/plot_all_q_variation_")
     
     
 def find_best_hyperparameters(Hyperparams, folder_name) : 

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from neural_networks.Model import Model
-from neural_networks.plot_visualisation import plot_predictions_and_targets
+from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames
 from neural_networks.file_directory_operations import create_and_save_plot
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 import json
@@ -34,7 +34,7 @@ def save_model(model, input_size, output_size, Hyperparams, file_path) :
         json.dump(config, f)
     torch.save(model.state_dict(), file_path)
     
-def visualize_prediction(train_loader, val_loader, test_loader, file_path) : 
+def visualize_prediction(q_ranges, train_loader, val_loader, test_loader, file_path, folder_name_for_prediction) : 
     
     """Load saved model and plot-save visualisation 
     
@@ -67,3 +67,5 @@ def visualize_prediction(train_loader, val_loader, test_loader, file_path) :
     plot_predictions_and_targets(model, train_loader, "Train loader", 100, file_path, "train_loader")
     plot_predictions_and_targets(model, val_loader, "Validation loader", 100, file_path, "val_loader")
     plot_predictions_and_targets(model, test_loader, "Test loader", 100, file_path, "test_loader")
+    
+    plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, folder_name_for_prediction, 100)

@@ -48,17 +48,22 @@ class ExcelBatchWriter:
         if not self.buffer:
             return
         
-        # Read the existing data from the Excel file
+        # Lire les données existantes du fichier Excel
         df = pd.read_excel(self.filename)
         
-        # Append the buffered lines to the DataFrame
-        df = pd.concat([df, pd.DataFrame(self.buffer)], ignore_index=True)
+        # Convertir le buffer en DataFrame
+        buffer_df = pd.DataFrame(self.buffer)
         
-        # Write the updated DataFrame back to the Excel file
-        with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
-            df.to_excel(writer, index=False)
+        # Vérifier si le DataFrame n'est pas vide ou entièrement NaN
+        if not buffer_df.empty and not buffer_df.isna().all().all():
+            # Concaténer le DataFrame existant avec le buffer
+            df = pd.concat([df, buffer_df], ignore_index=True)
         
-        # Clear the buffer
+            # Écrire le DataFrame mis à jour dans le fichier Excel
+            with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
+                df.to_excel(writer, index=False)
+        
+        # Vider le buffer
         self.buffer = []
 
     def del_lines(self, n):

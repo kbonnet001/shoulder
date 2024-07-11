@@ -2,6 +2,7 @@ from math import ceil
 import matplotlib as plt
 import matplotlib.pyplot as plt
 import torch
+import os
 from neural_networks.data_preparation import create_data_loader
 from neural_networks.file_directory_operations import create_and_save_plot
 
@@ -73,6 +74,7 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
         for inputs, labels in data_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
+            outputs = outputs.squeeze()  # Remove dimensions of size 1
             predictions.extend(outputs.cpu().numpy())
             targets.extend(labels.cpu().numpy())
     return predictions, targets
@@ -106,14 +108,38 @@ def plot_predictions_and_targets(model, loader, string_loader, num, directory_pa
     create_and_save_plot(directory_path, f"plot_predictions_and_targets_{loader_name}")
     plt.show()
 
-def plot_predictions_and_targets_from_filenames(model, filenames, limits, num):
+def plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, folder_name, num):
 
-    loaders = [create_data_loader(filename, limit) for filename, limit in zip(filenames, limits)]
-
-    num_files = len(loaders)
-    rows = ceil(num_files / 2)
+    all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
+    filenames = sorted([filename for filename in os.listdir(folder_name)])
+    loaders = [create_data_loader(f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
     
-    fig, axs = plt.subplots(rows, 2, figsize=(20, 5 * rows))
+    fig, axs = plt.subplots(3, (len(q_ranges)+1)//3, figsize=(15, 10))
+    
+    for q_index in range(len(q_ranges)) : 
+        
+        row = q_index // ((len(q_ranges) + 1) // 3)
+        col = q_index % ((len(q_ranges) + 1) // 3)
+        
+        predictions, targets = get_predictions_and_targets(model, loaders[q_index])
+        acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+
+        axs[row, col].plot(targets[:num], label='True values', marker='o')
+        axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--')
+        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}",fontsize='smaller')
+        axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+        axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
+        axs[row, col].legend()
+    
+    fig.suptitle(f'Predictions and targets of Muscle length Muscle', fontweight='bold')
+    plt.tight_layout()  
+    plt.savefig(f"{file_path}/plot_muscle_length_predictions_and_targets.png")
+    plt.show()
+    
+    return None
+
+    
+
     
     for idx, loader in enumerate(loaders):
         row = idx // 2

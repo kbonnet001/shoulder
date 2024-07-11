@@ -6,6 +6,7 @@ from neural_networks.functions_data_generation import *
 from neural_networks.plot_visualisation import plot_mvt_discontinuities_in_red
 from neural_networks.file_directory_operations import create_directory
 import copy
+import random
 import os
 
 def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
@@ -136,7 +137,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    writer.close()
    return None
 
-def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
+def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False, file_path="") :
    
    """Create a directory with all excel files and png of mvt for all q
    
@@ -156,7 +157,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    # Create a folder for save excel files and plots
-   directory = "plot_all_q_variation_" + filename
+   directory = file_path+"plot_all_q_variation_" + filename
    create_directory(directory)
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
@@ -170,7 +171,8 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    for q_index in range (len(q_ranges)) : 
       segment_lengths = []
       qs = []
-      writer = ExcelBatchWriter(f"{directory}/{q_index}_" + filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
+      writer = ExcelBatchWriter(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx", 
+                                q_ranges_names_with_dofs, batch_size=100)
       q = copy.deepcopy(q_fixed)
       
       for k in range (num_points+1) : 
@@ -267,63 +269,65 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
       # Generate a random q 
       q_ref = np.random.uniform(low=min_vals, high=max_vals)
       
-      for i in range (len(q_ranges)) :
-         print("i = ", i)
+      # for i in range (len(q_ranges)) :
+      
+      i = random.randint(0, len(q_ranges) - 1)
+      print("i = ", i)
+      
+      qs = []
+      segment_lengths = []
+      datas_ignored = []
+      lines = []
+      to_remove = []
+      
+      q = copy.deepcopy(q_ref)
+      
+      # Generate points (num_points) of a mvt relatively to qi
+      for k in range (num_points) : 
+         print("k = ", k)
          
-         qs = []
-         segment_lengths = []
-         datas_ignored = []
-         lines = []
-         to_remove = []
+         # Incrémenter qi
+         qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
+         q[i] = qi
+
+         print("q = ", q)
+      
+         origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
          
-         q = copy.deepcopy(q_ref)
+         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
          
-         # Generate points (num_points) of a mvt relatively to qi
-         for k in range (num_points) : 
-            print("k = ", k)
-            
-            # Incrémenter qi
-            qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
-            q[i] = qi
-   
-            print("q = ", q)
+         qs.append(qi)
+         segment_lengths.append(segment_length)
+         datas_ignored.append(data_ignored)
          
-            origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q)
-            
-            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
-            
-            qs.append(qi)
-            segment_lengths.append(segment_length)
-            datas_ignored.append(data_ignored)
-            
-            lines.append([muscle_index, q, origin_muscle, insertion_muscle, segment_length])
+         lines.append([muscle_index, copy.deepcopy(q), origin_muscle, insertion_muscle, segment_length])
          
-         # Find indexes with discontinuties
-         discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
-         for discontinuity in discontinuities : 
-            # min, max = data_to_remove_range(discontinuity, num_points, 5)
-            min, max = data_to_remove_part(discontinuity, qs, num_points, 3)
-            to_remove.extend(range(min, max + 1))
-         positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
-         if len(positions) != 0 : 
-            min, max = find_discontinuities_from_error_wrapping_range(positions, num_points, range = 3)
-            to_remove.extend(range(min, max + 1))
-         
-         # Sort to keep only one occurancy of each indexes
-         to_remove = sorted(set(to_remove), reverse=True)
-         
-         if len(to_remove) != 0 and plot_graph : 
-            # To check points removed (in red)
-            plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove)
-         
-         for l_idx in range (len(lines)) :
-            if l_idx in to_remove : 
-               writer_datas_ignored.add_line(*lines[l_idx])
-            else : 
-               writer.add_line(*lines[l_idx])
-               num_line+=1
-               if num_line > dataset_size : 
-                  break
+      # Find indexes with discontinuties
+      discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
+      for discontinuity in discontinuities : 
+         # min, max = data_to_remove_range(discontinuity, num_points, 5)
+         min, max = data_to_remove_part(discontinuity, qs, num_points, 3)
+         to_remove.extend(range(min, max + 1))
+      positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
+      if len(positions) != 0 : 
+         min, max = find_discontinuities_from_error_wrapping_range(positions, num_points, range = 3)
+         to_remove.extend(range(min, max + 1))
+      
+      # Sort to keep only one occurancy of each indexes
+      to_remove = sorted(set(to_remove), reverse=True)
+      
+      if len(to_remove) != 0 and plot_graph : 
+         # To check points removed (in red)
+         plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove)
+      
+      for l_idx in range (len(lines)) :
+         if l_idx in to_remove : 
+            writer_datas_ignored.add_line(*lines[l_idx])
+         else : 
+            writer.add_line(*lines[l_idx])
+            num_line+=1
+            if num_line > dataset_size : 
+               break
 
    writer.close()
    writer_datas_ignored.close()
@@ -359,3 +363,6 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
       data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
                                                    f"{directory}/{cylinders[k][0].muscle}", num_points, 
                                                    plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
+      q_fixed = np.array([0.0 for k in range (8)])
+      plot_all_q_variation(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
+                     plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}/")

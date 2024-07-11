@@ -161,7 +161,6 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     if plot : 
         plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path)
         
-        
     # Save model
     if save : 
         save_model(model, input_size, output_size, Hyperparams, f"{file_path}/model")

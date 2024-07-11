@@ -131,7 +131,8 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
     80 % : train (80%) + validation (20%)
     20% : test
     INPUTS : 
-    - batch_size : int, 16, 32, 64, 128 ...
+    - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user
+    - q_ranges : [q] q ranges of all q selected
     - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
     - plot : (default = False) bool, True to show datas distribution
     
@@ -150,11 +151,11 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
       print("Erreur : Le fichier doit avoir une extension .xlsx ou .xls")
       sys.exit(1)
   else : 
-      files_path = [os.path.join(folder_name, filenames[k]) for k in range(len(filenames))]
-      print(f"Processing file: {files_path[0]}")
+      file_path = os.path.join(folder_name, filenames[0])
+      print(f"Processing file: {file_path}")
 
       all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
-      X_tensor, y_tensor = data_preparation_create_tensor(files_path[0], 0, all_possible_categories)
+      X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0, all_possible_categories)
       X_tensors=[X_tensor]
       y_tensors=[y_tensor]
 
@@ -167,8 +168,8 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
       train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size])
 
       if plot : 
-        if os.path.exists(files_path[1]):
-          X_tensor_ignored, y_tensor_ignored = data_preparation_create_tensor(files_path[1], 0, all_possible_categories)
+        if os.path.exists(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx"):
+          X_tensor_ignored, y_tensor_ignored = data_preparation_create_tensor(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx", 0, all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
         plot_datas_distribution(filenames[0],folder_name, q_ranges, X_tensors, y_tensors)
@@ -252,8 +253,11 @@ def plot_datas_distribution(filename, files_path, q_ranges, X_tensors, y_tensors
     Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
 
     INPUT : 
-    - X_tensor : X tensor with all features (columns except the last one)
-    - y_tensor : y tensor with the target values (last column) """
+    - filename : name of the excel file with datas of the muscle (good datas) 
+    - files_path : file_path to save the plot
+    - q_ranges : [q], all q to see distribution 
+    - X_tensors : [X tensor], X tensor with all features (columns except the last one)
+    - y_tensors : [y tensor], y tensor with the target values (last column) """
     
     row_fixed, col_fixed = compute_row_col(len(q_ranges), 1)
     
