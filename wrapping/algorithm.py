@@ -46,6 +46,10 @@ def single_cylinder_obstacle_set_algorithm(origin_point, insertion_point, Cylind
    # ------
    # tangent points
    v1, v2 = find_tangent_points(P_cylinder_frame, S_cylinder_frame, r)
+   
+   if np.isnan(np.array(v1)).any() or np.isnan(np.array(v2)).any() : 
+      v1 = np.array([0.0, 0.0, 0.0])
+      v2 = np.array([0.0, 0.0, 0.0])
 
    # ------
    # Step 3
@@ -190,25 +194,3 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    
    return Qo, Go, Ho, To, Q_G_inactive, H_T_inactive, segment_length
 
-def angle_between_points(point1, point2):
-    # Convertir les points en vecteurs à partir de l'origine
-    vec1 = np.array(point1[:2])
-    vec2 = np.array(point2[:2])
-    
-    # Calculer le produit scalaire des deux vecteurs
-    dot_product = np.dot(vec1, vec2)
-    
-    # Calculer les normes des vecteurs
-    norm_vec1 = np.linalg.norm(vec1)
-    norm_vec2 = np.linalg.norm(vec2)
-    
-    # Calculer le cosinus de l'angle entre les vecteurs
-    cos_angle = dot_product / (norm_vec1 * norm_vec2)
-    
-    # Calculer l'angle en radians
-    angle_radians = np.arccos(cos_angle)
-    
-    # Convertir l'angle en degrés
-    angle_degrees = np.degrees(angle_radians)
-    
-    return angle_degrees
