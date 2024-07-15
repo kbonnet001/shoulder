@@ -12,6 +12,7 @@ import sklearn
 from neural_networks.MuscleDataset import MuscleDataset
 from neural_networks.file_directory_operations import create_and_save_plot
 from neural_networks.other import compute_row_col
+from neural_networks.Mode import Mode
 
 def print_informations_environment() : 
   # Print environment info
@@ -90,7 +91,7 @@ def data_standardization(filename, limit = 0):
 
 # -------------------------------------------------------------------------
 
-def data_preparation_create_tensor(df_data, limit, all_possible_categories):
+def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories):
     """
     Load data from df and create X and y tensors for PyTorch
     NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
@@ -107,12 +108,19 @@ def data_preparation_create_tensor(df_data, limit, all_possible_categories):
 
     # Load and standardize df
     df_muscle_datas = data_standardization(df_data, limit)
-    df_muscle_datas = df_muscle_datas.iloc[:, :]  # Adjust as necessary
+    # df_muscle_datas = df_muscle_datas.iloc[:, :]  # Adjust as necessary
 
     # Separate inputs from targets
-    X = df_muscle_datas.iloc[:, :-1].values
-    y = df_muscle_datas.iloc[:, -1].values
-
+    X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
+    if mode == Mode.DLMT_DQ :
+      # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
+      selected_columns = [col for col in df_muscle_datas.columns if col.startswith('dlmt_dq_')]
+      y = df_muscle_datas.loc[:, selected_columns].values
+      y_labels = selected_columns
+    else : # defaut mode = MUSCLE
+      y = df_muscle_datas.loc[:, 'segment_length'].values
+      y_labels = ['segment_length']
+    
     # One-hot encoding for the 'index_muscle' column
     encoder = OneHotEncoder(sparse_output=False, categories=[all_possible_categories])
     index_muscle_encoded = encoder.fit_transform(X[:, 0].reshape(-1, 1))
@@ -124,7 +132,7 @@ def data_preparation_create_tensor(df_data, limit, all_possible_categories):
     X_tensor = torch.tensor(X, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.float32)
 
-    return X_tensor, y_tensor
+    return X_tensor, y_tensor, y_labels
 
 def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
   """Create loaders : 
@@ -155,7 +163,7 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
       print(f"Processing file: {file_path}")
 
       all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
-      X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0, all_possible_categories)
+      X_tensor, y_tensor, y_labels = data_preparation_create_tensor(Hyperparams.mode, file_path, 0, all_possible_categories)
       X_tensors=[X_tensor]
       y_tensors=[y_tensor]
 
@@ -179,9 +187,12 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
       test_loader = DataLoader(test_dataset, batch_size=Hyperparams.batch_size, shuffle=False)
 
       input_size = len(X_tensor[0])
-      output_size = 1 # warning if y tensor change
+      if Hyperparams.mode == Mode.DLMT_DQ : 
+        output_size = y_tensor.size()[1]
+      else : # default mode == MUSCLE
+        output_size = 1 # warning if y tensor change
 
-      return train_loader, val_loader, test_loader, input_size, output_size
+      return train_loader, val_loader, test_loader, input_size, output_size, y_labels
 
 
 def create_loaders_from_folder_group_muscle(Hyperparams, q_ranges, folder_name, plot=False):

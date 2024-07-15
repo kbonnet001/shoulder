@@ -66,14 +66,14 @@ def main_superised_learning(Hyperparams, q_ranges, folder_name, muscle_name, ret
     # Create a folder for save plots
     create_directory(f"{folder_name}/{muscle_name}/_Model") # Muscle/Model
     
-    train_loader, val_loader, test_loader, input_size, output_size = create_loaders_from_folder(Hyperparams, q_ranges, f"{folder_name}/{muscle_name}", plot_preparation)
+    train_loader, val_loader, test_loader, input_size, output_size, y_labels = create_loaders_from_folder(Hyperparams, q_ranges, f"{folder_name}/{muscle_name}", plot_preparation)
     
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(f"{folder_name}/{muscle_name}/_Model/{file_path}") == False: 
         
         model, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", plot, save)
         
-    visualize_prediction(q_ranges, train_loader, val_loader, test_loader, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
+    visualize_prediction(q_ranges, y_labels, train_loader, val_loader, test_loader, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
     
     

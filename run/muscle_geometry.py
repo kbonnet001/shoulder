@@ -13,7 +13,9 @@ from neural_networks.ModelHyperparameters import ModelHyperparameters
 from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
-from wrapping.tensor import plot_tensor
+from wrapping.lever_arm import plot_tensor
+from neural_networks.Mode import Mode
+from neural_networks.main_trainning import main_superised_learning
 
 #################### 
 # Code des tests
@@ -30,9 +32,9 @@ from wrapping.wrapping_tests.step_1_test import Step_1_test
 ###############################################
 ###############################################
 
-model = biorbd.Model("models/Wu_DeGroote.bioMod")
+model_biorbd = biorbd.Model("models/Wu_DeGroote.bioMod")
 
-q_ranges, _ = compute_q_ranges(model)
+q_ranges, _ = compute_q_ranges(model_biorbd)
 
 
 # INPUTS :  
@@ -68,11 +70,11 @@ muscles_selected = ["PECM2", "PECM3"]
 segments_selected = ["thorax", "humerus_right"] # pour le moment, on change rien
 # -----------------------------------------------------------------
 
-# test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model, q_ranges, True, False) 
+# test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, True, False) 
 
-# data_for_learning (muscles_selected[0],cylinders_PECM2, model, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.xlsx", False, False) 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.xlsx", False, False) 
 
-# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model, 10, "rgtrsfdd.xlsx", data_without_error = True, plot=False, plot_cadran = False)
+# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model_biorbd, 10, "rgtrsfdd.xlsx", data_without_error = True, plot=False, plot_cadran = False)
 
 # -----------------------------------------------------------------
 
@@ -82,21 +84,21 @@ q_fixed = np.array([0.0 for k in range (10)])
 # q_fixed = np.array([q_ranges[0][0], q_ranges[1][1], q_ranges[2][0], 0.0])
 # q_fixed = np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges_PECM2])
 
-# plot_one_q_variation(muscles_selected[1], cylinders_PECM3, model, q_fixed, 
+# plot_one_q_variation(muscles_selected[1], cylinders_PECM3, model_biorbd, q_fixed, 
 #                         1, "PECM3_q1", 50, plot_all=False, plot_limit=True, plot_cadran=False)
 
-# plot_all_q_variation(muscles_selected[0], cylinders_PECM2, model, q_fixed, "PECM2_q_initial", num_points = 100, 
+# plot_all_q_variation(muscles_selected[0], cylinders_PECM2, model_biorbd, q_fixed, "PECM2_q_initial", num_points = 100, 
 #                      plot_all = False, plot_limit = False, plot_cadran=False, file_path="data_generation_data_more_ddl_6/PECM2")
 
 # Generate datas : 
 #----------------
-# data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
+# data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-# data_generation_muscles(muscles_selected, cylinders, model, 10000, "datas_poubelle", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 5000, "datas_with_dlmt_dq", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
-# data_for_learning_without_discontinuites(muscles_selected, cylinders, model, q_ranges, 5000, 
+# data_for_learning_without_discontinuites(muscles_selected, cylinders, model_biorbd, q_ranges, 5000, 
 #                 "df_PECM3_datas_without_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
 #                 plot=False, plot_cadran = False)
    
@@ -122,8 +124,8 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 
 # -----------------------------------------------------------------
 # Show biorbd
-# q = np.zeros((model.nbQ(), ))
-# b = bioviz.Viz(loaded_model=model)
+# q = np.zeros((model_biorbd.nbQ(), ))
+# b = bioviz.Viz(loaded_model=model_biorbd)
 # b.set_q(q)
 # b.exec()
 
@@ -158,15 +160,26 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # p_dropout = [0.2, 0.5]
 # use_batch_norm = True
 
-model_name="essai"
-batch_size=32
+model_name="essai_dlmt_dq"
+mode = Mode.DLMT_DQ
+batch_size=64
 n_layers=1
-n_nodes=[50]
+n_nodes=[10]
 activations=[nn.GELU()]
 activation_names = ["GELU"]
+
+# model_name="essai_muscle"
+# mode = Mode.MUSCLE
+# batch_size=32
+# n_layers=1
+# n_nodes=[50]
+# activations=[nn.GELU()]
+# activation_names = ["GELU"]
+
+
 L1_penalty=0.001
 L2_penalty=0.001
-learning_rate=0.001
+learning_rate=0.01
 num_epochs=1000 
 optimizer=0.0
 criterion = ModifiedHuberLoss(delta=2.0, factor=2.0)
@@ -177,13 +190,14 @@ folder_name = "datas/error_part"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 
-Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_layers, n_nodes, activations, activation_names, 
+Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_layers, n_nodes, activations, activation_names, 
                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
                                              use_batch_norm)
+print(Hyperparameter_essai1)
 
 # one model per muscle !
-# main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM2", retrain=False, 
-#                         file_path=Hyperparameter_essai1.model_name,plot_preparation=False, plot=True, save=True) 
+main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
+                        file_path=Hyperparameter_essai1.model_name,plot_preparation=False, plot=True, save=True) 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
 
@@ -212,7 +226,7 @@ q= np.array([(ranges[0] + ranges[-1]) / 2  for ranges in q_ranges])
 
 # compute_lmt(model, q, cylinders_PECM2, muscle_index, plot=False, plot_cadran = False)
 
-plot_tensor(model, q_initial, cylinders_PECM2, muscle_selected, "without_wrappingkjhgkhg",100)
+plot_tensor(model_biorbd, q_initial, cylinders_PECM2, muscle_selected, "without_wrappingkjhgkhg",100)
 
 
 

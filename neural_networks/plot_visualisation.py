@@ -2,6 +2,7 @@ from math import ceil
 import matplotlib as plt
 import matplotlib.pyplot as plt
 import torch
+import numpy as np
 import os
 from neural_networks.data_preparation import create_data_loader
 from neural_networks.file_directory_operations import create_and_save_plot
@@ -80,7 +81,35 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
     return predictions, targets
 
     
-def plot_predictions_and_targets(model, loader, string_loader, num, directory_path, loader_name) :
+# def plot_predictions_and_targets_ancienne(model, loader, string_loader, num, directory_path, loader_name) :
+    
+#     """Plot the true values and predicted values for a given model and data loader.
+#     INPUT:
+#     - model: The trained PyTorch model to be evaluated.
+#     - loader: DataLoader containing the dataset to evaluate.
+#     - num: The number of samples to plot for comparison.
+
+#     OUTPUT:
+#     - None: The function generates a plot showing the true values and predicted values.
+#     """
+    
+#     predictions, targets = get_predictions_and_targets(model, loader)
+
+#     acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+#     print("acc = ", acc)
+
+#     # Plot
+#     plt.figure(figsize=(10, 5))
+#     plt.plot(targets[:num], label='True values', marker='o')
+#     plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
+#     plt.xlabel('Sample')
+#     plt.ylabel('Muscle length')
+#     plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}")
+#     plt.legend()
+#     create_and_save_plot(directory_path, f"plot_predictions_and_targets_{loader_name}")
+#     plt.show()
+    
+def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, directory_path, loader_name) :
     
     """Plot the true values and predicted values for a given model and data loader.
     INPUT:
@@ -91,22 +120,44 @@ def plot_predictions_and_targets(model, loader, string_loader, num, directory_pa
     OUTPUT:
     - None: The function generates a plot showing the true values and predicted values.
     """
+    num_rows = min(len(y_labels), 3)
+    num_cols = max(1, (len(y_labels) + 1) // 3)
     
     predictions, targets = get_predictions_and_targets(model, loader)
+    acc = mean_distance(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
 
-    acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
-    print("acc = ", acc)
+    if num_cols == 1 and num_rows == 1 : 
+        plt.figure(figsize=(10, 5))
+        plt.plot(targets[:num], label='True values', marker='o')
+        plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
+        plt.xlabel('Sample')
+        plt.ylabel(f"{y_labels[0]}")
+        plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}", fontweight='bold')
+        plt.legend()
+    
+    else :  
+        accs = [mean_distance(torch.tensor(np.array(predictions[i])), torch.tensor(np.array(targets))) for i in range(len(y_labels))]
+        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
 
-    # Plot
-    plt.figure(figsize=(10, 5))
-    plt.plot(targets[:num], label='True values', marker='o')
-    plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
-    plt.xlabel('Échantillons')
-    plt.ylabel('Muscle length')
-    plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}")
-    plt.legend()
-    create_and_save_plot(directory_path, f"plot_predictions_and_targets_{loader_name}")
+        for k in range(len(y_labels)) : 
+            
+            row = k // ((len(y_labels) + 1) // 3)
+            col = k % ((len(y_labels) + 1) // 3)
+            
+            axs[row, col].plot([arr[k] for arr in targets][:num], label='True values', marker='^')
+            axs[row, col].plot([arr[k] for arr in predictions][:num], label='Predictions', marker='o',linestyle='--')
+            axs[row, col].set_xlabel('Sample')
+            axs[row, col].set_ylabel("Value")
+            axs[row, col].set_title(f'{y_labels[k]}, acc = {accs[k]:.6f}',fontsize='smaller')
+            axs[row, col].legend()
+        
+        fig.suptitle(f"Predictions and targets - {string_loader}", fontweight='bold')
+        plt.tight_layout()  
+    
+    
+    plt.savefig(f"{directory_path}/plot_predictions_and_targets.png")
     plt.show()
+
 
 def plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, folder_name, num):
 
@@ -152,7 +203,7 @@ def plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, fold
         ax.plot(targets[:num], label='True values', marker='o')
         ax.plot(predictions[:num], label='Predictions', marker='o', linestyle='--')
         ax.set_title(f"File: {filenames[idx]}, acc = {acc:.6f}")
-        ax.set_xlabel('Échantillons')
+        ax.set_xlabel('Sample')
         ax.set_ylabel('Muscle length')
         ax.legend()
 
