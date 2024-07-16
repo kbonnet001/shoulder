@@ -7,7 +7,7 @@ from neural_networks.plot_visualisation import plot_mvt_discontinuities_in_red
 from neural_networks.file_directory_operations import create_directory
 import copy
 import random
-from wrapping.lever_arm import compute_dlmt_dq
+from wrapping.lever_arm import compute_dlmt_dq, plot_lever_arm
 import os
 
 def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
@@ -120,8 +120,9 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
       print("segment_length = ", segment_length)
       qs.append(qi)
       segment_lengths.append(segment_length)
+      dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
       
-      writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
+      writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq))
 
    plt.plot(qs, segment_lengths, marker='o', linestyle='-', color='b')
    plt.xlabel(f'q{i}')
@@ -161,8 +162,6 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    directory = file_path+"plot_all_q_variation_" + filename
    create_directory(directory)
    
-   dlmt_dq = []
-   
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
    q = copy.deepcopy(q_fixed)
@@ -196,12 +195,12 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
          else :  
             segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
          
-         print("segment_length = ", segment_length)
          qs.append(qi)
          segment_lengths.append(segment_length)
          
-         print("c ce q aue l'on met : ", q)
-         writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, dlmt_dq)
+         dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
+         
+         writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq))
       
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities=False)
       
@@ -374,5 +373,11 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
       plot_all_q_variation(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
                      plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}/")
       
-      plot_tensor(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}/plot_tensor", 100)
+      plot_lever_arm(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}/plot_tensor", 100)
 
+
+# def data_generation_missingdlmt_dq_() : 
+#    # on a un sheet avec des lmt
+#    # pour chaque ligne ? batch, ligne on recupere q et lmt
+#    # puis on calcul dlmt_dq
+#    # en on ajoute les colonnes 

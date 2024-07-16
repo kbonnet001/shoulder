@@ -20,7 +20,7 @@ class ExcelBatchWriter:
                 "insertion_muscle_y": [],
                 "insertion_muscle_z": [],
                 "segment_length": [],
-                **{"dlmt_dq_" + self.q_ranges_names_with_dofs[k]: [] for k in range(len(self.q_ranges_names_with_dofs))},
+                **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
                  }
             pd.DataFrame(data).to_excel(filename, index=False)
 
@@ -36,7 +36,7 @@ class ExcelBatchWriter:
             "insertion_muscle_y": insertion_muscle[1],
             "insertion_muscle_z": insertion_muscle[2],
             "segment_length": segment_length, 
-            **{"dlmt_dq_" + self.q_ranges_names_with_dofs[k]: dlmt_dq[k] for k in range(len(dlmt_dq))},
+            **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": dlmt_dq[k] for k in range(len(dlmt_dq))},
         }
         
         # Add the new line to the buffer

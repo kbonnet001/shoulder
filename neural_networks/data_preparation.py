@@ -253,8 +253,8 @@ def create_loaders_from_folder_group_muscle(Hyperparams, q_ranges, folder_name, 
 
 # ----------------------------------------------------------------------------------------------
 
-def create_data_loader(filename, limit, all_possible_categories) : 
-  X_tensor, y_tensor = data_preparation_create_tensor(filename, limit, all_possible_categories)
+def create_data_loader(mode, filename, limit, all_possible_categories) : 
+  X_tensor, y_tensor, y_labels = data_preparation_create_tensor(mode, filename, limit, all_possible_categories)
   dataset = MuscleDataset(X_tensor, y_tensor)
   loader = DataLoader(dataset, 32, shuffle = False)
   return loader 

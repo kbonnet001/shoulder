@@ -6,6 +6,7 @@ import numpy as np
 import os
 from neural_networks.data_preparation import create_data_loader
 from neural_networks.file_directory_operations import create_and_save_plot
+from neural_networks.other import compute_row_col
 
 def mean_distance(predictions, targets):
     """
@@ -53,7 +54,8 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_
     
     create_and_save_plot(file_path, "plot_loss_and_accuracy")
     plt.show()
-    
+
+# -----------------------------
 def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     
     """Get predictions and targets from a model and data loader.
@@ -80,7 +82,6 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
             targets.extend(labels.cpu().numpy())
     return predictions, targets
 
-    
 # def plot_predictions_and_targets_ancienne(model, loader, string_loader, num, directory_path, loader_name) :
     
 #     """Plot the true values and predicted values for a given model and data loader.
@@ -159,13 +160,16 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     plt.show()
 
 
-def plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name, num):
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
+    # on recupere les sheets et on les tris dans l'ordre
     filenames = sorted([filename for filename in os.listdir(folder_name)])
-    loaders = [create_data_loader(f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
+    # on fait des loaders pour chaque sheet
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
     
-    fig, axs = plt.subplots(3, (len(q_ranges)+1)//3, figsize=(15, 10))
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 0, 3)
+    fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
     for q_index in range(len(q_ranges)) : 
         
@@ -182,7 +186,7 @@ def plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, fold
         axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
         axs[row, col].legend()
     
-    fig.suptitle(f'Predictions and targets of Muscle length Muscle', fontweight='bold')
+    fig.suptitle(f'Predictions and targets of Muscle length', fontweight='bold')
     plt.tight_layout()  
     plt.savefig(f"{file_path}/plot_muscle_length_predictions_and_targets.png")
     plt.show()
@@ -190,23 +194,75 @@ def plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, fold
     return None
 
     
+    # for idx, loader in enumerate(loaders):
+    #     row = idx // 2
+    #     col = idx % 2
+    #     ax = axs[row, col] if rows > 1 else axs[col]
+        
+    #     predictions, targets = get_predictions_and_targets(model, loader)
+    #     acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+        
+    #     ax.plot(targets[:num], label='True values', marker='o')
+    #     ax.plot(predictions[:num], label='Predictions', marker='o', linestyle='--')
+    #     ax.set_title(f"File: {filenames[idx]}, acc = {acc:.6f}")
+    #     ax.set_xlabel('Sample')
+    #     ax.set_ylabel('Muscle length')
+    #     ax.legend()
+        
+        
+def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name, num):
 
+    all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
+    # on recupere les sheets et on les tris dans l'ordre
+    filenames = sorted([filename for filename in os.listdir(folder_name)])
+    # on fait des loaders pour chaque sheet
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
     
-    for idx, loader in enumerate(loaders):
-        row = idx // 2
-        col = idx % 2
-        ax = axs[row, col] if rows > 1 else axs[col]
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 0, 3)
+    
+    # pour chaque q-index = 1 fig a chaque fois
+    for q_index in range(len(q_ranges)) : 
+        # on fait une nouvelle figure
+        fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+        # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
+        predictions, targets = get_predictions_and_targets(model, loaders[q_index])
+        # acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
         
-        predictions, targets = get_predictions_and_targets(model, loader)
-        acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+        if row_fixed == 1 and col_fixed == 1 : 
+            acc = mean_distance(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
+                
+            plt.figure(figsize=(10, 5))
+            plt.plot(targets[:num], label='True values', marker='o')
+            plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
+            plt.xlabel('q variation')
+            plt.ylabel(f"{y_labels[0]}")
+            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}", fontweight='bold')
+            plt.legend()
         
-        ax.plot(targets[:num], label='True values', marker='o')
-        ax.plot(predictions[:num], label='Predictions', marker='o', linestyle='--')
-        ax.set_title(f"File: {filenames[idx]}, acc = {acc:.6f}")
-        ax.set_xlabel('Sample')
-        ax.set_ylabel('Muscle length')
-        ax.legend()
+        else : 
+            # puis on fait chaque plot de la figure
+            for i in range (len(q_ranges)) : 
+                acc = mean_distance(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
+                
+                # marche mais c,est moche :/
+                row = i // ((len(q_ranges) + 1) // 3)
+                col = i % ((len(q_ranges) + 1) // 3)
+            
+                axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
+                axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
+                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}",fontsize='smaller')
+                axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+                axs[row, col].set_ylabel(f'dlmt_dq{i}',fontsize='smaller')
+                axs[row, col].legend()
+        
+            fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
+            plt.tight_layout()  
+            plt.savefig(f"{file_path}/q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            plt.show()
+    
+    return None
 
+# -------------------------------------
 def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) : 
     
     plt.plot(qs, segment_lengths, linestyle='-', color='b')

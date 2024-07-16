@@ -132,9 +132,9 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # exit(0)
 
 # # pour voir pyorerun
-model_path = "/home/lim/Documents/kloe/shoulder/run/models/Wu_DeGroote.bioMod"
-animation = LiveModelAnimation(model_path, with_q_charts=True)
-animation.rerun()
+# model_path = "/home/lim/Documents/kloe/shoulder/run/models/Wu_DeGroote.bioMod"
+# animation = LiveModelAnimation(model_path, with_q_charts=True)
+# animation.rerun()
 
 # -----------------------------------------------------------------
 
@@ -196,8 +196,8 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_lay
 print(Hyperparameter_essai1)
 
 # one model per muscle !
-# main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
-#                         file_path=Hyperparameter_essai1.model_name,plot_preparation=False, plot=True, save=True) 
+main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=False, 
+                        file_path=Hyperparameter_essai1.model_name,plot_preparation=False, plot=True, save=True) 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
 
