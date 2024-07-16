@@ -94,7 +94,7 @@ def plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
    delta_qi = 1e-10
    
-   row_size, col_size = compute_row_col(len(q_ranges), 0, 3)
+   row_size, col_size = compute_row_col(len(q_ranges), 3)
    # Big fig with all dlmt_dq
    fig, axs = plt.subplots(row_size, col_size, figsize=(15, 10))
    
@@ -167,7 +167,7 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    delta_qi = 1e-10
    
    
-   row_size, col_size = compute_row_col(len(q_ranges), 0, 3)
+   row_size, col_size = compute_row_col(len(q_ranges), 3)
    
    for q_index in range (len(q_ranges)) : 
       q = copy.deepcopy(q_fixed)

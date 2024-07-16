@@ -121,13 +121,12 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     OUTPUT:
     - None: The function generates a plot showing the true values and predicted values.
     """
-    num_rows = min(len(y_labels), 3)
-    num_cols = max(1, (len(y_labels) + 1) // 3)
-    
+    num_rows, num_cols = compute_row_col(len(y_labels), 3)
     predictions, targets = get_predictions_and_targets(model, loader)
-    acc = mean_distance(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
-
+    
     if num_cols == 1 and num_rows == 1 : 
+        acc = mean_distance(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
+        
         plt.figure(figsize=(10, 5))
         plt.plot(targets[:num], label='True values', marker='o')
         plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
@@ -142,11 +141,11 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
 
         for k in range(len(y_labels)) : 
             
-            row = k // ((len(y_labels) + 1) // 3)
-            col = k % ((len(y_labels) + 1) // 3)
+            row = k // 3
+            col = k % 3
             
-            axs[row, col].plot([arr[k] for arr in targets][:num], label='True values', marker='^')
-            axs[row, col].plot([arr[k] for arr in predictions][:num], label='Predictions', marker='o',linestyle='--')
+            axs[row, col].plot([target[k] for target in targets][:num], label='True values', marker='^')
+            axs[row, col].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--')
             axs[row, col].set_xlabel('Sample')
             axs[row, col].set_ylabel("Value")
             axs[row, col].set_title(f'{y_labels[k]}, acc = {accs[k]:.6f}',fontsize='smaller')
@@ -154,7 +153,6 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
         
         fig.suptitle(f"Predictions and targets - {string_loader}", fontweight='bold')
         plt.tight_layout()  
-    
     
     plt.savefig(f"{directory_path}/plot_predictions_and_targets.png")
     plt.show()
@@ -168,13 +166,13 @@ def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, fi
     # on fait des loaders pour chaque sheet
     loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 0, 3)
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
     fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
     for q_index in range(len(q_ranges)) : 
         
-        row = q_index // ((len(q_ranges) + 1) // 3)
-        col = q_index % ((len(q_ranges) + 1) // 3)
+        row = q_index // 3
+        col = q_index % 3
         
         predictions, targets = get_predictions_and_targets(model, loaders[q_index])
         acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
@@ -218,7 +216,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
     # on fait des loaders pour chaque sheet
     loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 0, 3)
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
     
     # pour chaque q-index = 1 fig a chaque fois
     for q_index in range(len(q_ranges)) : 
@@ -245,8 +243,8 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
                 acc = mean_distance(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
                 
                 # marche mais c,est moche :/
-                row = i // ((len(q_ranges) + 1) // 3)
-                col = i % ((len(q_ranges) + 1) // 3)
+                row = i // 3
+                col = i % 3
             
                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
                 axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
