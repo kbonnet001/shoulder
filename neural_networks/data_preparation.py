@@ -270,7 +270,7 @@ def plot_datas_distribution(filename, files_path, q_ranges, X_tensors, y_tensors
     - X_tensors : [X tensor], X tensor with all features (columns except the last one)
     - y_tensors : [y tensor], y tensor with the target values (last column) """
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 1)
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 1, 4)
     
     fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
     

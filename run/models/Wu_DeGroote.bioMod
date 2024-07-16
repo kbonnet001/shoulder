@@ -115,10 +115,10 @@ segment ulna_effector_right
        -0.00181025108711977   0.999328355607296   0.0366000091559926  -0.2904
        -0.0493668331166902   -0.0366447496814640  0.998108249694797   -0.0123
         0                     0                   0                    1
-	rotations z
+	//rotations z
 	jointDampings 0.0
-	ranges
-	    0.05 pi*3/4
+	//ranges
+	//    0.05 pi*3/4
 endsegment
 segment ulna_right
     parent ulna_effector_right
@@ -140,9 +140,9 @@ endsegment
 
 segment radius_effector_right
     parent ulna_right
-    rotations y
-	ranges
-	    -pi/2 pi/2
+    //rotations y
+	//ranges
+	//    -pi/2 pi/2
     RTinmatrix 1
     RT
         0.999852739302321   -0.0171609938419917  0                  0.0004
@@ -172,9 +172,9 @@ segment hand_right
     parent radius_right
     RT 0 0 0 xyz 0.0171148952815322 -0.230100258785044 0.023770687891017
     // rotations xz
-	ranges
-	    -1 0.6
-	    -pi/5 pi/12
+	//ranges
+	//    -1 0.6
+	//    -pi/5 pi/12
     mass 0.4575
     com 0 -0.068095 0
     inertia

@@ -1,7 +1,7 @@
-def compute_row_col(x, y) : 
+def compute_row_col(x, y, div) : 
     
-    row = (x+y)//4
-    if (x+y)%4 != 0 :
+    row = (x+y)//div
+    if (x+y)%div != 0 :
         row+=1
     
-    return row, min(x+y, 4)
+    return row, min(x+y, div)

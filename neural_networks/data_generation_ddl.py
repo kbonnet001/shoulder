@@ -7,7 +7,7 @@ from neural_networks.plot_visualisation import plot_mvt_discontinuities_in_red
 from neural_networks.file_directory_operations import create_directory
 import copy
 import random
-from wrapping.lever_arm import compute_dlmt_dq, plot_tensor
+from wrapping.lever_arm import compute_dlmt_dq
 import os
 
 def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
