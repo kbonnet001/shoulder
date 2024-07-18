@@ -161,21 +161,21 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # p_dropout = [0.2, 0.5]
 # use_batch_norm = True
 
-# model_name="essai_dlmt_dq_lmt_x"
-# mode = Mode.DLMT_DQ
-# batch_size=128
-# n_layers=1
-# n_nodes=[128, 64, 32]
-# activations=[nn.GELU(), nn.GELU(), nn.GELU()]
-# activation_names = ["GELU", "GELU", "GELU"]
-
-model_name="essai_muscle0" #0 meilleur
-mode = Mode.MUSCLE
-batch_size=32
+model_name="essai_dlmt_dq_lmt_x0"
+mode = Mode.DLMT_DQ
+batch_size=64
 n_layers=1
-n_nodes=[25]
+n_nodes=[15]
 activations=[nn.GELU()]
 activation_names = ["GELU"]
+
+# model_name="essai_muscle0" #0 meilleur
+# mode = Mode.MUSCLE
+# batch_size=32
+# n_layers=1
+# n_nodes=[25]
+# activations=[nn.GELU()]
+# activation_names = ["GELU"]
 
 L1_penalty=0.01
 L2_penalty=0.01
@@ -196,7 +196,7 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_lay
 print(Hyperparameter_essai1)
 
 # # one model per muscle !
-main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
+main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=False, 
                         file_path=Hyperparameter_essai1.model_name,plot_preparation=False, plot=True, save=True) 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 

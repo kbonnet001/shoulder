@@ -71,7 +71,7 @@ def main_superised_learning(Hyperparams, q_ranges, folder_name, muscle_name, ret
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(f"{folder_name}/{muscle_name}/_Model/{file_path}") == False: 
         
-        model, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", plot, save)
+        _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", plot, save)
         
     visualize_prediction(Hyperparams.mode, q_ranges, y_labels, train_loader, val_loader, test_loader, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
@@ -130,9 +130,9 @@ def find_best_hyperparameters(Hyperparams, q_ranges, folder, muscle_name) :
     
     print("Let's go !")
 
+    folder_name = f"{folder}/{muscle_name}"
     train_loader, val_loader, test_loader, input_size, output_size, _ = create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot = False)
 
-    folder_name = f"{folder}/{muscle_name}"
     list_simulation= []
     best_val_loss = float('inf')
     best_val_acc = float('inf')

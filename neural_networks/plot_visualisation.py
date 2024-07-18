@@ -32,7 +32,7 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_
     - val_accs """
     
     # Create subplots
-    fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+    _, axs = plt.subplots(1, 2, figsize=(15, 5))
 
     # Plot loss graph
     axs[0].plot(train_losses, label='Train Loss')
@@ -81,34 +81,6 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
             predictions.extend(outputs.cpu().numpy())
             targets.extend(labels.cpu().numpy())
     return predictions, targets
-
-# def plot_predictions_and_targets_ancienne(model, loader, string_loader, num, directory_path, loader_name) :
-    
-#     """Plot the true values and predicted values for a given model and data loader.
-#     INPUT:
-#     - model: The trained PyTorch model to be evaluated.
-#     - loader: DataLoader containing the dataset to evaluate.
-#     - num: The number of samples to plot for comparison.
-
-#     OUTPUT:
-#     - None: The function generates a plot showing the true values and predicted values.
-#     """
-    
-#     predictions, targets = get_predictions_and_targets(model, loader)
-
-#     acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
-#     print("acc = ", acc)
-
-#     # Plot
-#     plt.figure(figsize=(10, 5))
-#     plt.plot(targets[:num], label='True values', marker='o')
-#     plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
-#     plt.xlabel('Sample')
-#     plt.ylabel('Muscle length')
-#     plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}")
-#     plt.legend()
-#     create_and_save_plot(directory_path, f"plot_predictions_and_targets_{loader_name}")
-#     plt.show()
     
 def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, directory_path, loader_name) :
     
@@ -139,32 +111,31 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
         accs = [mean_distance(torch.tensor(np.array(predictions[i])), torch.tensor(np.array(targets))) for i in range(len(y_labels))]
         fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
 
-        for k in range(len(y_labels)) : 
+        axs = axs.flatten() if num_rows == 1 or num_cols == 1 else axs
+
+        for k in range(len(y_labels)) :
+            row = k // num_cols
+            col = k % num_cols
+            index = k if num_rows == 1 or num_cols == 1 else (row, col)
             
-            row = k // 3
-            col = k % 3
-            
-            axs[row, col].plot([target[k] for target in targets][:num], label='True values', marker='^')
-            axs[row, col].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--')
-            axs[row, col].set_xlabel('Sample')
-            axs[row, col].set_ylabel("Value")
-            axs[row, col].set_title(f'{y_labels[k]}, acc = {accs[k]:.6f}',fontsize='smaller')
-            axs[row, col].legend()
+            axs[index].plot([target[k] for target in targets][:num], label='True values', marker='^')
+            axs[index].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--')
+            axs[index].set_xlabel('Sample')
+            axs[index].set_ylabel("Value")
+            axs[index].set_title(f'{y_labels[k]}, acc = {accs[k]:.6f}',fontsize='smaller')
+            axs[index].legend()
         
         fig.suptitle(f"Predictions and targets - {string_loader}", fontweight='bold')
         plt.tight_layout()  
         
     create_and_save_plot(f"{directory_path}", f"plot_predictions_and_targets_{string_loader}.png")
-    # plt.savefig(f"{directory_path}/plot_predictions_and_targets.png")
     plt.show()
 
 
 def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name, num):
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
-    # on recupere les sheets et on les tris dans l'ordre
     filenames = sorted([filename for filename in os.listdir(folder_name)])
-    # on fait des loaders pour chaque sheet
     loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
     
     row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
@@ -241,7 +212,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
         
         else : 
             # puis on fait chaque plot de la figure
-            for i in range (len(q_ranges)) : 
+            for i in range (len(y_labels)) : 
                 acc = mean_distance(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
                 
                 # marche mais c,est moche :/
@@ -257,8 +228,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
         
             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
             plt.tight_layout()  
-            create_and_save_plot(f"{file_path}", "q{q_index}_plot_lever_arm_predictions_and_targets.png")
-            # plt.savefig(f"{file_path}/q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_lever_arm_predictions_and_targets.png")
             plt.show()
     
     return None

@@ -118,8 +118,8 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
     if mode == Mode.DLMT_DQ :
       # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
       selected_columns = [col for col in df_muscle_datas.columns if col.startswith('dlmt_dq_')]
-      y = df_muscle_datas.loc[:, selected_columns].values
-      y_labels = selected_columns
+      y = df_muscle_datas.loc[:, selected_columns[:2]].values
+      y_labels = selected_columns[:2]
     else : # defaut mode = MUSCLE
       y = df_muscle_datas.loc[:, 'segment_length'].values
       y_labels = ['segment_length']
@@ -159,20 +159,24 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
   # filenames[1] --> muscle datas ignored (could not exist...)
     
   if not (filenames[0].endswith(".xlsx") or filenames[0].endswith(".xls")):
-      print("Erreur : Le fichier doit avoir une extension .xlsx ou .xls")
+      print("Error : File need extension .xlsx or .xls\n\
+        If the file existe, maybe it's open in a window. Please close it try again.")
       sys.exit(1)
   else : 
       file_path = os.path.join(folder_name, filenames[0])
       print(f"Processing file: {file_path}")
 
       all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
-      X_tensor, y_tensor, y_labels = data_preparation_create_tensor(Hyperparams.mode, file_path, 0, all_possible_categories)
+      X_tensor, y_tensor, y_labels = data_preparation_create_tensor(Hyperparams.mode, file_path, 0, 
+                                                                    all_possible_categories)
       X_tensors=[X_tensor]
       y_tensors=[y_tensor]
 
       if plot : 
         if os.path.exists(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx"):
-          X_tensor_ignored, y_tensor_ignored, _ = data_preparation_create_tensor(Hyperparams.mode, f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx", 0, all_possible_categories)
+          X_tensor_ignored, y_tensor_ignored, _ = \
+            data_preparation_create_tensor(Hyperparams.mode, f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx", 
+                                           0, all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
         plot_datas_distribution(filenames[0],folder_name, q_ranges, X_tensors, y_tensors)
