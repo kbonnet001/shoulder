@@ -153,8 +153,9 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
         
         fig.suptitle(f"Predictions and targets - {string_loader}", fontweight='bold')
         plt.tight_layout()  
-    
-    plt.savefig(f"{directory_path}/plot_predictions_and_targets.png")
+        
+    create_and_save_plot(f"{directory_path}", f"plot_predictions_and_targets_{string_loader}.png")
+    # plt.savefig(f"{directory_path}/plot_predictions_and_targets.png")
     plt.show()
 
 
@@ -186,7 +187,8 @@ def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, fi
     
     fig.suptitle(f'Predictions and targets of Muscle length', fontweight='bold')
     plt.tight_layout()  
-    plt.savefig(f"{file_path}/plot_muscle_length_predictions_and_targets.png")
+    create_and_save_plot(f"{file_path}", "plot_muscle_length_predictions_and_targets.png")
+    # plt.savefig(f"{file_path}/plot_muscle_length_predictions_and_targets.png")
     plt.show()
     
     return None
@@ -255,7 +257,8 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
         
             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
             plt.tight_layout()  
-            plt.savefig(f"{file_path}/q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            create_and_save_plot(f"{file_path}", "q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            # plt.savefig(f"{file_path}/q{q_index}_plot_lever_arm_predictions_and_targets.png")
             plt.show()
     
     return None

@@ -11,7 +11,7 @@ def compute_row_col(sum, div) :
     
     INPUTS : 
     - sum : int, sum of all number of plot to do in the figure
-    - div : int, number of lines max 
+    - div : int, number of col max 
     
     OUTPUTS : 
     - row : int, number of row for subplot

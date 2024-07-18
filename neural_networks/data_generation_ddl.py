@@ -4,16 +4,21 @@ from neural_networks.ExcelBatchWriter import ExcelBatchWriter
 from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 from neural_networks.plot_visualisation import plot_mvt_discontinuities_in_red
-from neural_networks.file_directory_operations import create_directory
+from neural_networks.file_directory_operations import create_directory, create_and_save_plot
 import copy
 import random
 from wrapping.lever_arm import compute_dlmt_dq, plot_lever_arm
 import os
+from neural_networks.other import compute_row_col
 
 def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas
+   
    Datas are generated ponctually, independantly and uniformly
+   This function isn't use because we need to generate mvt to keep only good datas
+   But, this is the classical method to generate datas, so it can be use for a new y (exit) if it's appropriate...
+   Thus, this function is an example if you try to create an other generate datas function
    
    INPUTS
    - muscle_selected : string, name of the muscle selected. 
@@ -22,7 +27,6 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
    - model : model 
-   - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
    - dataset_size : int, number of data we would like
    - filename : string, name of the file to create
    - data_without_error : bool (default = False), True to ignore data with error wrapping 
@@ -42,7 +46,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    while k < dataset_size : 
       print("k = ", k)
 
-      # Generate a random q 
+      # Generate a random q
       q = np.random.uniform(low=min_vals, high=max_vals)
       
       origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
@@ -53,7 +57,6 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    
       if (data_ignored == False and data_without_error == True) or (data_without_error == False) : 
          # Add line to data frame
-         # add_line_df(filename, muscle_index, q, origin_muscle, insertion_muscle, segment_length)
          writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
          print("hop dans le sheet")
          
@@ -63,6 +66,8 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    writer.close()
    
    return None
+
+# ----------------------
 
 def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
@@ -75,7 +80,6 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
    - model : model 
-   - q_ranges_muscle : array 4*2, q ranges limited for the muscle selected 
    - q_fixed : array 4*1, q fixed, reference
    - i : int (0, 1, 2, 3), qi to do variate
    - filename : string, name of the file to create
@@ -93,14 +97,11 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    writer = ExcelBatchWriter(f"{directory}/"+filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
 
    q = q_fixed
-   
    segment_lengths = []
    qs = []
-   
-   print("q range = ", q_ranges)
 
    for k in range (num_points+1) : 
-      print("k = ", k)
+      print("plot one q variation, k = ", k)
       
       qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
       q[i] = qi
@@ -131,7 +132,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    plt.xticks(qs[::5])
    plt.yticks(segment_lengths[::5]) 
    plt.grid(True)
-   plt.savefig(f"{directory}/one_q_variation.png")
+   create_and_save_plot(f"{directory}", "one_q_variation.png")
    plt.show()
    
    find_discontinuty(qs, segment_lengths, plot_discontinuities=True)
@@ -166,9 +167,8 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
    q = copy.deepcopy(q_fixed)
    
-   print("q range = ", q_ranges)
-
-   fig, axs = plt.subplots(2, (len(q_ranges)+1)//2, figsize=(15, 10))
+   row_fixed, col_fixed = compute_row_col(len(q_ranges), 2)
+   fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
 
    for q_index in range (len(q_ranges)) : 
       segment_lengths = []
@@ -178,7 +178,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
       q = copy.deepcopy(q_fixed)
       
       for k in range (num_points+1) : 
-         print("k = ", k)
+         print("plot all q variation, k = ", k)
          
          qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
          q[q_index] = qi
@@ -204,8 +204,8 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
       
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities=False)
       
-      row = q_index // ((len(q_ranges) + 1) // 2)
-      col = q_index % ((len(q_ranges) + 1) // 2)
+      row = q_index // 2
+      col = q_index % 2
 
       axs[row, col].plot(qs, segment_lengths, marker='o', linestyle='-', color='b', markersize=3)
       for idx in discontinuities:
@@ -223,7 +223,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    
    fig.suptitle(f'Muscle Length as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
    plt.tight_layout()  
-   plt.savefig(f"{directory}/all_q_variation.png")
+   create_and_save_plot(f"{directory}", "all_q_variation.png")
    plt.show()
    
    return None
@@ -310,7 +310,6 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
       # Find indexes with discontinuties
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
       for discontinuity in discontinuities : 
-         # min, max = data_to_remove_range(discontinuity, num_points, 5)
          min, max = data_to_remove_part(discontinuity, qs, num_points, 3)
          to_remove.extend(range(min, max + 1))
       positions = [n for n, ignored in enumerate(datas_ignored) if ignored]

@@ -15,7 +15,7 @@ from neural_networks.k_cross_validation import cross_validation, try_best_hyperp
 from neural_networks.functions_data_generation import compute_q_ranges
 from wrapping.lever_arm import plot_lever_arm
 from neural_networks.Mode import Mode
-from neural_networks.main_trainning import main_superised_learning
+from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters
 
 #################### 
 # Code des tests
@@ -141,10 +141,11 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-# model_name = "H_essai_1"
+# model_name = "train_muscle_PECM2"
+# mode = Mode.MUSCLE
 # batch_size = 32
 # n_layers = [1]
-# n_nodes = [[8], [10], [15], [20], [25], [30]]
+# n_nodes = [[8], [10], [12], [15], [20], [25], [30]]
 # activations = [[nn.GELU()]]
 # activation_names = [["GELU"]]
 # L1_penalty = [0.01, 0.001]
@@ -160,33 +161,32 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # p_dropout = [0.2, 0.5]
 # use_batch_norm = True
 
-model_name="essai_dlmt_dq"
-mode = Mode.DLMT_DQ
-batch_size=64
+# model_name="essai_dlmt_dq_lmt_x"
+# mode = Mode.DLMT_DQ
+# batch_size=128
+# n_layers=1
+# n_nodes=[128, 64, 32]
+# activations=[nn.GELU(), nn.GELU(), nn.GELU()]
+# activation_names = ["GELU", "GELU", "GELU"]
+
+model_name="essai_muscle0" #0 meilleur
+mode = Mode.MUSCLE
+batch_size=32
 n_layers=1
-n_nodes=[10]
+n_nodes=[25]
 activations=[nn.GELU()]
 activation_names = ["GELU"]
 
-# model_name="essai_muscle"
-# mode = Mode.MUSCLE
-# batch_size=32
-# n_layers=1
-# n_nodes=[50]
-# activations=[nn.GELU()]
-# activation_names = ["GELU"]
-
-
-L1_penalty=0.001
-L2_penalty=0.001
-learning_rate=0.01
+L1_penalty=0.01
+L2_penalty=0.01
+learning_rate=0.001
 num_epochs=1000 
 optimizer=0.0
-criterion = ModifiedHuberLoss(delta=2.0, factor=2.0)
-p_dropout=0.5
+criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+p_dropout=0.2
 use_batch_norm=True
 
-folder_name = "datas/error_part"
+folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 
@@ -195,13 +195,13 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_lay
                                              use_batch_norm)
 print(Hyperparameter_essai1)
 
-# one model per muscle !
-main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=False, 
+# # one model per muscle !
+main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
                         file_path=Hyperparameter_essai1.model_name,plot_preparation=False, plot=True, save=True) 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
 
-# list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, folder_name)
+# list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, q_ranges, "datas", "PECM2")
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
 print("")

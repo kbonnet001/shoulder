@@ -13,6 +13,7 @@ from neural_networks.MuscleDataset import MuscleDataset
 from neural_networks.file_directory_operations import create_and_save_plot
 from neural_networks.other import compute_row_col
 from neural_networks.Mode import Mode
+import torch.nn.functional as F
 
 def print_informations_environment() : 
   # Print environment info
@@ -111,7 +112,9 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
     # df_muscle_datas = df_muscle_datas.iloc[:, :]  # Adjust as necessary
 
     # Separate inputs from targets
-    X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
+    # X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
+    X = df_muscle_datas.loc[:, 'muscle_selected':'segment_length'].values
+    X = np.delete(X, (-2, -3, -4, -5, -6, -7), axis=1) # on met lmt mais on enleve les coordonnes de origin et insertion
     if mode == Mode.DLMT_DQ :
       # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
       selected_columns = [col for col in df_muscle_datas.columns if col.startswith('dlmt_dq_')]
@@ -167,6 +170,14 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
       X_tensors=[X_tensor]
       y_tensors=[y_tensor]
 
+      if plot : 
+        if os.path.exists(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx"):
+          X_tensor_ignored, y_tensor_ignored, _ = data_preparation_create_tensor(Hyperparams.mode, f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx", 0, all_possible_categories)
+          X_tensors.append(X_tensor_ignored)
+          y_tensors.append(y_tensor_ignored)
+        plot_datas_distribution(filenames[0],folder_name, q_ranges, X_tensors, y_tensors)
+      
+      # X_tensor = F.normalize(X_tensor)  # Normalize each row (sample) to have unit norm
       dataset = MuscleDataset(X_tensor, y_tensor)
 
       train_val_size, test_size = compute_samples(dataset, 0.80)
@@ -174,14 +185,7 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
 
       train_size, val_size = compute_samples(train_val_dataset, 0.80)
       train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size])
-
-      if plot : 
-        if os.path.exists(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx"):
-          X_tensor_ignored, y_tensor_ignored = data_preparation_create_tensor(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx", 0, all_possible_categories)
-          X_tensors.append(X_tensor_ignored)
-          y_tensors.append(y_tensor_ignored)
-        plot_datas_distribution(filenames[0],folder_name, q_ranges, X_tensors, y_tensors)
-             
+      
       train_loader = DataLoader(train_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
       val_loader = DataLoader(val_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
       test_loader = DataLoader(test_dataset, batch_size=Hyperparams.batch_size, shuffle=False)
@@ -270,7 +274,7 @@ def plot_datas_distribution(filename, files_path, q_ranges, X_tensors, y_tensors
     - X_tensors : [X tensor], X tensor with all features (columns except the last one)
     - y_tensors : [y tensor], y tensor with the target values (last column) """
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 1, 4)
+    row_fixed, col_fixed = compute_row_col(len(q_ranges) + 1, 4)
     
     fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
     
