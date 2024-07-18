@@ -30,13 +30,14 @@ def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' 
 
     for inputs, targets in train_loader:
         inputs, targets = inputs.to(device), targets.to(device)
-        optimizer.zero_grad()  # Gradients initialization
-        outputs = model(inputs)  # Model prediction
+        optimizer.zero_grad() # Gradients initialization
+        outputs = model(inputs) # Model prediction
 
-        targets = targets.unsqueeze(1)
-        loss = criterion(outputs, targets)  # Compute loss
-        loss.backward()  # Backpropagation
-        optimizer.step()  # Updating weights
+        if len(targets.size()) == 1 : # security when y is 1
+            targets = targets.unsqueeze(1)
+        loss = criterion(outputs, targets) # Compute loss
+        loss.backward() # Backpropagation
+        optimizer.step() # Updating weights
 
         # Stats for plot
         running_loss += loss.item() * inputs.size(0)
@@ -79,7 +80,8 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)  # Model prediction
 
-            targets = targets.unsqueeze(1)
+            if len(targets.size()) == 1 : # security when y is 1
+                targets = targets.unsqueeze(1)
             loss = criterion(outputs, targets)  # Compute loss
 
             # Stats for plot
@@ -117,7 +119,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     - val_loss : float, loss validation
     - val_acc : float, accuracy (mean distance) validation"""
     
-    model = Model(input_size, output_size, Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, 
+    model = Model(input_size, output_size, Hyperparams.n_nodes, Hyperparams.activations, 
                   Hyperparams.L1_penalty, Hyperparams.L2_penalty, Hyperparams.use_batch_norm, Hyperparams.dropout_prob)
     
     Hyperparams.compute_optimiser(model)
@@ -127,11 +129,20 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
         val_losses = []
         train_accs = []
         val_accs = []
-
+        
+    # pour muscle
     # Initialization of ReduceLROnPlateau
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=20, min_lr=1e-8)
+    min_lr=1e-8
+    patience_scheduler=20
+    early_stop_scheduler = 0
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=patience_scheduler, min_lr=min_lr)
     # Initialization of EarlyStopping
-    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=0.00001, verbose=True)
+    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=1e-9, verbose=True)
+    
+    # # Initialization of ReduceLROnPlateau
+    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=50, min_lr=1e-8)
+    # # Initialization of EarlyStopping
+    # early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=1e-5, verbose=True)
 
     for epoch in range(Hyperparams.num_epochs):
         train_loss, train_acc = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
@@ -143,20 +154,25 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
             train_accs.append(train_acc)
             val_accs.append(val_acc)
 
-        print(f'Epoch [{epoch+1}/{Hyperparams.num_epochs}], Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}, Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}')
-
+        print(f'Epoch [{epoch+1}/{Hyperparams.num_epochs}], Train Loss: {train_loss:.8f}, Val Loss: {val_loss:.8f},',\
+              f"Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}, lr = {scheduler.get_last_lr()}")
+        print("early_stop_scheduler = ", early_stop_scheduler)
+        
         # Réduire le taux d'apprentissage si nécessaire
         scheduler.step(val_loss)
 
         # Vérifier l'arrêt précoce
         early_stopping(val_loss)
-        if early_stopping.early_stop:
+        if early_stopping.early_stop : 
+            early_stop_scheduler += 1
+            
+        if early_stopping.early_stop and early_stop_scheduler > patience_scheduler:
             print("Early stopping at epoch:", epoch+1)
             break
 
     # Évaluation du modèle sur l'ensemble de test
     test_loss, test_acc = evaluate(model, test_loader, Hyperparams.criterion)
-    print(f'Test Loss: {test_loss:.6f}, Test Acc: {test_acc:.6f}')
+    print(f'Test Loss: {test_loss:.8f}, Test Acc: {test_acc:.8f}')
     
     if plot : 
         plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path)

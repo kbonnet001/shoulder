@@ -165,7 +165,7 @@ model_name="essai_dlmt_dq_lmt_x0"
 mode = Mode.DLMT_DQ
 batch_size=64
 n_layers=1
-n_nodes=[15]
+n_nodes=[25]
 activations=[nn.GELU()]
 activation_names = ["GELU"]
 
@@ -183,6 +183,7 @@ learning_rate=0.001
 num_epochs=1000 
 optimizer=0.0
 criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+# criterion = nn.MSELoss()
 p_dropout=0.2
 use_batch_norm=True
 
@@ -196,7 +197,7 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_lay
 print(Hyperparameter_essai1)
 
 # # one model per muscle !
-main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=False, 
+main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
                         file_path=Hyperparameter_essai1.model_name,plot_preparation=False, plot=True, save=True) 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 

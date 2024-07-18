@@ -1,10 +1,4 @@
-# def compute_row_col(x, y, div) : 
-    
-#     row = (x+y)//div
-#     if (x+y)%div != 0 :
-#         row+=1
-    
-#     return row, min(x+y, div)
+import numpy as np
 
 def compute_row_col(sum, div) : 
     """Compute ideal row and col for subplots
@@ -22,3 +16,16 @@ def compute_row_col(sum, div) :
         row+=1
     
     return row, min(sum, div)
+
+def compute_num_bins(data, x_max, x_min) : 
+    # Calculer l'IQR et le nombre de données
+    IQR = np.percentile(data, 75) - np.percentile(data, 25)
+    N = len(data)
+
+    # Calculer la largeur des bins selon la règle de Freedman-Diaconis
+    bin_width = 2 * IQR / np.cbrt(N)
+
+    # Calculer le nombre de bins
+    num_bins = int((x_max - x_min) / bin_width)
+    
+    return num_bins

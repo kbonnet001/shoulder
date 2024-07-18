@@ -118,8 +118,8 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
             col = k % num_cols
             index = k if num_rows == 1 or num_cols == 1 else (row, col)
             
-            axs[index].plot([target[k] for target in targets][:num], label='True values', marker='^')
-            axs[index].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--')
+            axs[index].plot([target[k] for target in targets][:num], label='True values', marker='^', markersize=2)
+            axs[index].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--', markersize=2)
             axs[index].set_xlabel('Sample')
             axs[index].set_ylabel("Value")
             axs[index].set_title(f'{y_labels[k]}, acc = {accs[k]:.6f}',fontsize='smaller')
@@ -149,8 +149,8 @@ def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, fi
         predictions, targets = get_predictions_and_targets(model, loaders[q_index])
         acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
 
-        axs[row, col].plot(targets[:num], label='True values', marker='o')
-        axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--')
+        axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
+        axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
         axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
         axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')

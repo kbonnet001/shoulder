@@ -198,7 +198,7 @@ def find_best_hyperparameters(Hyperparams, q_ranges, folder, muscle_name) :
     
     # Finally, train one last time the model with best hyperparams and save model + plot
     # Hyperparams, q_ranges, folder_name, muscle_name, retrain, file_path, plot_preparation, plot, save
-    main_superised_learning(Hyperparams, q_ranges, folder, muscle_name, True,"Best_hyperparams",plot_preparation=True,plot=True,save=True)
+    main_superised_learning(best_hyperparameters_loss, q_ranges, folder, muscle_name, True,"Best_hyperparams",plot_preparation=True,plot=True,save=True)
     
     # print(f"Best hyperparameters acc found : {best_hyperparameters_acc}")
     # print(f'Best criterion: {best_criterion_class_acc.__name__} with parameters: {best_criterion_params_acc}')
