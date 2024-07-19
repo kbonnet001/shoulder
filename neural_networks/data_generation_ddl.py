@@ -373,10 +373,3 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
                      plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}/")
       
       plot_lever_arm(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}", 100)
-
-
-# def data_generation_missingdlmt_dq_() : 
-#    # on a un sheet avec des lmt
-#    # pour chaque ligne ? batch, ligne on recupere q et lmt
-#    # puis on calcul dlmt_dq
-#    # en on ajoute les colonnes 

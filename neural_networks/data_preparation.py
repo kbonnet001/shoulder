@@ -114,7 +114,7 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
     # Separate inputs from targets
     if mode == Mode.DLMT_DQ :
       X = df_muscle_datas.loc[:, 'muscle_selected':'segment_length'].values
-      X = np.delete(X, (0), axis=1) # on met lmt mais on enleve les coordonnes de origin et insertion
+      X = np.delete(X, (0, -2, -3, -4, -5, -6, -7), axis=1) # on met lmt mais on enleve les coordonnes de origin et insertion
     
       # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
       selected_columns = [col for col in df_muscle_datas.columns if col.startswith('dlmt_dq_')]
@@ -123,7 +123,7 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
       
     else : # defaut mode = MUSCLE
       X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
-      X = np.delete(X, (0), axis=1) 
+      X = np.delete(X, (0, -1, -2, -3, -4, -5, -6), axis=1) # on enleve les coordonnes de origin et insertion
       
       y = df_muscle_datas.loc[:, 'segment_length'].values
       y_labels = ['segment_length']
@@ -313,8 +313,9 @@ def plot_datas_distribution(filename, files_path, q_ranges, X_tensors, y_tensors
         x_min = min(y_plot[0])
         x_max = max(y_plot[0])
         num_bins = compute_num_bins(y_plot[0], x_max, x_min)
+        # num_bins = int((abs(x_max) + abs(x_min)) * 1000)
     
-        axs[row_j, col_j].hist(y_plot, bins=1000, alpha=0.5, stacked=True, 
+        axs[row_j, col_j].hist(y_plot, bins=500, alpha=0.5, stacked=True, 
                             label=["datas for learning", "datas ignored"])
         axs[row_j, col_j].set_xlim([x_min, x_max])
         axs[row_j, col_j].set_xlabel('Value')
