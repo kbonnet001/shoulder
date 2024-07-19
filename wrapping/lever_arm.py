@@ -182,7 +182,8 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
       # Then, q_index variate beetween min_range(q_index) and max_range(q_index)
       # For each value of q_index, compute dlmt_dq_index. So, we obtain an array of len(q_ranges) values
       # So, each fig represent plots for one partial derivative of lmt as a function of q_index
-      # And, each subplot of fig represent the varaition of dlmt_dq_index for THIS q_index
+      # And, each subplot represent the varaition of dlmt_dq_index for THIS q_index
+      #
       for k in range (num_points+1) : 
          print("q_index = ", q_index, " ; k = ", k)
 
@@ -222,8 +223,8 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
       create_and_save_plot(f"{filename}", f"dlmt_dq{q_index}.png" )
       plt.show()
 
-def plot_lever_arm(model, q_fixed, cylinders, muscle_selected, directory_name, num_points = 100) : 
-   directory = "plot_tensor_" + directory_name
+def plot_lever_arm(model, q_fixed, cylinders, muscle_selected, directory_name, num_points = 100) :
+   directory = f"{directory_name}/plot_lever_arm"
    create_directory(directory)
    
    plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, directory, num_points)

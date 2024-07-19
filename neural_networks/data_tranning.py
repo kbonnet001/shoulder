@@ -135,6 +135,8 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     min_lr=1e-8
     patience_scheduler=20
     early_stop_scheduler = 0
+    
+    # choose a early-stopping patience = 2 * scheduler patience
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=patience_scheduler, min_lr=min_lr)
     # Initialization of EarlyStopping
     early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=1e-9, verbose=True)
@@ -163,10 +165,10 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
 
         # Vérifier l'arrêt précoce
         early_stopping(val_loss)
-        if early_stopping.early_stop : 
-            early_stop_scheduler += 1
+        # if early_stopping.early_stop : 
+            # early_stop_scheduler += 1
             
-        if early_stopping.early_stop and early_stop_scheduler > patience_scheduler:
+        if early_stopping.early_stop :
             print("Early stopping at epoch:", epoch+1)
             break
 

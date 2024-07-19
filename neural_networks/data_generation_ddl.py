@@ -167,7 +167,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
    q = copy.deepcopy(q_fixed)
    
-   row_fixed, col_fixed = compute_row_col(len(q_ranges), 2)
+   row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
    fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
 
    for q_index in range (len(q_ranges)) : 
@@ -204,8 +204,8 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
       
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities=False)
       
-      row = q_index // 2
-      col = q_index % 2
+      row = q_index // 3
+      col = q_index % 3
 
       axs[row, col].plot(qs, segment_lengths, marker='o', linestyle='-', color='b', markersize=3)
       for idx in discontinuities:
@@ -363,7 +363,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
    create_directory(directory)
    
    for k in range(len(muscles_selected)) : 
-      create_directory(f"{directory}/{cylinders[k][0].muscle}")
+      create_directory(f"{directory}/{muscles_selected[k]}")
       data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
                                                    f"{directory}/{cylinders[k][0].muscle}", num_points, 
                                                    plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
@@ -372,7 +372,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
       plot_all_q_variation(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
                      plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}/")
       
-      plot_lever_arm(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}/plot_tensor", 100)
+      plot_lever_arm(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}", 100)
 
 
 # def data_generation_missingdlmt_dq_() : 

@@ -114,7 +114,7 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
     # Separate inputs from targets
     if mode == Mode.DLMT_DQ :
       X = df_muscle_datas.loc[:, 'muscle_selected':'segment_length'].values
-      X = np.delete(X, (-16), axis=1) # on met lmt mais on enleve les coordonnes de origin et insertion
+      X = np.delete(X, (0), axis=1) # on met lmt mais on enleve les coordonnes de origin et insertion
     
       # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
       selected_columns = [col for col in df_muscle_datas.columns if col.startswith('dlmt_dq_')]
@@ -164,7 +164,7 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot=False):
     
   if not (filenames[0].endswith(".xlsx") or filenames[0].endswith(".xls")):
       print("Error : File need extension .xlsx or .xls\n\
-        If the file existe, maybe it's open in a window. Please close it try again.")
+        If the file exist, maybe it's open in a window. Please close it and try again.")
       sys.exit(1)
   else : 
       file_path = os.path.join(folder_name, filenames[0])
@@ -289,7 +289,7 @@ def plot_datas_distribution(filename, files_path, q_ranges, X_tensors, y_tensors
     for i in range(len(q_ranges)):
         row = i // 4  
         col = i % 4   
-        axs[row, col].hist([X_tensors[k][:, i+12] for k in range (len(X_tensors))], bins=20, alpha=0.5, stacked=True, 
+        axs[row, col].hist([X_tensors[k][:, i] for k in range (len(X_tensors))], bins=20, alpha=0.5, stacked=True, 
                            label=["datas for learning", "datas ignored"])
         axs[row, col].set_xlabel('Value')
         axs[row, col].set_ylabel('Frequency')

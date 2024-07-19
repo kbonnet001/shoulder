@@ -94,7 +94,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 5000, "datas_with_dlmt_dq", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 5000, "datas_with_dlmt_dq", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
@@ -141,7 +141,7 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-# model_name = "train_muscle_PECM2"
+# model_name = "train_muscle_PECM2_train"
 # mode = Mode.MUSCLE
 # batch_size = 32
 # n_layers = [1]
@@ -161,27 +161,28 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # p_dropout = [0.2, 0.5]
 # use_batch_norm = True
 
-model_name="essai_dlmt_dq_lmt_x0"
-mode = Mode.DLMT_DQ
-batch_size=64
-n_layers=1
-n_nodes=[25]
-activations=[nn.GELU()]
-activation_names = ["GELU"]
-
-# model_name="essai_muscle0" #0 meilleur
+# model_name="essai_muscle_train"
 # mode = Mode.MUSCLE
-# batch_size=32
+# batch_size=64
 # n_layers=1
 # n_nodes=[25]
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
+
+model_name="essai_muscle_long_train_5000" #0 meilleur
+mode = Mode.MUSCLE
+batch_size=32
+n_layers=1
+n_nodes=[12]
+activations=[nn.GELU()]
+activation_names = ["GELU"]
 
 L1_penalty=0.01
 L2_penalty=0.01
 learning_rate=0.001
 num_epochs=1000 
 optimizer=0.0
+# criterion = LogCoshLoss(factor=1.8)
 criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 # criterion = nn.MSELoss()
 p_dropout=0.2
