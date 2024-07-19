@@ -10,6 +10,8 @@ from wrapping.step_4 import *
 def find_tangent_points_xy(p0, p1, r) :
 
   """Compute xy coordinates of v1 and v2
+  
+  To avoid error with a negative value in sqrt --> max(0, ...)
 
   INPUT
   - p0 : array 3*1 position of the first point
@@ -22,20 +24,15 @@ def find_tangent_points_xy(p0, p1, r) :
 
   p0_x2y2 = p0[0] ** 2 + p0[1] ** 2
   p1_x2y2 = p1[0] ** 2 + p1[1] ** 2
+  
+  if p0[0]**2+p0[1]**2-r**2<0 or p1[0]**2+p1[1]**2-r**2<0 : 
+    print("")
 
-  if p0[0]**2+p0[1]**2-r**2 < 0 :
-    v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(0))/p0_x2y2
-    v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(0))/p0_x2y2
-  else :
-    v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2
-    v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(p0[0]**2+p0[1]**2-r**2))/p0_x2y2
-
-  if p1[0]**2+p1[1]**2-r**2 < 0 :
-    v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(0))/p1_x2y2
-    v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(0))/p1_x2y2
-  else :
-    v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2
-    v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(p1[0]**2+p1[1]**2-r**2))/p1_x2y2
+  v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(max(0, p0[0]**2+p0[1]**2-r**2)))/p0_x2y2
+  v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(max(0, p0[0]**2+p0[1]**2-r**2)))/p0_x2y2
+  
+  v2_x = (p1[0]*r**2 - r*p1[1]*np.sqrt(max(0, p1[0]**2+p1[1]**2-r**2)))/p1_x2y2
+  v2_y = (p1[1]*r**2 + r*p1[0]*np.sqrt(max(0, p1[0]**2+p1[1]**2-r**2)))/p1_x2y2
 
   return [v1_x, v1_y, 0], [v2_x, v2_y, 0]
 

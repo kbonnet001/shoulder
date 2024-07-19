@@ -4,6 +4,7 @@ from wrapping.plot_cylinder import plot_one_cylinder_obstacle, plot_double_cylin
 from scipy.linalg import norm
 from openpyxl import load_workbook
 from neural_networks.discontinuities import *
+import copy
 
 def compute_q_ranges_segment(model, segment_selected) : 
     # segment_names
@@ -70,14 +71,14 @@ def initialisation_generation(model, q_ranges, muscle_selected, cylinders) :
    for cylinder in cylinders : 
       cylinder.compute_seg_index_and_gcs_seg_0(q_initial, model, segment_names)
    
-   origin_muscle, insertion_muscle = update_points_position(model, muscle_index, q_initial) # global initial
+   origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q_initial) # global initial
    points = [origin_muscle, insertion_muscle]
    for k in range(len(cylinders)) : 
       cylinders[k].compute_new_radius(points[k])
    
    return muscle_index
 
-def update_points_position(model, muscle_index, q) : 
+def update_points_position(model, point_index, muscle_index, q) : 
    # Updates
    # en gros, on fait un update par rapport à un muscle avec muscle index et le q doit correspondre
    model.updateMuscles(q) 
@@ -86,14 +87,15 @@ def update_points_position(model, muscle_index, q) :
    model.UpdateKinematicsCustom(q)
 
    # Find coordinates of origin point (P) and insertion point (S)
-   origin_muscle = mus.musclesPointsInGlobal(model, q)[0].to_array() 
-   insertion_muscle = mus.musclesPointsInGlobal(model, q)[-1].to_array() 
+   points = []
+   for k in (point_index) : 
+      points.append(mus.musclesPointsInGlobal(model, q)[k].to_array()) 
    
    # ces points sont dans le repere global (verifiee)
    # cela revient à faire :
    # switch_frame([0.016, -0.0354957, 0.005], gcs_seg))
    
-   return origin_muscle, insertion_muscle
+   return (points[k] for k in range (len(points)))
        
 
 def find_index_muscle(muscle, muscle_names):
@@ -147,11 +149,12 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
       cylinder.compute_new_matrix_segment(model, q) 
       cylinder.compute_matrix_rotation_zy(matrix_rot_zy) 
          
-   for k in range(2) : 
+   for k in range(len(cylinders)) : 
       cylinders[k].compute_new_radius(points[k])
    
    if (len(cylinders) == 0) :
       # Muscle path is straight line from origin_point to final_point
+      # Warning : is just a straight line, don't pass by via point !
       segment_length = norm(np.array(origin_muscle_rot) - np.array(insertion_muscle_rot))
       points_not_in_cylinder = []
       bool_inactive = []

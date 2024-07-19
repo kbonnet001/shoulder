@@ -1,10 +1,11 @@
 import torch
 
 class ModelHyperparameters:
-    def __init__(self, model_name, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, L2_penalty, 
+    def __init__(self, model_name, mode, batch_size, n_layers, n_nodes, activations, activation_names, L1_penalty, L2_penalty, 
                  learning_rate, num_epochs, criterion, dropout_prob, use_batch_norm):
         
         self.model_name = model_name
+        self.mode = mode
         self.batch_size = batch_size
         self.n_layers = n_layers
         self.n_nodes = n_nodes
@@ -33,7 +34,7 @@ class ModelHyperparameters:
         self.criterion = criterion_params
 
     def __str__(self):
-        return (f"ModelConfig : \n- model_name={self.model_name},\n- batch_size={self.batch_size},\n"
+        return (f"ModelConfig : \n- model_name={self.model_name},\n- mode={self.mode},\n- batch_size={self.batch_size},\n"
                 f"- n_layers={self.n_layers},\n- n_nodes={self.n_nodes},\n- activations={self.activations},\n"
                 f"- L1_penalty={self.L1_penalty},\n- L2_penalty={self.L2_penalty},\n- learning_rate={self.learning_rate},\n"
                 f"- num_epochs={self.num_epochs},\n- optimizer={self.optimizer},\n- criterion={self.criterion},\n" 

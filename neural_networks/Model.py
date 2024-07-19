@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class Model(nn.Module):
-    def __init__(self, input_size, output_size, n_layers, n_nodes, activations, L1_penalty, L2_penalty, use_batch_norm, dropout_prob):
+    def __init__(self, input_size, output_size, n_nodes, activations, L1_penalty, L2_penalty, use_batch_norm, dropout_prob):
         super(Model, self).__init__()
         layers = []
         in_features = input_size

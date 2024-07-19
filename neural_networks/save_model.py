@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
 from neural_networks.Model import Model
-from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames
+from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames_muscle, plot_predictions_and_targets_from_filenames_dlmt_dq
 from neural_networks.file_directory_operations import create_and_save_plot
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 import json
+from neural_networks.Mode import Mode
    
     
 def save_model(model, input_size, output_size, Hyperparams, file_path) : 
@@ -22,7 +23,6 @@ def save_model(model, input_size, output_size, Hyperparams, file_path) :
         'input_size': input_size,
         'output_size': output_size,
         'activation': Hyperparams.activation_names, 
-        'n_layers': Hyperparams.n_layers,
         'n_nodes': Hyperparams.n_nodes,
         'L1_penalty': Hyperparams.L1_penalty,
         'L2_penalty': Hyperparams.L2_penalty,
@@ -34,7 +34,8 @@ def save_model(model, input_size, output_size, Hyperparams, file_path) :
         json.dump(config, f)
     torch.save(model.state_dict(), file_path)
     
-def visualize_prediction(q_ranges, train_loader, val_loader, test_loader, file_path, folder_name_for_prediction) : 
+def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, test_loader, file_path, 
+                         folder_name_for_prediction) : 
     
     """Load saved model and plot-save visualisation 
     
@@ -53,7 +54,6 @@ def visualize_prediction(q_ranges, train_loader, val_loader, test_loader, file_p
         input_size=config['input_size'],
         output_size=config['output_size'],
         activations=activations,
-        n_layers=config['n_layers'], 
         n_nodes=config['n_nodes'],
         L1_penalty=config['L1_penalty'],
         L2_penalty=config['L2_penalty'],
@@ -64,8 +64,11 @@ def visualize_prediction(q_ranges, train_loader, val_loader, test_loader, file_p
     model.load_state_dict(torch.load(f"{file_path}/model"))
     model.eval()
     
-    plot_predictions_and_targets(model, train_loader, "Train loader", 100, file_path, "train_loader")
-    plot_predictions_and_targets(model, val_loader, "Validation loader", 100, file_path, "val_loader")
-    plot_predictions_and_targets(model, test_loader, "Test loader", 100, file_path, "test_loader")
+    plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
+    plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
+    plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
     
-    plot_predictions_and_targets_from_filenames(model, q_ranges, file_path, folder_name_for_prediction, 100)
+    if mode == Mode.MUSCLE : 
+        plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name_for_prediction, 100)
+    else  : # du coup Mode.DLMT_DQ
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name_for_prediction, 100)

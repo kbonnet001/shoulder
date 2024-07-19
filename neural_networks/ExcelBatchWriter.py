@@ -12,29 +12,31 @@ class ExcelBatchWriter:
         if not os.path.exists(filename):
             data = {
                 "muscle_selected": [],
-                **{self.q_ranges_names_with_dofs[k]: [] for k in range(len(self.q_ranges_names_with_dofs))},
+                **{f"q_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
                 "origin_muscle_x": [],
                 "origin_muscle_y": [],
                 "origin_muscle_z": [],
                 "insertion_muscle_x": [],
                 "insertion_muscle_y": [],
                 "insertion_muscle_z": [],
-                "segment_length": []
+                "segment_length": [],
+                **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
                  }
             pd.DataFrame(data).to_excel(filename, index=False)
 
-    def add_line(self, muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length):
+    def add_line(self, muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length, dlmt_dq):
         # Create a new line with the provided data
         new_line = {
             "muscle_selected": muscle_selected_index,
-            **{self.q_ranges_names_with_dofs[k]: q[k] for k in range(len(q))},
+            **{f"q_{self.q_ranges_names_with_dofs[k]}":  q[k] for k in range(len(q))},
             "origin_muscle_x": origin_muscle[0],
             "origin_muscle_y": origin_muscle[1],
             "origin_muscle_z": origin_muscle[2],
             "insertion_muscle_x": insertion_muscle[0],
             "insertion_muscle_y": insertion_muscle[1],
             "insertion_muscle_z": insertion_muscle[2],
-            "segment_length": segment_length
+            "segment_length": segment_length, 
+            **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": dlmt_dq[k] for k in range(len(dlmt_dq))},
         }
         
         # Add the new line to the buffer
