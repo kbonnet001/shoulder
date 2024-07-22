@@ -189,6 +189,7 @@ criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 p_dropout=0.2
 use_batch_norm=True
 
+num_datas_for_dataset = 100
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -199,7 +200,7 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_lay
 print(Hyperparameter_essai1)
 
 # # one model per muscle !
-main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
+main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
                         file_path=Hyperparameter_essai1.model_name, with_noise = True, plot_preparation=True, plot=True, save=True) 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
