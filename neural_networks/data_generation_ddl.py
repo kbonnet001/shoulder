@@ -10,6 +10,8 @@ import random
 from wrapping.lever_arm import compute_dlmt_dq, plot_lever_arm
 import os
 from neural_networks.other import compute_row_col
+from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
+import pandas as pd
 
 def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    
@@ -336,10 +338,11 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    writer.close()
    writer_datas_ignored.close()
    
-   writer.del_lines(dataset_size)
+   if dataset_size != 0 :
+      writer.del_lines(dataset_size)
    return None
 
-def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, filename, num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph = False ) : 
+def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, dataset_size_noise, filename, num_points = 50, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph = False ) : 
    
    """Generate datas for all muscles selected, one file of "dataset_size" lines per muscle
    
@@ -350,7 +353,8 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
    - cylinders : List of list of muscle's cylinder (0, 1 or 2 cylinders)
    - model : model 
-   - dataset_size : int, number of data we would like
+   - dataset_size : int, number of data we would like, choose "0" to don't add more datas (pure)
+   - dataset_size_noise : int, number of data with noise we would like, choose "0" to don't add more datas (noise)
    - filename : string, name of the file to create
    - num_points : int (default = 50) number of point to generate per mvt
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
@@ -364,12 +368,40 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, fi
    
    for k in range(len(muscles_selected)) : 
       create_directory(f"{directory}/{muscles_selected[k]}")
-      data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
+      if dataset_size != 0 :
+         data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
                                                    f"{directory}/{cylinders[k][0].muscle}", num_points, 
                                                    plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
-      q_fixed = np.array([0.0 for k in range (8)])
+      
+      if dataset_size_noise != 0 :
+         data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.xlsx", dataset_size_noise)
+      
+      # Plot visualization
+      q_fixed = np.array([0.0 for _ in range (8)])
       
       plot_all_q_variation(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
                      plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}/")
       
       plot_lever_arm(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}", 100)
+
+
+def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, batch_size = 1000, noise_std_dev = 0.01) :
+   """
+   Create datas with noise un add on file _with_noise.xlsx
+   
+   INPUTS : 
+   - model : biorbd model
+   - excel_file_path : string, path of the original file with all pure datas (= without noise and not ignored)
+   - dataset_size_noise : int, num of lines to have in the file
+   - batch_size : (default = 1000) int, size of batch
+      PLEASE, choose an appropriate value, len(df) must be a multiple of batch_size to add the correct num of row 
+   - noise_std-dev : (default = 0.01) float, standard deviation of added noise 
+   
+   OUTPUT : 
+   None, create or complete a file [...]_with_noise.xlsx
+   """
+   _, q_ranges_names_with_dofs = compute_q_ranges(model)
+   
+   writer = ExcelBatchWriterWithNoise(f"{excel_file_path.replace(".xlsx", "")}_with_noise.xlsx", q_ranges_names_with_dofs,
+                                      batch_size, noise_std_dev)
+   writer.augment_data_with_noise_batch(dataset_size_noise)

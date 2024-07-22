@@ -10,7 +10,7 @@ from pyorerun import LiveModelAnimation
 
 from neural_networks.data_generation import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles
+from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
 from wrapping.lever_arm import plot_lever_arm
@@ -95,7 +95,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 5000, "datas_with_dlmt_dq", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 5000, 1000, "datas_with_dlmt_dq", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
@@ -171,7 +171,7 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # activation_names = ["GELU"]
 
 model_name="essai_dlmt" #0 meilleur
-mode = Mode.DLMT_DQ
+mode = Mode.MUSCLE
 batch_size=32
 n_layers=1
 n_nodes=[12]
@@ -199,8 +199,8 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_lay
 print(Hyperparameter_essai1)
 
 # # one model per muscle !
-# main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
-#                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
+main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
+                        file_path=Hyperparameter_essai1.model_name, with_noise = True, plot_preparation=True, plot=True, save=True) 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
 
@@ -235,12 +235,13 @@ q_initial = np.array([0.0 for k in range (8)])
 
 
 
-# Exemple d'utilisation
-excel_file_path = 'data_generation_datas_with_dlmt_dq/PECM2/PECM2.xlsx'
-number_of_rows_to_add_per_batch = 100  # Le nombre de lignes à ajouter par batch
-batch_size = 1000  # Taille de chaque batch
-noise_std_dev = 0.01  # Écart type du bruit ajouté
+# # Exemple d'utilisation
+# excel_file_path = 'data_generation_datas_with_dlmt_dq/PECM2/PECM2.xlsx'
+# number_of_rows_to_add_per_batch = 100  # Le nombre de lignes à ajouter par batch
+# batch_size = 1000  # Taille de chaque batch
+# noise_std_dev = 0.01  # Écart type du bruit ajouté
 
-writer = ExcelBatchWriterWithNoise(excel_file_path, batch_size, noise_std_dev)
-writer.augment_data_with_noise_batch(number_of_rows_to_add_per_batch)
+# writer = ExcelBatchWriterWithNoise(excel_file_path, batch_size, noise_std_dev)
+# writer.augment_data_with_noise_batch(number_of_rows_to_add_per_batch)
 
+# data_for_learning_with_noise(model_biorbd, 'data_generation_datas_with_dlmt_dq/PECM2/PECM2.xlsx', dataset_size_noise = 1000, batch_size = 1000, noise_std_dev = 0.01)
