@@ -17,6 +17,7 @@ from wrapping.lever_arm import plot_lever_arm
 from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
+from neural_networks.Timer import measure_time
 
 #################### 
 # Code des tests
@@ -199,9 +200,13 @@ Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_lay
                                              use_batch_norm)
 print(Hyperparameter_essai1)
 
-# # one model per muscle !
-main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", muscle_name = "PECM2", retrain=True, 
-                        file_path=Hyperparameter_essai1.model_name, with_noise = True, plot_preparation=True, plot=True, save=True) 
+# one model per muscle !
+
+main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", 
+                        muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = True, 
+                        plot_preparation=True, plot=True, save=True) 
+
+
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
 
@@ -231,18 +236,3 @@ q_initial = np.array([0.0 for k in range (8)])
 # compute_lmt(model, q, cylinders_PECM2, muscle_index, plot=False, plot_cadran = False)
 
 # plot_lever_arm(model_biorbd, q_initial, cylinders_PECM2, muscle_selected, "One_cylinder_wrapping_PECM2_T",100)
-
-
-
-
-
-# # Exemple d'utilisation
-# excel_file_path = 'data_generation_datas_with_dlmt_dq/PECM2/PECM2.xlsx'
-# number_of_rows_to_add_per_batch = 100  # Le nombre de lignes à ajouter par batch
-# batch_size = 1000  # Taille de chaque batch
-# noise_std_dev = 0.01  # Écart type du bruit ajouté
-
-# writer = ExcelBatchWriterWithNoise(excel_file_path, batch_size, noise_std_dev)
-# writer.augment_data_with_noise_batch(number_of_rows_to_add_per_batch)
-
-# data_for_learning_with_noise(model_biorbd, 'data_generation_datas_with_dlmt_dq/PECM2/PECM2.xlsx', dataset_size_noise = 1000, batch_size = 1000, noise_std_dev = 0.01)
