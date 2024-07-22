@@ -141,7 +141,7 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
 
     return X_tensor, y_tensor, y_labels
 
-def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, with_noise = True, plot=False):
+def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, muscle_name, with_noise = True, plot=False):
   """Create loaders : 
     80 % : train (80%) + validation (20%)
     20% : test
@@ -149,6 +149,7 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, with_noise = 
     - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user
     - q_ranges : [q] q ranges of all q selected
     - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
+    - with_noise : (default = True), bool, true to put datas with noise in dataset for learning
     - plot : (default = False) bool, True to show datas distribution
     
     OUTPUTS : 
@@ -157,17 +158,14 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, with_noise = 
     - test_loader : DataLoader, data testing (20%)
     - input_size : int, size of input X
     - output_size : int, size of output y (WARNING, always 1)"""
-  
-  filenames = sorted([filename for filename in os.listdir(folder_name)])
-  # filenames[0] --> muscle
-  # filenames[1] --> muscle datas ignored (could not exist...)
     
-  if not (filenames[0].endswith(".xlsx") or filenames[0].endswith(".xls")):
+  file_path = os.path.join(folder_name, f"{muscle_name}.xlsx")
+    
+  if not os.path.exists(file_path):
       print("Error : File need extension .xlsx or .xls\n\
         If the file exist, maybe it's open in a window. Please close it and try again.")
       sys.exit(1)
   else : 
-      file_path = os.path.join(folder_name, filenames[0])
       print(f"Processing file: {file_path}")
 
       all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
@@ -176,12 +174,24 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, with_noise = 
       X_tensors=[X_tensor]
       y_tensors=[y_tensor]
       
+      # if Hyperparams.mode == Mode.DLMT_DQ : 
+      #   output_size = y_tensor.size()[1]
+      # else : # default mode == MUSCLE
+      #   output_size = 1 # warning if y tensor change
       input_size = len(X_tensor[0])
-      if Hyperparams.mode == Mode.DLMT_DQ : 
+      if len(y_tensor.size()) == 2 :
         output_size = y_tensor.size()[1]
-      else : # default mode == MUSCLE
-        output_size = 1 # warning if y tensor change
+      else : 
+        output_size = 1
 
+      # datas with noise   
+      if with_noise :
+        if os.path.exists(f"{file_path.replace(".xlsx", "_with_noise.xlsx")}"):
+          X_tensor_with_noise, y_tensor_with_noise, _ = \
+            data_preparation_create_tensor(Hyperparams.mode, f"{file_path.replace(".xlsx", "_with_noise.xlsx")}", 
+                                           0, all_possible_categories)
+      
+      # if plot
       if plot : 
         if os.path.exists(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx"):
           X_tensor_ignored, y_tensor_ignored, _ = \
@@ -189,19 +199,16 @@ def create_loaders_from_folder(Hyperparams, q_ranges, folder_name, with_noise = 
                                            0, all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
-      if plot or with_noise :    
-        if os.path.exists(f"{file_path.replace(".xlsx", "")}_with_noise.xlsx"):
-          X_tensor_with_noise, y_tensor_with_noise, _ = \
-            data_preparation_create_tensor(Hyperparams.mode, f"{file_path.replace(".xlsx", "")}_with_noise.xlsx", 
-                                           0, all_possible_categories)
+
+        if with_noise : 
           X_tensors.append(X_tensor_with_noise)
           y_tensors.append(y_tensor_with_noise)
           
-        plot_datas_distribution(filenames[0],folder_name, q_ranges, X_tensors, y_tensors, y_labels)
+        plot_datas_distribution(file_path,folder_name, q_ranges, X_tensors, y_tensors, y_labels)
       
       # X_tensor = F.normalize(X_tensor)  # Normalize each row (sample) to have unit norm
       
-      if with_noise and os.path.exists(f"{file_path.replace(".xlsx", "")}_with_noise.xlsx"): 
+      if with_noise and os.path.exists(f"{file_path.replace(".xlsx", "_with_noise.xlsx")}"): 
         dataset = MuscleDataset(torch.cat((X_tensor, X_tensor_with_noise), dim=0), torch.cat((y_tensor, y_tensor_with_noise), dim=0))
       else : 
         dataset = MuscleDataset(X_tensor, y_tensor)
