@@ -13,7 +13,7 @@ from neural_networks.ModelHyperparameters import ModelHyperparameters
 from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
-from wrapping.lever_arm import plot_lever_arm
+from wrapping.musclesLengthJacobian import plot_lever_arm
 from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
@@ -202,9 +202,9 @@ print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", 
-                        muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = True, 
-                        plot_preparation=False, plot=True, save=True) 
+# main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", 
+#                         muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = True, 
+#                         plot_preparation=False, plot=True, save=True) 
 
 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
@@ -236,3 +236,6 @@ q_initial = np.array([0.0 for k in range (8)])
 # compute_lmt(model, q, cylinders_PECM2, muscle_index, plot=False, plot_cadran = False)
 
 # plot_lever_arm(model_biorbd, q_initial, cylinders_PECM2, muscle_selected, "One_cylinder_wrapping_PECM2_T",100)
+
+from wrapping.muscleForces import test_muscle_force
+test_muscle_force()

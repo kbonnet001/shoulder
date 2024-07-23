@@ -7,7 +7,7 @@ from neural_networks.plot_visualisation import plot_mvt_discontinuities_in_red
 from neural_networks.file_directory_operations import create_directory, create_and_save_plot
 import copy
 import random
-from wrapping.lever_arm import compute_dlmt_dq, plot_lever_arm
+from wrapping.musclesLengthJacobian import compute_dlmt_dq, plot_lever_arm
 import os
 from neural_networks.other import compute_row_col
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
