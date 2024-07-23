@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from neural_networks.Model import Model
-from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames_muscle, plot_predictions_and_targets_from_filenames_dlmt_dq
+from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames_muscle, plot_predictions_and_targets_from_filenames_dlmt_dq, plot_predictions_and_targets_from_filenames_lmt_dlmt_dq
 from neural_networks.file_directory_operations import create_and_save_plot
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 import json
@@ -68,7 +68,10 @@ def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, tes
     plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
     plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
     
-    if mode == Mode.MUSCLE : 
-        plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name_for_prediction, 100)
-    else  : # du coup Mode.DLMT_DQ
+    if mode == Mode.DLMT_DQ : 
         plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name_for_prediction, 100)
+    elif mode == Mode.MUSCLE_DLMT_DQ : 
+        plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name_for_prediction, 100)
+    else : # Muscle
+        plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name_for_prediction, 100)
+        

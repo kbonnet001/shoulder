@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, random_split
 import sklearn
 from neural_networks.MuscleDataset import MuscleDataset
 from neural_networks.file_directory_operations import create_and_save_plot
-from neural_networks.other import compute_row_col, compute_num_bins
+from neural_networks.other import *
 from neural_networks.Mode import Mode
 import torch.nn.functional as F
 import time
@@ -121,6 +121,16 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
       selected_columns = [col for col in df_muscle_datas.columns if col.startswith('dlmt_dq_')]
       y = df_muscle_datas.loc[:, selected_columns].values
       y_labels = selected_columns
+    
+    elif mode == Mode.MUSCLE_DLMT_DQ : 
+      X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
+      X = np.delete(X, (0, -1, -2, -3, -4, -5, -6), axis=1) # on enleve les coordonnes de origin et insertion
+    
+      # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
+      selected_columns = [col for col in df_muscle_datas.columns if col.startswith('dlmt_dq_')]
+      selected_columns.insert(0, 'segment_length')
+      y = df_muscle_datas.loc[:, selected_columns].values
+      y_labels = selected_columns
       
     else : # defaut mode = MUSCLE
       X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
@@ -200,9 +210,9 @@ def create_loaders_from_folder(Hyperparams, q_ranges, num_datas_for_dataset, fol
           y_tensors.append(y_tensor_with_noise)
           graph_labels.append("datas with noise")
         
-        if os.path.exists(f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx"):
+        if os.path.exists(f"{file_path.replace(".xlsx", "_datas_ignored.xlsx")}"):
           X_tensor_ignored, y_tensor_ignored, _ = \
-            data_preparation_create_tensor(Hyperparams.mode, f"{file_path.replace(".xlsx", "")}_datas_ignored.xlsx", 
+            data_preparation_create_tensor(Hyperparams.mode, f"{file_path.replace(".xlsx", "_datas_ignored.xlsx")}", 
                                            0, all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
@@ -345,9 +355,17 @@ def plot_datas_distribution(muscle_name, files_path, q_ranges, X_tensors, y_tens
         x_min = min(y_plot[0])
         x_max = max(y_plot[0])
         num_bins = compute_num_bins(y_plot[0], x_max, x_min)
+        # num_bins = sturges_rule(y_plot[0])
+        # num_bins = rice_rule(y_plot[0])
+        # num_bins = scott_rule(y_plot[0].numpy())
+        
+        # if num_bins < 100 : 
+        #   num_bins = num_bins // 2
+        # if num_bins > 100 : 
+        #   num_bins = num_bins * 2
         # num_bins = int((abs(x_max) + abs(x_min)) * 1000)
     
-        axs[row_j, col_j].hist(y_plot, bins=500, alpha=0.5, stacked=True, 
+        axs[row_j, col_j].hist(y_plot, bins=num_bins, alpha=0.5, stacked=True, 
                             label=graph_labels)
         axs[row_j, col_j].set_xlim([x_min, x_max])
         axs[row_j, col_j].set_xlabel('Value')

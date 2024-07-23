@@ -1,5 +1,6 @@
 from enum import Enum
 
 class Mode(Enum):
-    MUSCLE = 1
-    DLMT_DQ = 2
+    MUSCLE = 1 # muscle only
+    DLMT_DQ = 2 # lever arm dlmt_dq only
+    MUSCLE_DLMT_DQ = 3 # muscle and lever arm
