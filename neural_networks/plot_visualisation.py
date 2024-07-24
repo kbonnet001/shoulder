@@ -22,6 +22,20 @@ def mean_distance(predictions, targets):
     distance = torch.mean(torch.abs(predictions - targets))
     return distance.item()
 
+def compute_pourcentage_error(predictions, targets) : 
+    """
+    Compute mean distance beetween predictions and targets
+
+    INPUTS :
+    - predictions (torch.Tensor): Model's predictions 
+    - targets (torch.Tensor): Targets
+
+    OUPUT : 
+        float: mean pourcentage of error predictions
+    """
+    error_pourcentage = torch.mean((torch.abs(predictions - targets)) / torch.abs(predictions))*100
+    return error_pourcentage.item()
+
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path):
     """Plot loss and accuracy (train and validation)
 
@@ -98,13 +112,14 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     
     if num_cols == 1 and num_rows == 1 : 
         acc = mean_distance(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
+        error_pourcentage = compute_pourcentage_error(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
         
         plt.figure(figsize=(10, 5))
         plt.plot(targets[:num], label='True values', marker='o')
         plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
         plt.xlabel('Sample')
         plt.ylabel(f"{y_labels[0]}")
-        plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}", fontweight='bold')
+        plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%", fontweight='bold')
         plt.legend()
     
     else :  
@@ -117,12 +132,13 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
             index = k if num_rows == 1 or num_cols == 1 else (row, col)
             
             acc = mean_distance(torch.tensor([prediction[k] for prediction in predictions]), torch.tensor([target[k] for target in targets]))
-
+            error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[k] for prediction in predictions]), torch.tensor([target[k] for target in targets]))
+        
             axs[index].plot([target[k] for target in targets][:num], label='True values', marker='^', markersize=2)
             axs[index].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--', markersize=2)
             axs[index].set_xlabel('Sample')
             axs[index].set_ylabel("Value")
-            axs[index].set_title(f'{y_labels[k]}, acc = {acc:.6f}',fontsize='smaller')
+            axs[index].set_title(f'{y_labels[k]}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%',fontsize='smaller')
             axs[index].legend()
         
         fig.suptitle(f"Predictions and targets - {string_loader}", fontweight='bold')
@@ -149,10 +165,11 @@ def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, fi
         
         predictions, targets = get_predictions_and_targets(model, loaders[q_index])
         acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
+        error_pourcentage = compute_pourcentage_error(torch.tensor(predictions), torch.tensor(targets))
 
         axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}",fontsize='smaller')
+        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
         axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
         axs[row, col].legend()
@@ -184,19 +201,21 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
         
         if row_fixed == 1 and col_fixed == 1 : 
             acc = mean_distance(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
-                
+            error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
+            
             plt.figure(figsize=(10, 5))
             plt.plot(targets[:num], label='True values', marker='o')
             plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
             plt.xlabel('q variation')
             plt.ylabel(f"{y_labels[0]}")
-            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}", fontweight='bold')
+            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%", fontweight='bold')
             plt.legend()
         
         else : 
             # puis on fait chaque plot de la figure
             for i in range (len(y_labels)) : 
                 acc = mean_distance(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
+                error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
                 
                 # marche mais c,est moche :/
                 row = i // 3
@@ -204,7 +223,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
             
                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
                 axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}",fontsize='smaller')
+                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
                 axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
                 axs[row, col].set_ylabel(f'dlmt_dq{i}',fontsize='smaller')
                 axs[row, col].legend()
@@ -234,10 +253,11 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
         
         predictions, targets = get_predictions_and_targets(model, loaders[q_index])
         acc = mean_distance(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
+        error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
 
         axs[row, col].plot([target[0] for target in targets][:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot([prediction[0] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)    
-        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}",fontsize='smaller')
+        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
         axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
         axs[row, col].legend()
@@ -255,23 +275,24 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
         predictions, targets = get_predictions_and_targets(model, loaders[q_index])
-        # acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
         
         if row_fixed == 1 and col_fixed == 1 : 
             acc = mean_distance(torch.tensor([prediction[1] for prediction in predictions]), torch.tensor([target[1] for target in targets]))
-                
+            error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[1] for prediction in predictions]), torch.tensor([target[1] for target in targets]))
+            
             plt.figure(figsize=(10, 5))
             plt.plot(targets[:num], label='True values', marker='o')
             plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
             plt.xlabel('q variation')
             plt.ylabel(f"{y_labels[1]}")
-            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}", fontweight='bold')
+            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%", fontweight='bold')
             plt.legend()
         
         else : 
             # puis on fait chaque plot de la figure
             for i in range (len(y_labels)-1) : 
                 acc = mean_distance(torch.tensor([prediction[i+1] for prediction in predictions]), torch.tensor([target[i+1] for target in targets]))
+                error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[i+1] for prediction in predictions]), torch.tensor([target[i+1] for target in targets]))
                 
                 # marche mais c,est moche :/
                 row = i // 3
@@ -279,7 +300,7 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
             
                 axs[row, col].plot([target[i+1] for target in targets][:num], label='True values', marker='o', markersize=2)
                 axs[row, col].plot([prediction[i+1] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}",fontsize='smaller')
+                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
                 axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
                 axs[row, col].set_ylabel(f'dlmt_dq{i}',fontsize='smaller')
                 axs[row, col].legend()
