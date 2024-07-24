@@ -66,7 +66,7 @@ def initialisation_generation(model, q_ranges, muscle_selected, cylinders) :
 
    # q_initial = np.array([0.,-0.01,0.,0.05])
    # q_initial = np.array([0.0, 0.0, 0.0, 0.0]) 
-   q_initial = np.array([0.0 for i in range (len(q_ranges))])
+   q_initial = np.array([0.0 for i in range(len(q_ranges))])
    
    for cylinder in cylinders : 
       cylinder.compute_seg_index_and_gcs_seg_0(q_initial, model, segment_names)

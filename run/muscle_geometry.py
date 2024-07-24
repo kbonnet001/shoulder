@@ -18,6 +18,8 @@ from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
 from neural_networks.Timer import measure_time
+from neural_networks.casadi import load_model_to_casadi, get_weights_biases, pytorch_to_casadi
+from neural_networks.save_model import load_saved_model
 
 #################### 
 # Code des tests
@@ -171,11 +173,11 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-model_name="essai_muscle_dlmt_dq_10" #0 meilleur
+model_name="msucle_dlnt_dq" #0 meilleur
 mode = Mode.MUSCLE_DLMT_DQ
-batch_size=64
+batch_size=32
 n_layers=1
-n_nodes=[12]
+n_nodes=[25]
 activations=[nn.GELU()]
 activation_names = ["GELU"]
 
@@ -190,7 +192,7 @@ criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 p_dropout=0.2
 use_batch_norm=True
 
-num_datas_for_dataset = 10
+num_datas_for_dataset = 10000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -202,9 +204,9 @@ print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", 
-                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = True, 
-                        plot_preparation=False, plot=True, save=True) 
+# main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", 
+#                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+#                         plot_preparation=False, plot=True, save=True) 
 
 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
@@ -237,5 +239,39 @@ q_initial = np.array([0.0 for k in range (8)])
 
 # plot_lever_arm(model_biorbd, q_initial, cylinders_PECM2, muscle_selected, "One_cylinder_wrapping_PECM2_T",100)
 
-# from wrapping.muscleForces import test_muscle_force
-# test_muscle_force()
+from wrapping.muscleForces import test_muscle_force
+test_muscle_force()
+
+# file_path_model = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_for_casadi'
+# input_shape = 8
+
+# casadi_model_test = load_model_to_casadi(file_path_model, input_shape)
+
+# input_data = ""
+# output_data = casadi_model_test(input_data)
+
+
+# Instantiate the model
+# file_path_model = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_for_casadi'
+# model = load_saved_model(file_path_model)
+
+# # Define the input shape
+# input_shape = (1,8)
+
+# # Convert the PyTorch model to a CasADi function
+# casadi_model = pytorch_to_casadi(model, input_shape)
+
+
+
+# file_path_model = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_for_casadi'
+# model = load_saved_model(file_path_model)
+
+# # Extraire les poids et les biais
+# weights, biases = get_weights_biases(model)
+
+# # Définir la fonction analytique dans CasADi
+# input_size = 8
+# output_size = 1
+# activations = ['GELU']
+# model_func = pytorch_to_casadi(weights, biases, activations, input_size, output_size)
+
