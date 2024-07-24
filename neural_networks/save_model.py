@@ -9,14 +9,16 @@ from neural_networks.Mode import Mode
    
     
 def save_model(model, input_size, output_size, Hyperparams, file_path) : 
-    """Save a model with its parameters and hyperparameters
+    """
+    Save a model with its parameters and hyperparameters
     
     INPUTS : 
     - model : model to save
     - input_size : int, size of input X
     - output_size : int, size of output y
     - Hyperparams : ModelHyperparameters, all hyperparameter 
-    - file_path : string, path """
+    - file_path : string, path 
+    """
     
     # Save model configuation
     config = {
@@ -30,20 +32,24 @@ def save_model(model, input_size, output_size, Hyperparams, file_path) :
         'dropout_prob': Hyperparams.dropout_prob
     }
 
-    with open('model_config.json', 'w') as f:
+    with open(f'{file_path}/model_config.json', 'w') as f:
         json.dump(config, f)
-    torch.save(model.state_dict(), file_path)
+    torch.save(model.state_dict(), f"{file_path}/model")
+
+def load_saved_model(file_path) : 
     
-def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, test_loader, file_path, 
-                         folder_name_for_prediction) : 
+    """
+    Load a saved model from file_path
     
-    """Load saved model and plot-save visualisation 
+    INPUT : 
+    - file_path : string, path where the file 'model_config.json' of the model could be find
     
-    INPUTS 
+    OUTPUT : 
+    - model : model loaded in eval mode
     """
     
     # Charger la configuration du modèle
-    with open('model_config.json', 'r') as f:
+    with open(f'{file_path.replace("/model", "")}/model_config.json', 'r') as f:
         config = json.load(f)
 
     # Recréer l'activation
@@ -63,6 +69,27 @@ def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, tes
 
     model.load_state_dict(torch.load(f"{file_path}/model"))
     model.eval()
+
+    return model
+    
+def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, test_loader, file_path, 
+                         folder_name_for_prediction) : 
+    
+    """
+    Load saved model and plot-save visualisations 
+    
+    INPUTS 
+    - mode : Mode
+    - q_ranges : array, range of each qi (min,max)
+    - y_labels : list string, labels of each type value in exit y
+    - train_loader : DataLoader, data trainning (80% of 80%)
+    - val_loader : DataLoader, data validation (20% of 80%)
+    - test_loader : DataLoader, data testing (20%)
+    - file_path : string, path where the file 'model_config.json' of the model could be find
+    - folder_name_for_prediction : string, path where files of folder 'plot_all_q_variation_' could be find
+    """
+    
+    model = load_saved_model(file_path)
     
     plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
     plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
@@ -74,4 +101,4 @@ def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, tes
         plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name_for_prediction, 100)
     else : # Muscle
         plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name_for_prediction, 100)
-        
+

@@ -181,7 +181,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
         
     # Save model
     if save : 
-        save_model(model, input_size, output_size, Hyperparams, f"{file_path}/model")
+        save_model(model, input_size, output_size, Hyperparams, f"{file_path}")
     
     return model, val_loss, val_acc
 
