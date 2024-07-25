@@ -23,6 +23,8 @@ class ExcelBatchWriterWithNoise:
                 "insertion_muscle_z": [],
                 "segment_length": [],
                 **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
+                "muscle_force": [],
+                "torque": []
                  }
             pd.DataFrame(data).to_excel(filename, index=False)
         

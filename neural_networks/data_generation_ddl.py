@@ -7,7 +7,8 @@ from neural_networks.plot_visualisation import plot_mvt_discontinuities_in_red
 from neural_networks.file_directory_operations import create_directory, create_and_save_plot
 import copy
 import random
-from wrapping.musclesLengthJacobian import compute_dlmt_dq, plot_lever_arm
+from wrapping.muscles_length_jacobian import compute_dlmt_dq, plot_lever_arm
+from wrapping.muscle_forces_and_torque import compute_torque, compute_muscle_force_origin_insertion_nul, compute_torque_from_lmt_and_dlmt_dq
 import os
 from neural_networks.other import compute_row_col
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
@@ -36,7 +37,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-   muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   muscle_index = find_index_muscle(model, muscle_selected)
        
    # Limits of q
    min_vals = [row[0] for row in q_ranges]
@@ -55,7 +56,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
       
       # ------------------------------------------------
 
-      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+      segment_length, data_ignored = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
    
       if (data_ignored == False and data_without_error == True) or (data_without_error == False) : 
          # Add line to data frame
@@ -92,7 +93,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
 
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-   muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   muscle_index= find_index_muscle(model, muscle_selected)
    
    directory = "plot_one_q_variation_" + filename
    create_directory(directory)
@@ -115,17 +116,19 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
       # ------------------------------------------------
 
       if k in [0,num_points/2, num_points] and plot_limit :
-         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
          
       else :  
-         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
       
       print("segment_length = ", segment_length)
       qs.append(qi)
       segment_lengths.append(segment_length)
-      dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
+      dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+      muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
+      torque = compute_torque(dlmt_dq, muscle_force)
       
-      writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq))
+      writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
 
    plt.plot(qs, segment_lengths, marker='o', linestyle='-', color='b')
    plt.xlabel(f'q{i}')
@@ -166,7 +169,7 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
    create_directory(directory)
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-   muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   muscle_index= find_index_muscle(model, muscle_selected)
    q = copy.deepcopy(q_fixed)
    
    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
@@ -192,17 +195,19 @@ def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, n
          # ------------------------------------------------
 
          if k in [0,num_points/2, num_points] and plot_limit :
-            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
+            segment_length, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
             
          else :  
-            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
+            segment_length, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
          
          qs.append(qi)
          segment_lengths.append(segment_length)
          
-         dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
+         dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+         muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
+         torque = compute_torque(dlmt_dq, muscle_force)
          
-         writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq))
+         writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
       
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities=False)
       
@@ -258,7 +263,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-   muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   muscle_index = find_index_muscle(model, muscle_selected)
+   # muscle_index = initialisation_generation(model, q_ranges, muscle_selected, cylinders)
    writer = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}.xlsx", q_ranges_names_with_dofs, batch_size=100)
    writer_datas_ignored = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
  
@@ -298,16 +304,19 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
       
          origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
          
-         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
+         segment_length, data_ignored = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
          
-         dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
+         dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+         muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
+         torque = compute_torque(dlmt_dq, muscle_force)
+         torque_test = compute_torque_from_lmt_and_dlmt_dq(muscle_index, segment_length, dlmt_dq)
          
          qs.append(qi)
          segment_lengths.append(segment_length)
          datas_ignored.append(data_ignored)
          
          lines.append([muscle_index, copy.deepcopy(q), origin_muscle, insertion_muscle, segment_length, 
-                       copy.deepcopy(dlmt_dq)])
+                       copy.deepcopy(dlmt_dq), muscle_force, torque])
          
       # Find indexes with discontinuties
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)

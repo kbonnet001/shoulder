@@ -13,7 +13,7 @@ from neural_networks.ModelHyperparameters import ModelHyperparameters
 from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
-from wrapping.musclesLengthJacobian import plot_lever_arm
+from wrapping.muscles_length_jacobian import plot_lever_arm
 from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
@@ -98,7 +98,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 5000, 1000, "datas_with_dlmt_dq", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "datas_with_f_and_tau", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
@@ -239,8 +239,57 @@ q_initial = np.array([0.0 for k in range (8)])
 
 # plot_lever_arm(model_biorbd, q_initial, cylinders_PECM2, muscle_selected, "One_cylinder_wrapping_PECM2_T",100)
 
-from wrapping.muscleForces import test_muscle_force
-test_muscle_force()
+# from wrapping.muscle_forces_and_torque import test_muscle_force, compute_muscle_force_origin_insertion_nul, compute_torque
+# from wrapping.muscles_length_jacobian import compute_dlmt_dq
+# test_muscle_force()
+
+# model_one_muscle = m = biorbd.Model("models/oneMuscle.bioMod")
+
+# lmt1 = 0.242617769697736
+# q1 = np.array([-0.0786849353613072, 
+#      0.0714227230995303, 
+#      -0.368636743434153, 
+#      0.480812853033726, 
+#      0.0564779278353358, 
+#      -1.0471975511966, 
+#      -2.38720333455028, 
+#      0.88080460882924])
+
+# dlmt_dq1 = compute_dlmt_dq(model_biorbd, q_ranges, q1, cylinders_PECM2, 0)
+# f1 = compute_muscle_force_origin_insertion_nul(model_one_muscle, 0, lmt1)
+
+# lmt2 = 0.139061503308524
+# q2 = np.array([-0.00533827452890219, 
+#      -0.148900513226347, 
+#      0.0964274708639019, 
+#      -0.0126420791755437, 
+#      0.0695855116103103, 
+#      2.1860248881229, 
+#     -2.15548447226009, 
+#      1.33380777124826])
+
+# dlmt_dq2 = compute_dlmt_dq(model_biorbd, q_ranges, q2, cylinders_PECM2, 0)
+# f2 = compute_muscle_force_origin_insertion_nul(model_one_muscle, 0, lmt2)
+
+# lmt3 = 0.268844328998133
+# q3 = np.array([-0.0546715244277362, 
+#      0.21367517662627, 
+#      -0.361552222464051, 
+#      0.440176189008029, 
+#      0.0606371961599653, 
+#      -1.0471975511966, 
+#     -2.21153422915413, 
+#      1.43189727009164])
+
+# dlmt_dq3 = compute_dlmt_dq(model_biorbd, q_ranges, q3, cylinders_PECM2, 0)
+# f3 = compute_muscle_force_origin_insertion_nul(model_one_muscle, 0, lmt3)
+
+# tau1 = compute_torque(np.array(dlmt_dq1), f1)
+# print("tau = ", tau1)
+# tau2 = compute_torque(np.array(dlmt_dq2), f2)
+# print("tau = ", tau2)
+# tau3 = compute_torque(np.array(dlmt_dq3), f3)
+# print("tau = ", tau3)
 
 # file_path_model = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_for_casadi'
 # input_shape = 8

@@ -56,13 +56,9 @@ def compute_q_ranges(model):
    
    return q_ranges, q_ranges_names_with_dofs
 
-def initialisation_generation(model, q_ranges, muscle_selected, cylinders) :
+def initialisation_generation(model, q_ranges, muscle_index, cylinders) :
    
    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
-
-   # Find index of the muscle selected
-   muscle_names = [model.muscle(i).name().to_string() for i in range(model.nbMuscles())]
-   muscle_index = find_index_muscle(muscle_selected, muscle_names)
 
    # q_initial = np.array([0.,-0.01,0.,0.05])
    # q_initial = np.array([0.0, 0.0, 0.0, 0.0]) 
@@ -75,8 +71,7 @@ def initialisation_generation(model, q_ranges, muscle_selected, cylinders) :
    points = [origin_muscle, insertion_muscle]
    for k in range(len(cylinders)) : 
       cylinders[k].compute_new_radius(points[k])
-   
-   return muscle_index
+
 
 def update_points_position(model, point_index, muscle_index, q) : 
    # Updates
@@ -98,7 +93,7 @@ def update_points_position(model, point_index, muscle_index, q) :
    return (points[k] for k in range (len(points)))
        
 
-def find_index_muscle(muscle, muscle_names):
+def find_index_muscle(model, muscle):
    
    """ Find index of the muscle selected in the name list
    
@@ -109,6 +104,9 @@ def find_index_muscle(muscle, muscle_names):
    OUTPUT : 
    - position : int, position of the muscle in the list"""
 
+   # Find index of the muscle selected
+   muscle_names = [model.muscle(i).name().to_string() for i in range(model.nbMuscles())]
+
    try:
       position = muscle_names.index(muscle) 
       return position
@@ -116,7 +114,7 @@ def find_index_muscle(muscle, muscle_names):
       valid_muscles = ", ".join(muscle_names)
       raise ValueError(f"Invalid muscle name '{muscle}'. You must choose a valid muscle from this list: [{valid_muscles}]")
 
-def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False) :
+def compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False) :
 
    """Compute segment length
    
@@ -135,6 +133,8 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    OUTPUT : 
    - segment_length : length of muscle path """
 
+   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   
    print("on fait l'algo avec celui ci insertion_muscle = ", insertion_muscle)
    # First of all, create a rotation matrix (the model have y and not z for ax up) 
    # Single cylinder algo and double cylinders algo don't work without this change

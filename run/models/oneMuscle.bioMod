@@ -1,0 +1,45 @@
+version 4
+gravity 0 0 0
+
+// SEGMENT DEFINITION
+
+segment base
+endsegment
+
+segment attachment
+	parent base
+	translations z
+endsegment
+
+
+// MUSCLE DEFINITION
+musclegroup base_to_attachment
+	OriginParent    	base
+	InsertionParent 	attachment
+endmusclegroup
+
+	muscle	muscle1 // PECM2
+    	Type	hilldegroote
+    	statetype   degroote
+    	musclegroup	base_to_attachment
+    	OriginPosition	0, 0, 0
+    	InsertionPosition	0, 0, 0
+    	optimalLength	0.14 // PECM2
+    	maximalForce	699.7 // PECM2
+    	tendonSlackLength	0.0955 // PECM2
+    	pennationAngle	0.436332312999 // PECM2
+    	maxVelocity	10
+	endmuscle
+
+	muscle	muscle2
+    	Type	hilldegroote
+    	statetype   degroote
+    	musclegroup	base_to_attachment
+    	OriginPosition	0, 0, 0
+    	InsertionPosition	0, 0, 0
+    	optimalLength	0.1813 // PECM3
+    	maximalForce	446.7 // PECM3
+    	tendonSlackLength	0.0988 // PECM3
+    	pennationAngle	0.436332312999 // PECM3
+    	maxVelocity	10
+	endmuscle
