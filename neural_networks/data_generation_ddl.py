@@ -8,7 +8,7 @@ from neural_networks.file_directory_operations import create_directory, create_a
 import copy
 import random
 from wrapping.muscles_length_jacobian import compute_dlmt_dq, plot_lever_arm
-from wrapping.muscle_forces_and_torque import compute_torque, compute_muscle_force_origin_insertion_nul, compute_torque_from_lmt_and_dlmt_dq
+from wrapping.muscle_forces_and_torque import compute_torque, compute_muscle_force_origin_insertion_nul, compute_torque_from_lmt_and_dlmt_dq, plot_muscle_force_and_torque_q_variation
 import os
 from neural_networks.other import compute_row_col
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
@@ -309,7 +309,6 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
          muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
          torque = compute_torque(dlmt_dq, muscle_force)
-         torque_test = compute_torque_from_lmt_and_dlmt_dq(muscle_index, segment_length, dlmt_dq)
          
          qs.append(qi)
          segment_lengths.append(segment_length)
@@ -388,10 +387,12 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
       # Plot visualization
       q_fixed = np.array([0.0 for _ in range (8)])
       
-      plot_all_q_variation(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
-                     plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}/")
+      # plot_all_q_variation(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
+      #                plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}")
       
-      plot_lever_arm(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}", 100)
+      # plot_lever_arm(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}", 100)
+      
+      plot_muscle_force_and_torque_q_variation(muscles_selected[k], cylinders[k], model, q_fixed, f"{directory}/{cylinders[k][0].muscle}/plot_all_q_variation_", 100)
 
 
 def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, batch_size = 1000, noise_std_dev = 0.01) :

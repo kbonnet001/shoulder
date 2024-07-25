@@ -1,6 +1,10 @@
 import numpy as np
 import biorbd
-from neural_networks.functions_data_generation import update_points_position
+from neural_networks.functions_data_generation import update_points_position, compute_q_ranges, find_index_muscle, compute_segment_length
+from neural_networks.file_directory_operations import *
+import copy
+from wrapping.muscles_length_jacobian import compute_dlmt_dq
+from neural_networks.other import compute_row_col
 
 def compute_muscle_force_origin_insertion_nul(muscle_index, lmt, model_one_muscle = biorbd.Model("models/oneMuscle.bioMod")) :
     """
@@ -45,58 +49,88 @@ def compute_torque_from_lmt_and_dlmt_dq(muscle_index, lmt, dlmt_dq) :
     return compute_torque(dlmt_dq, f)
 
 
-# def compute_torque(dlmt_dq, f):
-#     # Assurez-vous que dlmt_dq est un tableau numpy
-#     dlmt_dq = np.array(dlmt_dq)
-    
-#     # Vérifiez que f est bien un scalaire
-#     if isinstance(f, (int, float)):
-#         # Calculez le torque en utilisant le produit scalaire
-#         torque = np.dot(-dlmt_dq, f)
+def plot_muscle_force_and_torque_q_variation(muscle_selected, cylinders, model, q_fixed, directory_path, num_points = 100) :
+   
+    """Create a directory with all excel files and png of mvt for all q
+
+    INPUTS
+    - muscle_selected : string, name of the muscle selected. 
+                            Please chose an autorized name in this list : 
+                            ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
+                            'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
+    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
+    - model : model 
+    - q_fixed : array 4*1, q fixed, reference
+    - filename : string, name of the file to create
+    - num_points : int (default = 50) number of point to generate per mvt
+    - plot_all : bool (default false), True if we want all plots of point P, S (and Q, G, H and T) with cylinder(s)
+    - plot_limit : bool (default = False), True to plot points P, S (and Q, G, H and T) with cylinder(s) 
+                                                                                            (first, middle and last one)
+    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
+
+    # Create a folder for save excel files and plots
+
+    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+    muscle_index= find_index_muscle(model, muscle_selected)
+    q = copy.deepcopy(q_fixed)
+
+    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+    fig1, axs1 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+    fig2, axs2 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+
+    for q_index in range (len(q_ranges)) : 
+        forces = []
+        torques = []
+        qs = []
         
-#         # Affichez les valeurs pour le débogage
-#         print("dlmt_dq = ", dlmt_dq)
-#         print("f = ", f)
-#         print("np.dot(-dlmt_dq, f) = ", torque)
+        q = copy.deepcopy(q_fixed)
         
-#         return torque
-#     else:
-#         raise ValueError("f doit être un scalaire (int ou float).")
+        for k in range (num_points+1) : 
+            print("plot muscle force and torque, k = ", k)
+            
+            qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
+            q[q_index] = qi
+            
+            print("q = ", q)
 
+            # ------------------------------------------------
+            origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
+            lmt, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False)  
+         
+            
+            dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+            muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, lmt)
+            torque = compute_torque(dlmt_dq, muscle_force)
+
+            qs.append(qi)
+            forces.append(muscle_force)
+            torques.append(torque)
+        
+        row = q_index // 3
+        col = q_index % 3
+
+        axs1[row, col].plot(qs, forces, marker='o', linestyle='-', color='b', markersize=3)
+        axs1[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+        axs1[row, col].set_ylabel('Muscle_force',fontsize='smaller')
+        axs1[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
+        axs1[row, col].set_xticks(qs[::5])
+        axs1[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
+        
+        axs2[row, col].plot(qs, torques, marker='o', linestyle='-', color='b', markersize=3)
+        axs2[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+        axs2[row, col].set_ylabel('Torque',fontsize='smaller')
+        axs2[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
+        axs2[row, col].set_xticks(qs[::5])
+        axs2[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
+
+    fig1.suptitle(f'Muscle Force as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
+    plt.tight_layout()  
+    create_and_save_plot(f"{directory_path}", "muscle_force_q_variation.png")
+    plt.show()
     
-model_one_muscle = biorbd.Model("models/oneMuscle.bioMod")
-def test_muscle_force() : 
-    m = biorbd.Model("models/oneMuscle.bioMod")
-    m2 = biorbd.Model("models/Wu_DeGroote.bioMod")
-    
-    q = np.array([0])
-    qdot = np.array([0])
+    fig2.suptitle(f'Torque as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
+    plt.tight_layout()  
+    create_and_save_plot(f"{directory_path}", "torque_q_variation.png")
+    plt.show()
 
-    mus = m.muscle(0) 
-    mus.position().setInsertionInLocal(np.array([0, 0, 0.20])) # 0.20 a changer par lmt
-    mus.musclesPointsInGlobal(m, q)[0].to_array()
-    m.muscle(1).position().setInsertionInLocal(np.array([0, 0, 0.21]))
-
-    mus2 = m2.muscle(0) 
-    mus2.position().setInsertionInLocal(np.array([0, 0, 0.20])) # 0.20 a changer par lmt
-    mus2.musclesPointsInGlobal(m2, q)[0].to_array()
-
-    states = m.stateSet()
-    for state in states:
-        state.setActivation(1)
-    f = m.muscleForces(states, q, qdot).to_array()
-
-    print(f"f: {f}")
-
-# en gros on aimerait changer la position origin et insertion du muscle pour mettre a 000 et ainsi mettre aue le 
-# z aui change avec le bon etirement = lmt
-# le probleme cest aue cest pas sur auon puisse faire cela donc peut ere oblige d,utiliser modele un muscle 
-# pour eviter de faire des betises
-
-
-
-# faire une fonction pour calculer le torque et ajouter au sheet de donnee
-
-# fini : 
-    # revoir le fichier one muscle et verifier aue c'est bien PECM2 et PECM3 avec juste origin et insertion
-    # faire une fonction propre pour avoir F et avec un warning pour dire aue C,est possible aue pour PECM2 et PECM3 
+    return None
