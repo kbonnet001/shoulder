@@ -132,6 +132,13 @@ def data_preparation_create_tensor(mode, df_data, limit, all_possible_categories
       y = df_muscle_datas.loc[:, selected_columns].values
       y_labels = selected_columns
       
+    elif mode == Mode.TORQUE : 
+      X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
+      X = np.delete(X, (0, -1, -2, -3, -4, -5, -6), axis=1) # on enleve les coordonnes de origin et insertion
+    
+      y = df_muscle_datas.loc[:, 'torque'].values
+      y_labels = ['torque']
+      
     else : # defaut mode = MUSCLE
       X = df_muscle_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
       X = np.delete(X, (0, -1, -2, -3, -4, -5, -6), axis=1) # on enleve les coordonnes de origin et insertion

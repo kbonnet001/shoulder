@@ -149,7 +149,7 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
 
 # ------------------------------------------
 # beaucoup de repetition de code ici ...
-def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames(mode, model, y_labels, q_ranges, file_path, folder_name, num):
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     filenames = sorted([filename for filename in os.listdir(folder_name)])
@@ -171,13 +171,12 @@ def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, fi
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
         axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-        axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
+        axs[row, col].set_ylabel(f'{y_labels[0]}',fontsize='smaller')
         axs[row, col].legend()
     
-    fig.suptitle(f'Predictions and targets of Muscle length', fontweight='bold')
+    fig.suptitle(f'Predictions and targets of {y_labels[0]}', fontweight='bold')
     plt.tight_layout()  
-    create_and_save_plot(f"{file_path}", "plot_muscle_length_predictions_and_targets.png")
-    # plt.savefig(f"{file_path}/plot_muscle_length_predictions_and_targets.png")
+    create_and_save_plot(f"{file_path}", f"plot_{y_labels[0]}_predictions_and_targets.png")
     plt.show()
     
     return None

@@ -97,7 +97,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "datas_essai_plot2", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 500, 0, "data_generation_datas_with_f_and_tau", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
@@ -172,8 +172,8 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-model_name="msucle_dlnt_dq" #0 meilleur
-mode = Mode.MUSCLE_DLMT_DQ
+model_name="test" 
+mode = Mode.TORQUE
 batch_size=32
 n_layers=1
 n_nodes=[25]
@@ -196,16 +196,16 @@ folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 
-# Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_layers, n_nodes, activations, activation_names, 
-#                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
-#                                              use_batch_norm)
-# print(Hyperparameter_essai1)
+Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_layers, n_nodes, activations, activation_names, 
+                                             L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
+                                             use_batch_norm)
+print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-# main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_dlmt_dq", 
-#                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-#                         plot_preparation=False, plot=True, save=True) 
+main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_f_and_tau", 
+                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+                        plot_preparation=False, plot=True, save=True) 
 
 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
@@ -238,11 +238,11 @@ q_initial = np.array([0.0 for k in range (8)])
 
 # plot_length_jacobian(model_biorbd, q_initial, cylinders_PECM2, muscle_selected, "One_cylinder_wrapping_PECM2_T",100)
 
-from wrapping.muscle_forces_and_torque import compute_muscle_force_origin_insertion_nul, compute_torque
-from wrapping.muscles_length_jacobian import compute_dlmt_dq
-# test_muscle_force()
+# from wrapping.muscle_forces_and_torque import compute_muscle_force_origin_insertion_nul, compute_torque
+# from wrapping.muscles_length_jacobian import compute_dlmt_dq
+# # test_muscle_force()
 
-model_one_muscle = m = biorbd.Model("models/oneMuscle.bioMod")
+# model_one_muscle = m = biorbd.Model("models/oneMuscle.bioMod")
 
 # lmt1 = 0.242617769697736
 # q1 = np.array([-0.0786849353613072, 
@@ -358,16 +358,16 @@ model_one_muscle = m = biorbd.Model("models/oneMuscle.bioMod")
 # EXAMPLE 
 ############
 
-from neural_networks.save_model import main_function_model
+# from neural_networks.save_model import main_function_model
 
-file_path = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_dlnt_dq'
-q1 = [-0.0786849353613072, 
-     0.0714227230995303, 
-     -0.368636743434153, 
-     0.480812853033726, 
-     0.0564779278353358, 
-     -1.0471975511966, 
-     -2.38720333455028, 
-     0.88080460882924]
+# file_path = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_dlnt_dq'
+# q1 = [-0.0786849353613072, 
+#      0.0714227230995303, 
+#      -0.368636743434153, 
+#      0.480812853033726, 
+#      0.0564779278353358, 
+#      -1.0471975511966, 
+#      -2.38720333455028, 
+#      0.88080460882924]
 
-main_function_model(file_path, q1)
+# main_function_model(file_path, q1)
