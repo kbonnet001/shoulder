@@ -6,6 +6,7 @@ from neural_networks.file_directory_operations import create_and_save_plot
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 import json
 from neural_networks.Mode import Mode
+from neural_networks.Timer import measure_time
    
     
 def save_model(model, input_size, output_size, Hyperparams, file_path) : 
@@ -91,8 +92,8 @@ def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, tes
     
     model = load_saved_model(file_path)
     
-    plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
-    plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
+    # plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
+    # plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
     plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
     
     if mode == Mode.DLMT_DQ : 
@@ -102,3 +103,29 @@ def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, tes
     else : # Muscle
         plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name_for_prediction, 100)
 
+
+
+def main_function_model(file_path, inputs) : 
+    """
+    Model prediction with a saved model
+    Please, look at this function as an example 
+    One load before all is beter than one load for each time you use the model prediction, ... 
+
+    INPUTS : 
+    - file_path : string, path where the file 'model_config.json' of the model could be find
+    - inputs : [], inputs, check is the dimention is correct before
+    
+    OUTPUT :
+    - output : pytorch tensor, model's prediction(s) 
+    """
+    
+    # Load model from file_path, model eval
+    model = load_saved_model(file_path)
+    
+    with measure_time() as timer:
+        # You must have a torch tensor !
+        inputs_tensor = torch.tensor([inputs])
+        outputs = model(inputs_tensor).squeeze()
+    
+    print(f"output(s) = {outputs}, time execution (without loading model time) = {timer.execution_time}")
+    return outputs

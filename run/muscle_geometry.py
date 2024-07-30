@@ -18,7 +18,6 @@ from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
 from neural_networks.Timer import measure_time
-from neural_networks.casadi import load_model_to_casadi, get_weights_biases, pytorch_to_casadi
 from neural_networks.save_model import load_saved_model
 
 #################### 
@@ -98,7 +97,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "datas_essai_plot2", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "datas_essai_plot2", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
@@ -197,10 +196,10 @@ folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 
-Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_layers, n_nodes, activations, activation_names, 
-                                             L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
-                                             use_batch_norm)
-print(Hyperparameter_essai1)
+# Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_layers, n_nodes, activations, activation_names, 
+#                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
+#                                              use_batch_norm)
+# print(Hyperparameter_essai1)
 
 # one model per muscle !
 
@@ -239,11 +238,11 @@ q_initial = np.array([0.0 for k in range (8)])
 
 # plot_length_jacobian(model_biorbd, q_initial, cylinders_PECM2, muscle_selected, "One_cylinder_wrapping_PECM2_T",100)
 
-# from wrapping.muscle_forces_and_torque import test_muscle_force, compute_muscle_force_origin_insertion_nul, compute_torque
-# from wrapping.muscles_length_jacobian import compute_dlmt_dq
+from wrapping.muscle_forces_and_torque import compute_muscle_force_origin_insertion_nul, compute_torque
+from wrapping.muscles_length_jacobian import compute_dlmt_dq
 # test_muscle_force()
 
-# model_one_muscle = m = biorbd.Model("models/oneMuscle.bioMod")
+model_one_muscle = m = biorbd.Model("models/oneMuscle.bioMod")
 
 # lmt1 = 0.242617769697736
 # q1 = np.array([-0.0786849353613072, 
@@ -271,7 +270,7 @@ q_initial = np.array([0.0 for k in range (8)])
 # dlmt_dq2 = compute_dlmt_dq(model_biorbd, q_ranges, q2, cylinders_PECM2, 0)
 # f2 = compute_muscle_force_origin_insertion_nul(model_one_muscle, 0, lmt2)
 
-# lmt3 = 0.268844328998133
+# # lmt3 = 0.268844328998133
 # q3 = np.array([-0.0546715244277362, 
 #      0.21367517662627, 
 #      -0.361552222464051, 
@@ -291,6 +290,25 @@ q_initial = np.array([0.0 for k in range (8)])
 # tau3 = compute_torque(np.array(dlmt_dq3), f3)
 # print("tau = ", tau3)
 
+
+# comparaison activation ----------------------
+
+# np.random.seed(42)
+# q = np.random.rand(model_biorbd.nbQ())
+# qdot = np.random.rand(model_biorbd.nbQ())
+# state_set = model_biorbd.stateSet()
+# for state in state_set:
+#     state.setActivation(1)
+# print(model_biorbd.muscleForces(state_set, q, qdot).to_array() / 2)
+# print(model_biorbd.muscularJointTorque(state_set, q, qdot).to_array() / 2)
+# state_set = model_biorbd.stateSet()
+# for state in state_set:
+#     state.setActivation(0.5)
+# print(model_biorbd.muscleForces(state_set, q, qdot).to_array())
+# print(model_biorbd.muscularJointTorque(state_set, q, qdot).to_array())
+
+
+# -----------------------------------
 # file_path_model = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_for_casadi'
 # input_shape = 8
 
@@ -301,15 +319,25 @@ q_initial = np.array([0.0 for k in range (8)])
 
 
 # Instantiate the model
+# from neural_networks.casadi import casadi_test
 # file_path_model = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_for_casadi'
 # model = load_saved_model(file_path_model)
 
 # # Define the input shape
 # input_shape = (1,8)
+# q1 = np.array([-0.0786849353613072, 
+#      0.0714227230995303, 
+#      -0.368636743434153, 
+#      0.480812853033726, 
+#      0.0564779278353358, 
+#      -1.0471975511966, 
+#      -2.38720333455028, 
+#      0.88080460882924])
 
-# # Convert the PyTorch model to a CasADi function
+# casadi_test(model, q1, len(q1))
+
+# Convert the PyTorch model to a CasADi function
 # casadi_model = pytorch_to_casadi(model, input_shape)
-
 
 
 # file_path_model = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_for_casadi'
@@ -324,3 +352,22 @@ q_initial = np.array([0.0 for k in range (8)])
 # activations = ['GELU']
 # model_func = pytorch_to_casadi(weights, biases, activations, input_size, output_size)
 
+
+
+############
+# EXAMPLE 
+############
+
+from neural_networks.save_model import main_function_model
+
+file_path = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_dlnt_dq'
+q1 = [-0.0786849353613072, 
+     0.0714227230995303, 
+     -0.368636743434153, 
+     0.480812853033726, 
+     0.0564779278353358, 
+     -1.0471975511966, 
+     -2.38720333455028, 
+     0.88080460882924]
+
+main_function_model(file_path, q1)
