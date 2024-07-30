@@ -22,7 +22,7 @@ def dev_partielle_lmt_qi_points_without_wrapping (lmt1, lmt2, delta_qi) :
    
    return (lmt1 - lmt2) / (2*delta_qi)
 
-def compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi=1e-8) : 
+def compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi=1e-8) : 
     
    """ Compute the partial derivative of lmt as a function of q 
    
@@ -54,8 +54,8 @@ def compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi=1e-8) :
         origin_point_pos, insertion_point_pos = update_points_position(model, [0, -1], muscle_index, q + vect_delta_qi)
         origin_point_neg, insertion_point_neg = update_points_position(model, [0, -1], muscle_index, q - vect_delta_qi)
           
-        lmt1, _ = compute_segment_length(model, cylinders, q, origin_point_pos, insertion_point_pos, False, False)
-        lmt2, _ = compute_segment_length(model, cylinders, q, origin_point_neg, insertion_point_neg, False, False)
+        lmt1, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_point_pos, insertion_point_pos, False, False)
+        lmt2, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_point_neg, insertion_point_neg, False, False)
       else : 
         mus = model.muscle(muscle_index) 
         p_pos = list(update_points_position(model, [n for n in range(len(mus.musclesPointsInGlobal(model, q)))], muscle_index, q + vect_delta_qi))
@@ -91,7 +91,7 @@ def plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    
-   muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   muscle_index= find_index_muscle(model, muscle_selected)
    delta_qi = 1e-10
    
    row_size, col_size = compute_row_col(len(q_ranges), 3)
@@ -118,7 +118,7 @@ def plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
          model.UpdateKinematicsCustom(q)
          dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
          
-         dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi)
+         dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
          
          qs.append(qi)
          dlmt_dqis.append(dlmt_dq)
@@ -167,7 +167,7 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    
-   muscle_index= initialisation_generation(model, q_ranges, muscle_selected, cylinders)
+   muscle_index= find_index_muscle(model, muscle_selected)
    delta_qi = 1e-10
    
    row_size, col_size = compute_row_col(len(q_ranges), 3)
@@ -194,7 +194,7 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
          model.UpdateKinematicsCustom(q)
          dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
          
-         dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi)
+         dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
          
          qs.append(qi)
          dlmt_dqis.append(dlmt_dq)

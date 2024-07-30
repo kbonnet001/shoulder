@@ -37,7 +37,7 @@ def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_seconde
     
     return total_time_estimated_secondes, total_time_estimated_minutes, total_time_estimated_hours
 
-def main_superised_learning(Hyperparams, q_ranges, folder_name, muscle_name, retrain, file_path, plot_preparation, plot, save) : 
+def main_superised_learning(Hyperparams, q_ranges, num_datas_for_dataset, folder_name, muscle_name, retrain, file_path, with_noise, plot_preparation, plot, save) : 
     
     """Main fonction for prepare, train-val-test and save a model 
     
@@ -46,6 +46,7 @@ def main_superised_learning(Hyperparams, q_ranges, folder_name, muscle_name, ret
     - folder_name : string, path/name of the folder contained all excel data file of muscles (one for each muscle)
     - retrain : bool, True to train the model again
     - file_path : string, name of the model will be save after tranning
+    - with_noise : (default = True), bool, true to put datas with noise in dataset for learning
     - plot_preparation : bool, True to show distribution of all datas preparation
     
     ---------------------------
@@ -66,7 +67,7 @@ def main_superised_learning(Hyperparams, q_ranges, folder_name, muscle_name, ret
     # Create a folder for save plots
     create_directory(f"{folder_name}/{muscle_name}/_Model") # Muscle/Model
     
-    train_loader, val_loader, test_loader, input_size, output_size, y_labels = create_loaders_from_folder(Hyperparams, q_ranges, f"{folder_name}/{muscle_name}", plot_preparation)
+    train_loader, val_loader, test_loader, input_size, output_size, y_labels = create_loaders_from_folder(Hyperparams, q_ranges, num_datas_for_dataset, f"{folder_name}/{muscle_name}", muscle_name, with_noise, plot_preparation)
     
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(f"{folder_name}/{muscle_name}/_Model/{file_path}") == False: 

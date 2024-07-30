@@ -21,10 +21,12 @@ class ExcelBatchWriter:
                 "insertion_muscle_z": [],
                 "segment_length": [],
                 **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
+                "muscle_force": [],
+                "torque": []
                  }
             pd.DataFrame(data).to_excel(filename, index=False)
 
-    def add_line(self, muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length, dlmt_dq):
+    def add_line(self, muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length, dlmt_dq, muscle_force, torque):
         # Create a new line with the provided data
         new_line = {
             "muscle_selected": muscle_selected_index,
@@ -37,6 +39,8 @@ class ExcelBatchWriter:
             "insertion_muscle_z": insertion_muscle[2],
             "segment_length": segment_length, 
             **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": dlmt_dq[k] for k in range(len(dlmt_dq))},
+            "muscle_force": muscle_force,
+            "torque": torque
         }
         
         # Add the new line to the buffer
@@ -88,7 +92,6 @@ class ExcelBatchWriter:
         else:
             return 0
         
-
     def close(self):
         # Flush any remaining lines in the buffer when closing
         self._flush()

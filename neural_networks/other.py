@@ -29,3 +29,13 @@ def compute_num_bins(data, x_max, x_min) :
     num_bins = int((x_max - x_min) / bin_width)
     
     return num_bins
+
+def sturges_rule(data):
+    return int(np.ceil(np.log2(len(data)) + 1))
+
+def rice_rule(data):
+    return int(np.ceil(2 * (len(data) ** (1/3))))
+
+def scott_rule(data):
+    bin_width = 3.5 * np.std(data) / (len(data) ** (1/3))
+    return int((np.max(data) - np.min(data)) / bin_width)
