@@ -10,7 +10,7 @@ from pyorerun import LiveModelAnimation
 
 from neural_networks.data_generation import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, plot_all_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
+from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
 from wrapping.muscles_length_jacobian import plot_lever_arm
@@ -98,7 +98,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "datas_with_f_and_tau", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "datas_essai plot", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------

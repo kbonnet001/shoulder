@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from neural_networks.functions_data_generation import *
 import numpy as np
 from neural_networks.other import compute_row_col
+import os
 from neural_networks.file_directory_operations import create_directory, create_and_save_plot
 
 # -------------------------------------
@@ -89,64 +90,66 @@ def plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    OUTPUT : 
    - None, save plot"""
    
-   q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+   if os.path.exists(f"{filename}/dlmt_dq.png") == False :
    
-   muscle_index= find_index_muscle(model, muscle_selected)
-   delta_qi = 1e-10
-   
-   row_size, col_size = compute_row_col(len(q_ranges), 3)
-   # Big fig with all dlmt_dq
-   fig, axs = plt.subplots(row_size, col_size, figsize=(15, 10))
-   
-   # Compute the partial derivative of lmt as a function of q_index
-   for q_index in range (len(q_ranges)) : 
-      q = copy.deepcopy(q_fixed)
-      qs = []
-      dlmt_dqis= []
-      dlmt_dq_biorbds = []
+      q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
       
-      # Then, q_index variate beetween min_range(q_index) and max_range(q_index)
-      # For each value of q_index, compute dlmt_dq_index. So, we obtain an array of len(q_ranges) values
-      # So, each subplot represent the varaition of dlmt_dq_index for each qi
-      for k in range (num_points+1) : 
-         print("q_index = ", q_index, " ; k = ", k)
-
-         qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
-         q[q_index] = qi
-         
-         model.updateMuscles(q) 
-         model.UpdateKinematicsCustom(q)
-         dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
-         
-         dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
-         
-         qs.append(qi)
-         dlmt_dqis.append(dlmt_dq)
-         dlmt_dq_biorbds.append(dlmt_dq_biorbd[muscle_index])
+      muscle_index= find_index_muscle(model, muscle_selected)
+      delta_qi = 1e-10
       
+      row_size, col_size = compute_row_col(len(q_ranges), 3)
+      # Big fig with all dlmt_dq
+      fig, axs = plt.subplots(row_size, col_size, figsize=(15, 10))
+      
+      # Compute the partial derivative of lmt as a function of q_index
+      for q_index in range (len(q_ranges)) : 
+         q = copy.deepcopy(q_fixed)
+         qs = []
+         dlmt_dqis= []
+         dlmt_dq_biorbds = []
+         
+         # Then, q_index variate beetween min_range(q_index) and max_range(q_index)
+         # For each value of q_index, compute dlmt_dq_index. So, we obtain an array of len(q_ranges) values
+         # So, each subplot represent the varaition of dlmt_dq_index for each qi
+         for k in range (num_points+1) : 
+            print("q_index = ", q_index, " ; k = ", k)
 
-      row = q_index // 3
-      col = q_index % 3
-
-      for i in range(len(dlmt_dq)) :
-         if i == 0:
-            axs[row, col].plot(qs, [dlmt_dqi_biorbd[i] for dlmt_dqi_biorbd in dlmt_dq_biorbds], marker='^', 
-                               linestyle='--', color = "silver", markersize=2, label=f"dlmt_dq_biorbd")
-         else:
-            axs[row, col].plot(qs, [dlmt_dqi_biorbd[i] for dlmt_dqi_biorbd in dlmt_dq_biorbds], marker='^',
-                               linestyle='--', color = "silver", markersize=2)
+            qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
+            q[q_index] = qi
             
-         axs[row, col].plot(qs, [dlmt_dqi[i] for dlmt_dqi in dlmt_dqis], marker='o', 
-                            linestyle='-', markersize=2, label=f"dlmt_dq{i}")
-      axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-      axs[row, col].set_ylabel(f'dlmt_dq{q_index}',fontsize='smaller')
-      axs[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
-      axs[row, col].legend()
-   
-   fig.suptitle(f'dlmt_dq\nq_fixed = {q_fixed}', fontweight='bold')
-   plt.tight_layout()  
-   create_and_save_plot(f"{filename}", "dlmt_dq.png")
-   plt.show()
+            model.updateMuscles(q) 
+            model.UpdateKinematicsCustom(q)
+            dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
+            
+            dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
+            
+            qs.append(qi)
+            dlmt_dqis.append(dlmt_dq)
+            dlmt_dq_biorbds.append(dlmt_dq_biorbd[muscle_index])
+         
+
+         row = q_index // 3
+         col = q_index % 3
+
+         for i in range(len(dlmt_dq)) :
+            if i == 0:
+               axs[row, col].plot(qs, [dlmt_dqi_biorbd[i] for dlmt_dqi_biorbd in dlmt_dq_biorbds], marker='^', 
+                                 linestyle='--', color = "silver", markersize=2, label=f"dlmt_dq_biorbd")
+            else:
+               axs[row, col].plot(qs, [dlmt_dqi_biorbd[i] for dlmt_dqi_biorbd in dlmt_dq_biorbds], marker='^',
+                                 linestyle='--', color = "silver", markersize=2)
+               
+            axs[row, col].plot(qs, [dlmt_dqi[i] for dlmt_dqi in dlmt_dqis], marker='o', 
+                              linestyle='-', markersize=2, label=f"dlmt_dq{i}")
+         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+         axs[row, col].set_ylabel(f'dlmt_dq{q_index}',fontsize='smaller')
+         axs[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
+         axs[row, col].legend()
+      
+      fig.suptitle(f'dlmt_dq\nq_fixed = {q_fixed}', fontweight='bold')
+      plt.tight_layout()  
+      create_and_save_plot(f"{filename}", "dlmt_dq.png")
+      plt.show()
 
 
 def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num_points = 100) : 
@@ -174,54 +177,56 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    
    # Compute the partial derivative of lmt as a function of q_index
    for q_index in range (len(q_ranges)) : 
-      q = copy.deepcopy(q_fixed)
-      qs = []
-      dlmt_dqis= []
-      dlmt_dq_biorbds = []
       
-      # Then, q_index variate beetween min_range(q_index) and max_range(q_index)
-      # For each value of q_index, compute dlmt_dq_index. So, we obtain an array of len(q_ranges) values
-      # So, each fig represent plots for one partial derivative of lmt as a function of q_index
-      # And, each subplot represent the varaition of dlmt_dq_index for THIS q_index
-      #
-      for k in range (num_points+1) : 
-         print("q_index = ", q_index, " ; k = ", k)
+      if os.path.exists(f"{filename}/dlmt_dq{q_index}.png") == False :
+         q = copy.deepcopy(q_fixed)
+         qs = []
+         dlmt_dqis= []
+         dlmt_dq_biorbds = []
+         
+         # Then, q_index variate beetween min_range(q_index) and max_range(q_index)
+         # For each value of q_index, compute dlmt_dq_index. So, we obtain an array of len(q_ranges) values
+         # So, each fig represent plots for one partial derivative of lmt as a function of q_index
+         # And, each subplot represent the varaition of dlmt_dq_index for THIS q_index
+         
+         for k in range (num_points+1) : 
+            print("q_index = ", q_index, " ; k = ", k)
 
-         qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
-         q[q_index] = qi
+            qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
+            q[q_index] = qi
+            
+            model.updateMuscles(q) 
+            model.UpdateKinematicsCustom(q)
+            dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
+            
+            dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
+            
+            qs.append(qi)
+            dlmt_dqis.append(dlmt_dq)
+            dlmt_dq_biorbds.append(dlmt_dq_biorbd[muscle_index])
          
-         model.updateMuscles(q) 
-         model.UpdateKinematicsCustom(q)
-         dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
+         fig_qi, axs_qi = plt.subplots(row_size, col_size, figsize=(15, 10))
+         for j in range (len(dlmt_dq)) : 
+            row_qi = j // 3
+            col_qi = j % 3
+            
+            acc = np.mean(abs( np.array([dlmt_dq_biorbd[j] for dlmt_dq_biorbd in dlmt_dq_biorbds]) - 
+                              np.array([dlmt_dq[j] for dlmt_dq in dlmt_dqis])))
+            
+            axs_qi[row_qi, col_qi].plot(qs, [dlmt_dq_biorbd[j] for dlmt_dq_biorbd in dlmt_dq_biorbds], 
+                                       marker='^', linestyle='--', color = "silver", 
+                                       markersize=2,label=f"dlmt_dq_biorbd{q_index}[{j}]")
+            axs_qi[row_qi, col_qi].plot(qs, [dlmt_dq[j] for dlmt_dq in dlmt_dqis], marker='o', linestyle='-', 
+                                       markersize=2, label=f"dlmt_dq{q_index}[{j}]")
+            axs_qi[row_qi, col_qi].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+            axs_qi[row_qi, col_qi].set_ylabel(f'dlmt_dq{q_index}[{j}]',fontsize='smaller')
+            axs_qi[row_qi, col_qi].set_title(f'{q_ranges_names_with_dofs[q_index]}[{j}] - acc = {acc:.6f}',fontsize='smaller')
+            axs_qi[row_qi, col_qi].legend()
          
-         dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
-         
-         qs.append(qi)
-         dlmt_dqis.append(dlmt_dq)
-         dlmt_dq_biorbds.append(dlmt_dq_biorbd[muscle_index])
-      
-      fig_qi, axs_qi = plt.subplots(row_size, col_size, figsize=(15, 10))
-      for j in range (len(dlmt_dq)) : 
-         row_qi = j // 3
-         col_qi = j % 3
-         
-         acc = np.mean(abs( np.array([dlmt_dq_biorbd[j] for dlmt_dq_biorbd in dlmt_dq_biorbds]) - 
-                           np.array([dlmt_dq[j] for dlmt_dq in dlmt_dqis])))
-         
-         axs_qi[row_qi, col_qi].plot(qs, [dlmt_dq_biorbd[j] for dlmt_dq_biorbd in dlmt_dq_biorbds], 
-                                     marker='^', linestyle='--', color = "silver", 
-                                     markersize=2,label=f"dlmt_dq_biorbd{q_index}[{j}]")
-         axs_qi[row_qi, col_qi].plot(qs, [dlmt_dq[j] for dlmt_dq in dlmt_dqis], marker='o', linestyle='-', 
-                                     markersize=2, label=f"dlmt_dq{q_index}[{j}]")
-         axs_qi[row_qi, col_qi].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-         axs_qi[row_qi, col_qi].set_ylabel(f'dlmt_dq{q_index}[{j}]',fontsize='smaller')
-         axs_qi[row_qi, col_qi].set_title(f'{q_ranges_names_with_dofs[q_index]}[{j}] - acc = {acc:.6f}',fontsize='smaller')
-         axs_qi[row_qi, col_qi].legend()
-      
-      fig_qi.suptitle(f'dlmt_dq{q_index}\nq_fixed = {q_fixed}', fontweight='bold')
-      plt.tight_layout()  
-      create_and_save_plot(f"{filename}", f"dlmt_dq{q_index}.png" )
-      plt.show()
+         fig_qi.suptitle(f'dlmt_dq{q_index}\nq_fixed = {q_fixed}', fontweight='bold')
+         plt.tight_layout()  
+         create_and_save_plot(f"{filename}", f"dlmt_dq{q_index}.png")
+         plt.show()
 
 def plot_lever_arm(model, q_fixed, cylinders, muscle_selected, directory_name, num_points = 100) :
    directory = f"{directory_name}/plot_lever_arm"
