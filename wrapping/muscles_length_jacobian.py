@@ -43,6 +43,7 @@ def compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi=1e-8) 
    - dlmt_dq : array 1*len(q) float, the partial derivative of lmt as a function of q """
    
    dlmt_dq = []
+   initialisation_generation(model, q_ranges, muscle_index, cylinders)
    
    for i in range(len(q)) : 
         
@@ -55,8 +56,8 @@ def compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi=1e-8) 
         origin_point_pos, insertion_point_pos = update_points_position(model, [0, -1], muscle_index, q + vect_delta_qi)
         origin_point_neg, insertion_point_neg = update_points_position(model, [0, -1], muscle_index, q - vect_delta_qi)
           
-        lmt1, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_point_pos, insertion_point_pos, False, False)
-        lmt2, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_point_neg, insertion_point_neg, False, False)
+        lmt1, _ = compute_segment_length(model, cylinders, q, origin_point_pos, insertion_point_pos, False, False)
+        lmt2, _ = compute_segment_length(model, cylinders, q, origin_point_neg, insertion_point_neg, False, False)
       else : 
         mus = model.muscle(muscle_index) 
         p_pos = list(update_points_position(model, [n for n in range(len(mus.musclesPointsInGlobal(model, q)))], muscle_index, q + vect_delta_qi))
@@ -74,7 +75,7 @@ def compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi=1e-8) 
    return dlmt_dq
  
  
-def plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num_points = 100) : 
+def plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, filename, num_points = 100) : 
     
    """ Plot and save a comparaison of variation of dlmt_dq (with wrappings) and dlmt_dq_biorbd (with via points) 
    NOTE : you must have len(q_fixed) >=2
@@ -89,6 +90,8 @@ def plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    
    OUTPUT : 
    - None, save plot"""
+   
+   print("plot_all_length_jacobian")
    
    if os.path.exists(f"{filename}/dlmt_dq.png") == False :
    
@@ -152,7 +155,7 @@ def plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
       plt.show()
 
 
-def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num_points = 100) : 
+def plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, filename, num_points = 100) : 
     
    """ Plot and save a comparaison of variation of dlmt_dq (with wrappings) and dlmt_dq_biorbd (with via points) 
    NOTE : you must have len(q_fixed) >=2
@@ -167,6 +170,8 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
    
    OUTPUT : 
    - None, save plot"""
+   
+   print("plot_one_length_jacobian")
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    
@@ -228,9 +233,9 @@ def plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, filename, num
          create_and_save_plot(f"{filename}", f"dlmt_dq{q_index}.png")
          plt.show()
 
-def plot_lever_arm(model, q_fixed, cylinders, muscle_selected, directory_name, num_points = 100) :
-   directory = f"{directory_name}/plot_lever_arm"
+def plot_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory_name, num_points = 100) :
+   directory = f"{directory_name}/plot_length_jacobian"
    create_directory(directory)
    
-   plot_one_lever_arm(model, q_fixed, cylinders, muscle_selected, directory, num_points)
-   plot_all_lever_arm(model, q_fixed, cylinders, muscle_selected, directory, num_points)
+   plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory, num_points)
+   plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory, num_points)

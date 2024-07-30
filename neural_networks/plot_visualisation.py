@@ -230,7 +230,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
         
             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
             plt.tight_layout()  
-            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
             plt.show()
     
     return None
@@ -307,7 +307,7 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
         
             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
             plt.tight_layout()  
-            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
             plt.show()
     
     return None

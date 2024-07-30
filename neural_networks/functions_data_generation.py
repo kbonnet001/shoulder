@@ -114,7 +114,7 @@ def find_index_muscle(model, muscle):
       valid_muscles = ", ".join(muscle_names)
       raise ValueError(f"Invalid muscle name '{muscle}'. You must choose a valid muscle from this list: [{valid_muscles}]")
 
-def compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False) :
+def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False) :
 
    """Compute segment length
    
@@ -133,7 +133,7 @@ def compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_m
    OUTPUT : 
    - segment_length : length of muscle path """
 
-   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   # initialisation_generation(model, q_ranges, muscle_index, cylinders)
    
    print("on fait l'algo avec celui ci insertion_muscle = ", insertion_muscle)
    # First of all, create a rotation matrix (the model have y and not z for ax up) 
