@@ -6,6 +6,7 @@ from neural_networks.EarlyStopping import EarlyStopping
 from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
 from neural_networks.file_directory_operations import create_and_save_plot
+import math
 
 def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     """
@@ -149,6 +150,10 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     for epoch in range(Hyperparams.num_epochs):
         train_loss, train_acc = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
         val_loss, val_acc = evaluate(model, val_loader, Hyperparams.criterion)
+        
+        # security
+        if math.isnan(train_acc) or math.isnan(val_acc):
+            return model, float('inf'), float('inf')
         
         if plot : 
             train_losses.append(train_loss)

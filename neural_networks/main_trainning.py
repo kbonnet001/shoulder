@@ -80,7 +80,7 @@ def main_superised_learning(Hyperparams, q_ranges, num_datas_for_dataset, folder
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
     
     
-def find_best_hyperparameters(Hyperparams, q_ranges, folder, muscle_name) : 
+def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, folder, muscle_name, with_noise) : 
     
     """Try hyperparameters, keep all train-evaluated models in a list and return best hyperparams
     
@@ -129,12 +129,12 @@ def find_best_hyperparameters(Hyperparams, q_ranges, folder, muscle_name) :
           f"\n- {total_time_estimated_min} minutes\n- {total_time_estimated_h} hours\n\n"
           f"Research of best hyperparameters will beggining in few secondes ...\n"
           f"------------------------")
-    time.sleep(10)
+    time.sleep(0)
     
     print("Let's go !")
 
     folder_name = f"{folder}/{muscle_name}"
-    train_loader, val_loader, test_loader, input_size, output_size, _ = create_loaders_from_folder(Hyperparams, q_ranges, folder_name, plot = False)
+    train_loader, val_loader, test_loader, input_size, output_size, _ = create_loaders_from_folder(Hyperparams, q_ranges, num_datas_for_dataset, folder_name, muscle_name, with_noise, plot = False)
 
     list_simulation= []
     best_val_loss = float('inf')
@@ -201,7 +201,8 @@ def find_best_hyperparameters(Hyperparams, q_ranges, folder, muscle_name) :
     
     # Finally, train one last time the model with best hyperparams and save model + plot
     # Hyperparams, q_ranges, folder_name, muscle_name, retrain, file_path, plot_preparation, plot, save
-    main_superised_learning(best_hyperparameters_loss, q_ranges, folder, muscle_name, True,"Best_hyperparams",plot_preparation=True,plot=True,save=True)
+
+    main_superised_learning(best_hyperparameters_loss, q_ranges, num_datas_for_dataset, folder, muscle_name, True,"Best_hyperparams",with_noise, plot_preparation=True,plot=True,save=True)
     
     # print(f"Best hyperparameters acc found : {best_hyperparameters_acc}")
     # print(f'Best criterion: {best_criterion_class_acc.__name__} with parameters: {best_criterion_params_acc}')

@@ -513,15 +513,15 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
          data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.xlsx", dataset_size_noise)
       
       # Plot visualization
-      q_fixed = np.array([0.0 for _ in range (8)])
+      # q_fixed = np.array([0.0 for _ in range (8)])
       
-      create_all_q_variation_files(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
-                     plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}")
-      plot_all_q_variation(model, q_fixed, 'segment_length', "", file_path=f"{directory}/{cylinders[k][0].muscle}")
-      plot_all_q_variation(model, q_fixed, 'muscle_force', "", file_path=f"{directory}/{cylinders[k][0].muscle}")
-      plot_all_q_variation(model, q_fixed, 'torque', "", file_path=f"{directory}/{cylinders[k][0].muscle}")
+      # create_all_q_variation_files(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
+      #                plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}")
+      # plot_all_q_variation(model, q_fixed, 'segment_length', "", file_path=f"{directory}/{cylinders[k][0].muscle}")
+      # plot_all_q_variation(model, q_fixed, 'muscle_force', "", file_path=f"{directory}/{cylinders[k][0].muscle}")
+      # plot_all_q_variation(model, q_fixed, 'torque', "", file_path=f"{directory}/{cylinders[k][0].muscle}")
       
-      plot_length_jacobian(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}/plot_all_q_variation_", 100)
+      # plot_length_jacobian(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}/plot_all_q_variation_", 100)
       
 
 def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, batch_size = 1000, noise_std_dev = 0.01) :
