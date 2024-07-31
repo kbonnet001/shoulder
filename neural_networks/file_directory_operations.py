@@ -1,4 +1,5 @@
 import os
+import matplotlib.pyplot as plt
 
 def create_directory(directory_path):
     """
@@ -12,9 +13,6 @@ def create_directory(directory_path):
         print(f"The folder'{directory_path}' have been created.")
     else:
         print(f"The folder '{directory_path}' already exist.")
-
-import matplotlib.pyplot as plt
-import os
 
 def create_and_save_plot(directory_path, file_name):
     """
@@ -32,3 +30,12 @@ def create_and_save_plot(directory_path, file_name):
     file_path = os.path.join(directory_path, file_name)
     plt.savefig(file_path)
 
+def save_text_to_file(text, file_path):
+    """_summary_
+
+    Args:
+        text (_type_): _description_
+        file_path (_type_): _description_
+    """
+    with open(file_path, 'w') as file:
+        file.write(text)

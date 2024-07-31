@@ -9,7 +9,7 @@ from neural_networks.plot_visualisation import *
 from itertools import product
 from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.file_directory_operations import create_directory
+from neural_networks.file_directory_operations import create_directory, save_text_to_file
 import time
 
 def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes = 60) : 
@@ -74,9 +74,12 @@ def main_superised_learning(Hyperparams, q_ranges, num_datas_for_dataset, folder
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(f"{folder_name}/{muscle_name}/_Model/{file_path}") == False: 
         
-        _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", plot, save)
+        _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
+                                                  Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
+                                                  plot, save)
         
-    visualize_prediction(Hyperparams.mode, q_ranges, y_labels, train_loader, val_loader, test_loader, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
+    visualize_prediction(Hyperparams.mode, q_ranges, y_labels, train_loader, val_loader, test_loader, 
+                         f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
     
     
@@ -132,26 +135,27 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
     time.sleep(0)
     
     print("Let's go !")
+    # ------------------
+    
+    create_directory(f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}")
 
     folder_name = f"{folder}/{muscle_name}"
-    train_loader, val_loader, test_loader, input_size, output_size, _ = create_loaders_from_folder(Hyperparams, q_ranges, num_datas_for_dataset, folder_name, muscle_name, with_noise, plot = False)
+    train_loader, val_loader, test_loader, input_size, output_size, _ \
+    = create_loaders_from_folder(Hyperparams, q_ranges, num_datas_for_dataset, folder_name, muscle_name, 
+                                 with_noise, plot = False)
 
     list_simulation= []
     best_val_loss = float('inf')
-    best_val_acc = float('inf')
     best_criterion_class_loss = None
     best_criterion_params_loss = None
-    best_criterion_class_acc = None
-    best_criterion_params_acc = None
     num_try = 0
 
-    for params in product(Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, Hyperparams.L1_penalty
-                          , Hyperparams.L2_penalty,Hyperparams.learning_rate, Hyperparams.dropout_prob):
+    for params in product(Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, Hyperparams.activation_names, 
+                          Hyperparams.L1_penalty, Hyperparams.L2_penalty,Hyperparams.learning_rate, Hyperparams.dropout_prob):
         
-        try_hyperparams = ModelHyperparameters("Try Hyperparams",Hyperparams.mode, Hyperparams.batch_size, params[0], params[1], 
-                                                params[2], "", params[3], params[4], 
-                                                params[5], Hyperparams.num_epochs, None, 
-                                                params[6], Hyperparams.use_batch_norm)
+        try_hyperparams = ModelHyperparameters("Try Hyperparams",Hyperparams.mode, Hyperparams.batch_size, params[0], 
+                                               params[1], params[2], params[3], params[4], params[5], params[6], 
+                                               Hyperparams.num_epochs, None, params[7], Hyperparams.use_batch_norm)
         
         for criterion_class, criterion_param_grid in Hyperparams.criterion:
             for criterion_params_comb in product(*criterion_param_grid.values()):
@@ -161,8 +165,9 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
                 print(try_hyperparams)
                 
                 # Train-Evaluate model
-                model, val_loss, val_acc = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, try_hyperparams, 
-                                                                                                            file_path="", plot = False)
+                _, val_loss, val_acc = train_model_supervised_learning(train_loader, val_loader, test_loader, 
+                                                                           input_size, output_size, try_hyperparams, 
+                                                                           file_path="", plot = False)
                 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
@@ -170,31 +175,27 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
                     best_criterion_params_loss = criterion_params
                     
                     # Best hyperparameters
-                    best_hyperparameters_loss = ModelHyperparameters("Best_hyperparameter", Hyperparams.mode, Hyperparams.batch_size, try_hyperparams.n_layers,
-                                                try_hyperparams.n_nodes, try_hyperparams.activations, "", 
-                                                try_hyperparams.L1_penalty, try_hyperparams.L2_penalty, 
-                                                try_hyperparams.learning_rate, Hyperparams.num_epochs, try_hyperparams.criterion, 
-                                                try_hyperparams.dropout_prob, Hyperparams.use_batch_norm)
+                    best_hyperparameters_loss = ModelHyperparameters("Best_hyperparameter", Hyperparams.mode, 
+                                                                     Hyperparams.batch_size, try_hyperparams.n_layers,
+                                                                     try_hyperparams.n_nodes, try_hyperparams.activations, 
+                                                                     try_hyperparams.activation_names, 
+                                                                     try_hyperparams.L1_penalty, 
+                                                                     try_hyperparams.L2_penalty, 
+                                                                     try_hyperparams.learning_rate, Hyperparams.num_epochs, 
+                                                                     try_hyperparams.criterion, try_hyperparams.dropout_prob, 
+                                                                     Hyperparams.use_batch_norm)
                     best_hyperparameters_loss.save_results_parameters(val_loss, val_acc)
-                
-                # if val_acc < best_val_acc:
-                #     best_val_acc= val_acc
-                #     best_criterion_class_acc = criterion_class
-                #     best_criterion_params_acc = criterion_params
-                    
-                #     # Best hyperparameters
-                #     best_hyperparameters_acc = ModelHyperparameters("Best_hyperparameter", Hyperparams.batch_size, try_hyperparams.n_layers,
-                #                                 try_hyperparams.n_nodes, try_hyperparams.activations, "", 
-                #                                 try_hyperparams.L1_penalty, try_hyperparams.L2_penalty, 
-                #                                 try_hyperparams.learning_rate, Hyperparams.num_epochs, try_hyperparams.criterion, 
-                #                                 try_hyperparams.dropout_prob, Hyperparams.use_batch_norm)
-                #     best_hyperparameters_acc.save_results_parameters(val_loss, val_acc)
 
-                list_simulation.append([val_loss, try_hyperparams, f"{num_try}: val_loss = {val_loss} and val acc = {val_acc} \n- Training with hyperparameters : {try_hyperparams} \ncriterion: {criterion_class.__name__} with parameters: {criterion_params}\n---\n"])
+                list_simulation.append([val_loss, f"\nnum_try : {num_try} | val_loss = {val_loss} | val acc = {val_acc}", 
+                                        f"Training with hyperparameters : {try_hyperparams} \n", 
+                                        f"Criterion: {criterion_class.__name__}",
+                                        f"with parameters: {criterion_params}\n----------\n----------\n"])
                 num_try+=1
 
     list_simulation.sort(key=lambda x: x[0]) # sort list to have val_loss in croissant order 
-    
+    save_text_to_file('\n'.join([str(line) for sublist in list_simulation for line in sublist]), 
+                      f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}/list_simulation.txt")
+  
     print(f"Best hyperparameters loss found : {best_hyperparameters_loss}")
     print(f'Best criterion: {best_criterion_class_loss.__name__} with parameters: {best_criterion_params_loss}')
     print("list_simulation = ", list_simulation)
@@ -202,11 +203,9 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
     # Finally, train one last time the model with best hyperparams and save model + plot
     # Hyperparams, q_ranges, folder_name, muscle_name, retrain, file_path, plot_preparation, plot, save
 
-    main_superised_learning(best_hyperparameters_loss, q_ranges, num_datas_for_dataset, folder, muscle_name, True,"Best_hyperparams",with_noise, plot_preparation=True,plot=True,save=True)
-    
-    # print(f"Best hyperparameters acc found : {best_hyperparameters_acc}")
-    # print(f'Best criterion: {best_criterion_class_acc.__name__} with parameters: {best_criterion_params_acc}')
-    # print("list_simulation = ", list_simulation)
+    main_superised_learning(best_hyperparameters_loss, q_ranges, num_datas_for_dataset, folder, muscle_name, True,
+                            f"{Hyperparams.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
+                            save=True)
     
     return list_simulation, best_hyperparameters_loss
 
