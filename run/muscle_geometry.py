@@ -158,7 +158,7 @@ num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
     # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss, {'delta': [0.2, 1.0, 2.0], 'factor': [1.0, 2.0, 3.0]}),
+    (ModifiedHuberLoss, {'delta': [0.2, 1.0], 'factor': [1.0]}),
     # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
     # (nn.MSELoss, {})
 ]

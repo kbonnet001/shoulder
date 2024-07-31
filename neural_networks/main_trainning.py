@@ -74,7 +74,7 @@ def main_superised_learning(Hyperparams, q_ranges, num_datas_for_dataset, folder
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(f"{folder_name}/{muscle_name}/_Model/{file_path}") == False: 
         
-        _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
+        _, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
                                                   Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                                                   plot, save)
         
@@ -149,7 +149,7 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
     best_criterion_class_loss = None
     best_criterion_params_loss = None
     num_try = 0
-
+    
     for params in product(Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, Hyperparams.activation_names, 
                           Hyperparams.L1_penalty, Hyperparams.L2_penalty,Hyperparams.learning_rate, Hyperparams.dropout_prob):
         
@@ -166,10 +166,13 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
                 
                 # Train-Evaluate model
                 create_directory(f"{directory}/{num_try}")
-                _, val_loss, val_acc = train_model_supervised_learning(train_loader, val_loader, test_loader, 
-                                                                           input_size, output_size, try_hyperparams, 
-                                                                           file_path=f"{directory}/{num_try}", 
-                                                                           plot = False, save = save_all)
+                
+                with measure_time() as timer:
+                    # Please, consider this mesure time like as estimation 
+                    _, val_loss, val_acc, epoch = train_model_supervised_learning(train_loader, val_loader, test_loader, 
+                                                                            input_size, output_size, try_hyperparams, 
+                                                                            file_path=f"{directory}/{num_try}", 
+                                                                            plot = False, save = save_all)
                 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
@@ -188,10 +191,12 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
                                                                      Hyperparams.use_batch_norm)
                     best_hyperparameters_loss.save_results_parameters(val_loss, val_acc)
 
-                list_simulation.append([val_loss, f"\nnum_try : {num_try} | val_loss = {val_loss} | val acc = {val_acc}", 
-                                        f"Training with hyperparameters : {try_hyperparams} \n", 
+                list_simulation.append([val_loss, f"\nnum_try : {num_try} | val_loss = {val_loss} | val acc = {val_acc}",
+                                        f"Time execution: {timer.execution_time:.6f} seconds ",
+                                        f"Training with hyperparameters : {try_hyperparams} \n",
+                                        f"Num of epoch used : {epoch + 1}",
                                         f"Criterion: {criterion_class.__name__}",
-                                        f"with parameters: {criterion_params}\n----------\n----------\n"])
+                                        f"with parameters: {criterion_params}\n----------\n"])
                 num_try+=1
 
     list_simulation.sort(key=lambda x: x[0]) # sort list to have val_loss in croissant order 

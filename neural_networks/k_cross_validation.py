@@ -98,7 +98,7 @@ def cross_validation(folder_name, Hyperparams, num_folds) :
         # on fait les noueau train et val loader en fonction du k fold où on est
         train_loader, val_loader = new_k_loaders(Hyperparams.batch_size, train_val_dataset, train_idx, val_idx)
 
-        model, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
+        model, _, _, _= train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
                                     "", False, False) 
         
         test_loss, test_acc = evaluate(model, test_loader, Hyperparams.criterion)
