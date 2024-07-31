@@ -97,7 +97,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 500, 0, "data_generation_datas_with_f_and_tau", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10000, 0, "datas_with_tau", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
@@ -203,9 +203,9 @@ print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_f_and_tau", 
-                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-                        plot_preparation=False, plot=True, save=True) 
+# main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_f_and_tau", 
+#                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+#                         plot_preparation=False, plot=True, save=True) 
 
 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
