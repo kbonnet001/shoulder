@@ -83,7 +83,7 @@ def main_superised_learning(Hyperparams, q_ranges, num_datas_for_dataset, folder
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
     
     
-def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, folder, muscle_name, with_noise) : 
+def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = True) : 
     
     """Try hyperparameters, keep all train-evaluated models in a list and return best hyperparams
     
@@ -136,8 +136,8 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
     
     print("Let's go !")
     # ------------------
-    
-    create_directory(f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}")
+    directory = f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}"
+    create_directory(directory)
 
     folder_name = f"{folder}/{muscle_name}"
     train_loader, val_loader, test_loader, input_size, output_size, _ \
@@ -165,9 +165,11 @@ def find_best_hyperparameters(Hyperparams, q_ranges, num_datas_for_dataset, fold
                 print(try_hyperparams)
                 
                 # Train-Evaluate model
+                create_directory(f"{directory}/{num_try}")
                 _, val_loss, val_acc = train_model_supervised_learning(train_loader, val_loader, test_loader, 
                                                                            input_size, output_size, try_hyperparams, 
-                                                                           file_path="", plot = False)
+                                                                           file_path=f"{directory}/{num_try}", 
+                                                                           plot = False, save = save_all)
                 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
