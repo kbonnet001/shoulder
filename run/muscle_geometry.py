@@ -208,14 +208,14 @@ print(Hyperparameter_essai1)
 # one model per muscle !
 
 main_superised_learning(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, folder_name="data_generation_datas_with_tau", 
-                        muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
                         plot_preparation=False, plot=True, save=True) 
 
 
 # main_superised_learning(Hyperparameter_essai1, q_ranges, folder_name="datas", muscle_name = "PECM3", retrain=False, 
 #                         file_path=Hyperparameter_essai1.model_name,plot_preparation=True, plot=True, save=True) 
 
-list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, "data_generation_datas_with_tau", "PECM2", with_noise)
+# list_simulation, best_hyperparameters_loss, best_hyperparameters_acc = find_best_hyperparameters(Hyperparameter_essai1, q_ranges, num_datas_for_dataset, "data_generation_datas_with_tau", "PECM2", with_noise)
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
 print("")
