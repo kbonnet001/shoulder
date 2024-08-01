@@ -10,7 +10,7 @@ from neural_networks.EarlyStopping import EarlyStopping
 from neural_networks.main_trainning import train_model_supervised_learning
 import numpy as np
 
-def create_dataset_from_folder_cross_val(folder_name):
+def create_dataset_from_folder_cross_val(mode, folder_name):
   """Create loaders : 
     80 % : train + validation
     20% : test
@@ -31,7 +31,7 @@ def create_dataset_from_folder_cross_val(folder_name):
         print(f"Processing file: {file_path}")
 
         all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
-        X_tensor, y_tensor = data_preparation_create_tensor(file_path, all_possible_categories)
+        X_tensor, y_tensor, _ = data_preparation_create_tensor(mode, file_path, all_possible_categories)
         dataset = MuscleDataset(X_tensor, y_tensor)
 
         train_val_size, test_size = compute_samples(dataset, 0.80)
@@ -85,7 +85,7 @@ def cross_validation(folder_name, Hyperparams, num_folds) :
     
     kfold = KFold(n_splits=num_folds, shuffle=True)
     
-    train_val_dataset, test_dataset, input_size, output_size = create_dataset_from_folder_cross_val(folder_name) 
+    train_val_dataset, test_dataset, input_size, output_size = create_dataset_from_folder_cross_val(Hyperparams.mode, folder_name) 
     test_loader = DataLoader(test_dataset, batch_size=Hyperparams.batch_size, shuffle=False)
 
     # Initialisation des listes pour stocker les résultats de chaque pli

@@ -23,7 +23,7 @@ def dev_partielle_lmt_qi_points_without_wrapping (lmt1, lmt2, delta_qi) :
    
    return (lmt1 - lmt2) / (2*delta_qi)
 
-def compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi=1e-8) : 
+def compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi=1e-8) : 
     
    """ Compute the partial derivative of lmt as a function of q 
    
@@ -43,7 +43,7 @@ def compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi=1e-8) 
    - dlmt_dq : array 1*len(q) float, the partial derivative of lmt as a function of q """
    
    dlmt_dq = []
-   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
    
    for i in range(len(q)) : 
         
@@ -124,7 +124,7 @@ def plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
             model.UpdateKinematicsCustom(q)
             dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
             
-            dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
+            dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi)
             
             qs.append(qi)
             dlmt_dqis.append(dlmt_dq)
@@ -204,7 +204,7 @@ def plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
             model.UpdateKinematicsCustom(q)
             dlmt_dq_biorbd = model.musclesLengthJacobian().to_array()
             
-            dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi)
+            dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi)
             
             qs.append(qi)
             dlmt_dqis.append(dlmt_dq)

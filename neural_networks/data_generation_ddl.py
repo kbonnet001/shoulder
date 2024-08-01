@@ -38,7 +38,7 @@ def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, file
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index = find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
        
    # Limits of q
    min_vals = [row[0] for row in q_ranges]
@@ -95,7 +95,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
 
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index= find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
    
    directory = "plot_one_q_variation_" + filename
    create_directory(directory)
@@ -126,7 +126,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
       print("segment_length = ", segment_length)
       qs.append(qi)
       segment_lengths.append(segment_length)
-      dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+      dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
       muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
       torque = compute_torque(dlmt_dq, muscle_force)
       
@@ -146,97 +146,6 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    
    writer.close()
    return None
-
-# def plot_all_q_variation(muscle_selected, cylinders, model, q_fixed, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False, file_path="") :
-   
-#    """Create a directory with all excel files and png of mvt for all q
-   
-#    INPUTS
-#    - muscle_selected : string, name of the muscle selected. 
-#                         Please chose an autorized name in this list : 
-#                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
-#                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
-#    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-#    - model : model 
-#    - q_fixed : array 4*1, q fixed, reference
-#    - filename : string, name of the file to create
-#    - num_points : int (default = 50) number of point to generate per mvt
-#    - plot_all : bool (default false), True if we want all plots of point P, S (and Q, G, H and T) with cylinder(s)
-#    - plot_limit : bool (default = False), True to plot points P, S (and Q, G, H and T) with cylinder(s) 
-#                                                                                           (first, middle and last one)
-#    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
-   
-#    # Create a folder for save excel files and plots
-#    directory = file_path+"plot_all_q_variation_" + filename
-#    create_directory(directory)
-   
-#    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-#    muscle_index= find_index_muscle(model, muscle_selected)
-#    q = copy.deepcopy(q_fixed)
-   
-#    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
-#    fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
-
-#    for q_index in range (len(q_ranges)) : 
-#       segment_lengths = []
-#       qs = []
-#       writer = ExcelBatchWriter(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx", 
-#                                 q_ranges_names_with_dofs, batch_size=100)
-#       q = copy.deepcopy(q_fixed)
-      
-#       for k in range (num_points+1) : 
-#          print("plot all q variation, k = ", k)
-         
-#          qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
-#          q[q_index] = qi
-         
-#          print("q = ", q)
-         
-#          origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
-
-#          # ------------------------------------------------
-
-#          if k in [0,num_points/2, num_points] and plot_limit :
-#             segment_length, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
-            
-#          else :  
-#             segment_length, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
-         
-#          qs.append(qi)
-#          segment_lengths.append(segment_length)
-         
-#          dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
-#          muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
-#          torque = compute_torque(dlmt_dq, muscle_force)
-         
-#          writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
-      
-#       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities=False)
-      
-#       row = q_index // 3
-#       col = q_index % 3
-
-#       axs[row, col].plot(qs, segment_lengths, marker='o', linestyle='-', color='b', markersize=3)
-#       for idx in discontinuities:
-#          axs[row, col].plot(qs[idx:idx+2], segment_lengths[idx:idx+2], 'r', linewidth=2)  # Discontinuities are in red
-#       axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-#       axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
-#       axs[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
-#       axs[row, col].set_xticks(qs[::5])
-#       axs[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
-
-#       axs[row, col].set_yticks(segment_lengths[::5])
-#       axs[row, col].set_yticklabels([f'{y:.4f}' for y in segment_lengths[::5]],fontsize='smaller')
-   
-#    writer.close()
-   
-#    fig.suptitle(f'Muscle Length as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
-#    plt.tight_layout()  
-#    create_and_save_plot(f"{directory}", "all_q_variation.png")
-#    plt.show()
-   
-#    return None
-
 
 def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False, file_path="") :
    
@@ -265,10 +174,10 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index= find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
    q = copy.deepcopy(q_fixed)
 
-   for q_index in range (len(q_ranges)) : 
+   for q_index in range (model.nbQ()) : 
       if os.path.exists(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx") == False :
 
          writer = ExcelBatchWriter(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx", 
@@ -297,7 +206,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
             
             qs.append(qi)
             segment_lengths.append(segment_length)
-            dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+            dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
             muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
             torque = compute_torque(dlmt_dq, muscle_force)
             
@@ -328,12 +237,12 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path="") :
    
    if os.path.exists(f"{directory}/{y_label}_all_q_variation.png") == False :
    
-      q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+      _, q_ranges_names_with_dofs = compute_q_ranges(model)
       
-      row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+      row_fixed, col_fixed = compute_row_col(model.nbQ(), 3)
       fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
 
-      for q_index in range (len(q_ranges)) : 
+      for q_index in range (model.nbQ()) : 
          file_q_index = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx"
          
          y = []
@@ -391,7 +300,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    
    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
    muscle_index = find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
    
    writer = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}.xlsx", q_ranges_names_with_dofs, batch_size=100)
    writer_datas_ignored = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
@@ -407,9 +316,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
       # Generate a random q 
       q_ref = np.random.uniform(low=min_vals, high=max_vals)
       
-      # for i in range (len(q_ranges)) :
-      
-      i = random.randint(0, len(q_ranges) - 1)
+      i = random.randint(0, model.nbQ() - 1)
       print("i = ", i)
       
       qs = []
@@ -434,7 +341,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          
          segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
          
-         dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+         dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
          muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
          torque = compute_torque(dlmt_dq, muscle_force)
          

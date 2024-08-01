@@ -149,16 +149,17 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
 
 # ------------------------------------------
 # beaucoup de repetition de code ici ...
-def plot_predictions_and_targets_from_filenames(mode, model, y_labels, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name, num):
+    # model learning not model_biorbd
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     filenames = sorted([filename for filename in os.listdir(folder_name)])
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+    row_fixed, col_fixed = compute_row_col(nbQ, 3)
     fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         
         row = q_index // 3
         col = q_index % 3
@@ -181,18 +182,18 @@ def plot_predictions_and_targets_from_filenames(mode, model, y_labels, q_ranges,
     
     return None
         
-def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name, num):
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     # on recupere les sheets et on les tris dans l'ordre
     filenames = sorted([filename for filename in os.listdir(folder_name)])
     # on fait des loaders pour chaque sheet
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+    row_fixed, col_fixed = compute_row_col(nbQ, 3)
     
     # pour chaque q-index = 1 fig a chaque fois
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         # on fait une nouvelle figure
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
@@ -234,18 +235,18 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
     
     return None
 
-def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name, num):
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     # on recupere les sheets et on les tris dans l'ordre
     filenames = sorted([filename for filename in os.listdir(folder_name)])
     # on fait des loaders pour chaque sheet
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+    row_fixed, col_fixed = compute_row_col(nbQ, 3)
     fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         
         row = q_index // 3
         col = q_index % 3
@@ -269,7 +270,7 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
     
     
     # pour chaque q-index = 1 fig a chaque fois
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         # on fait une nouvelle figure
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
