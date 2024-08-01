@@ -31,7 +31,7 @@ def create_dataset_from_folder_cross_val(folder_name):
         print(f"Processing file: {file_path}")
 
         all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
-        X_tensor, y_tensor = data_preparation_create_tensor(file_path, 0, all_possible_categories)
+        X_tensor, y_tensor = data_preparation_create_tensor(file_path, all_possible_categories)
         dataset = MuscleDataset(X_tensor, y_tensor)
 
         train_val_size, test_size = compute_samples(dataset, 0.80)
