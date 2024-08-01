@@ -9,7 +9,7 @@ from neural_networks.plot_visualisation import *
 from itertools import product
 from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.file_directory_operations import create_directory, save_text_to_file
+from neural_networks.file_directory_operations import create_directory, save_text_to_file,save_informations_model, read_info_model
 import time
 
 def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes = 60) : 
@@ -197,6 +197,9 @@ def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, m
                                         f"Num of epoch used : {epoch + 1}",
                                         f"Criterion: {criterion_class.__name__}",
                                         f"with parameters: {criterion_params}\n----------\n"])
+                
+                save_informations_model(f"{directory}/{num_try}", num_try, val_loss, val_acc, timer.execution_time, 
+                                        try_hyperparams, epoch+1, criterion_class.__name__, criterion_params)
                 num_try+=1
 
     list_simulation.sort(key=lambda x: x[0]) # sort list to have val_loss in croissant order 
@@ -206,6 +209,9 @@ def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, m
     print(f"Best hyperparameters loss found : {best_hyperparameters_loss}")
     print(f'Best criterion: {best_criterion_class_loss.__name__} with parameters: {best_criterion_params_loss}')
     print("list_simulation = ", list_simulation)
+    
+    plot_results_try_hyperparams(f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}",
+                                 "execution_time", "val_loss")
     
     # Finally, train one last time the model with best hyperparams and save model + plot
     main_superised_learning(best_hyperparameters_loss, nbQ, num_datas_for_dataset, folder, muscle_name, True,

@@ -5,7 +5,7 @@ import torch
 import numpy as np
 import os
 from neural_networks.data_preparation import create_data_loader
-from neural_networks.file_directory_operations import create_and_save_plot
+from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 from neural_networks.other import compute_row_col
 
 def mean_distance(predictions, targets):
@@ -330,3 +330,33 @@ def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) :
     plt.show()
     
 
+def plot_results_try_hyperparams(directory_path, x_info, y_info):
+    x_axis = []
+    y_axis = []
+    model_name_try = []
+    
+    # Get informations for plot
+    for directory in os.listdir(directory_path):
+        full_directory_path = os.path.join(directory_path, directory)
+        if os.path.isdir(full_directory_path) and os.path.exists(f"{full_directory_path}/model_informations.txt") :
+            x_axis_value, y_axis_value = read_info_model(f"{full_directory_path}/model_informations.txt", [x_info, y_info])
+            x_axis.append(x_axis_value)
+            y_axis.append(y_axis_value)
+            model_name_try.append(directory) 
+    
+    # Generate unique colors for each point using a colormap
+    num_points = len(x_axis)
+    colors = plt.cm.jet(np.linspace(0, 1, num_points))
+
+    plt.figure(figsize=(10, 5))
+    for i in range(num_points):
+        plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i], label=model_name_try[i])
+        plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right')
+    
+    plt.xlabel(x_info)
+    plt.ylabel(y_info)
+    plt.title(f"{x_info} vs {y_info}", fontweight='bold')
+    plt.grid(True)
+    create_and_save_plot(f"{directory_path}", f"{x_info} vs {y_info}.png")
+    plt.show()
+    
