@@ -49,88 +49,88 @@ def compute_torque_from_lmt_and_dlmt_dq(muscle_index, lmt, dlmt_dq) :
     return compute_torque(dlmt_dq, f)
 
 
-def plot_muscle_force_and_torque_q_variation(muscle_selected, cylinders, model, q_fixed, directory_path, num_points = 100) :
+# def plot_muscle_force_and_torque_q_variation(muscle_selected, cylinders, model, q_fixed, directory_path, num_points = 100) :
    
-    """Create a directory with all excel files and png of mvt for all q
+#     """Create a directory with all excel files and png of mvt for all q
 
-    INPUTS
-    - muscle_selected : string, name of the muscle selected. 
-                            Please chose an autorized name in this list : 
-                            ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
-                            'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
-    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-    - model : model 
-    - q_fixed : array 4*1, q fixed, reference
-    - filename : string, name of the file to create
-    - num_points : int (default = 50) number of point to generate per mvt
-    - plot_all : bool (default false), True if we want all plots of point P, S (and Q, G, H and T) with cylinder(s)
-    - plot_limit : bool (default = False), True to plot points P, S (and Q, G, H and T) with cylinder(s) 
-                                                                                            (first, middle and last one)
-    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
+#     INPUTS
+#     - muscle_selected : string, name of the muscle selected. 
+#                             Please chose an autorized name in this list : 
+#                             ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
+#                             'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
+#     - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
+#     - model : model 
+#     - q_fixed : array 4*1, q fixed, reference
+#     - filename : string, name of the file to create
+#     - num_points : int (default = 50) number of point to generate per mvt
+#     - plot_all : bool (default false), True if we want all plots of point P, S (and Q, G, H and T) with cylinder(s)
+#     - plot_limit : bool (default = False), True to plot points P, S (and Q, G, H and T) with cylinder(s) 
+#                                                                                             (first, middle and last one)
+#     - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
 
-    # Create a folder for save excel files and plots
+#     # Create a folder for save excel files and plots
 
-    q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-    muscle_index= find_index_muscle(model, muscle_selected)
-    q = copy.deepcopy(q_fixed)
+#     q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
+#     muscle_index= find_index_muscle(model, muscle_selected)
+#     q = copy.deepcopy(q_fixed)
 
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
-    fig1, axs1 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
-    fig2, axs2 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+#     row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+#     fig1, axs1 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+#     fig2, axs2 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
 
-    for q_index in range (len(q_ranges)) : 
-        forces = []
-        torques = []
-        qs = []
+#     for q_index in range (len(q_ranges)) : 
+#         forces = []
+#         torques = []
+#         qs = []
         
-        q = copy.deepcopy(q_fixed)
+#         q = copy.deepcopy(q_fixed)
         
-        for k in range (num_points+1) : 
-            print("plot muscle force and torque, k = ", k)
+#         for k in range (num_points+1) : 
+#             print("plot muscle force and torque, k = ", k)
             
-            qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
-            q[q_index] = qi
+#             qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
+#             q[q_index] = qi
             
-            print("q = ", q)
+#             print("q = ", q)
 
-            # ------------------------------------------------
-            origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
-            lmt, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False)  
+#             # ------------------------------------------------
+#             origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
+#             lmt, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False)  
          
             
-            dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
-            muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, lmt)
-            torque = compute_torque(dlmt_dq, muscle_force)
+#             dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
+#             muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, lmt)
+#             torque = compute_torque(dlmt_dq, muscle_force)
 
-            qs.append(qi)
-            forces.append(muscle_force)
-            torques.append(torque)
+#             qs.append(qi)
+#             forces.append(muscle_force)
+#             torques.append(torque)
         
-        row = q_index // 3
-        col = q_index % 3
+#         row = q_index // 3
+#         col = q_index % 3
 
-        axs1[row, col].plot(qs, forces, marker='o', linestyle='-', color='b', markersize=3)
-        axs1[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-        axs1[row, col].set_ylabel('Muscle_force',fontsize='smaller')
-        axs1[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
-        axs1[row, col].set_xticks(qs[::5])
-        axs1[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
+#         axs1[row, col].plot(qs, forces, marker='o', linestyle='-', color='b', markersize=3)
+#         axs1[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+#         axs1[row, col].set_ylabel('Muscle_force',fontsize='smaller')
+#         axs1[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
+#         axs1[row, col].set_xticks(qs[::5])
+#         axs1[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
         
-        axs2[row, col].plot(qs, torques, marker='o', linestyle='-', color='b', markersize=3)
-        axs2[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-        axs2[row, col].set_ylabel('Torque',fontsize='smaller')
-        axs2[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
-        axs2[row, col].set_xticks(qs[::5])
-        axs2[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
+#         axs2[row, col].plot(qs, torques, marker='o', linestyle='-', color='b', markersize=3)
+#         axs2[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
+#         axs2[row, col].set_ylabel('Torque',fontsize='smaller')
+#         axs2[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
+#         axs2[row, col].set_xticks(qs[::5])
+#         axs2[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
 
-    fig1.suptitle(f'Muscle Force as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
-    plt.tight_layout()  
-    create_and_save_plot(f"{directory_path}", "muscle_force_q_variation.png")
-    plt.show()
+#     fig1.suptitle(f'Muscle Force as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
+#     plt.tight_layout()  
+#     create_and_save_plot(f"{directory_path}", "muscle_force_q_variation.png")
+#     plt.show()
     
-    fig2.suptitle(f'Torque as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
-    plt.tight_layout()  
-    create_and_save_plot(f"{directory_path}", "torque_q_variation.png")
-    plt.show()
+#     fig2.suptitle(f'Torque as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
+#     plt.tight_layout()  
+#     create_and_save_plot(f"{directory_path}", "torque_q_variation.png")
+#     plt.show()
 
-    return None
+#     return None

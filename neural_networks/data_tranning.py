@@ -6,6 +6,7 @@ from neural_networks.EarlyStopping import EarlyStopping
 from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
 from neural_networks.file_directory_operations import create_and_save_plot
+import math
 
 def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     """
@@ -130,7 +131,6 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
         train_accs = []
         val_accs = []
         
-    # pour muscle
     # Initialization of ReduceLROnPlateau
     min_lr=1e-8
     patience_scheduler=20
@@ -140,15 +140,16 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=patience_scheduler, min_lr=min_lr)
     # Initialization of EarlyStopping
     early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=1e-9, verbose=True)
-    
-    # # Initialization of ReduceLROnPlateau
-    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=50, min_lr=1e-8)
-    # # Initialization of EarlyStopping
-    # early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=1e-5, verbose=True)
 
     for epoch in range(Hyperparams.num_epochs):
         train_loss, train_acc = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
         val_loss, val_acc = evaluate(model, val_loader, Hyperparams.criterion)
+        
+        # Security
+        # Sometime, acc(s) could be Nan :(
+        # Check your activation function and try an other !
+        if math.isnan(train_acc) or math.isnan(val_acc):
+            return model, float('inf'), float('inf')
         
         if plot : 
             train_losses.append(train_loss)
@@ -183,7 +184,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     if save : 
         save_model(model, input_size, output_size, Hyperparams, f"{file_path}")
     
-    return model, val_loss, val_acc
+    return model, val_loss, val_acc, epoch
 
 
 

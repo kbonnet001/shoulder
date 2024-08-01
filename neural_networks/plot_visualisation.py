@@ -5,7 +5,7 @@ import torch
 import numpy as np
 import os
 from neural_networks.data_preparation import create_data_loader
-from neural_networks.file_directory_operations import create_and_save_plot
+from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 from neural_networks.other import compute_row_col
 
 def mean_distance(predictions, targets):
@@ -149,16 +149,17 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
 
 # ------------------------------------------
 # beaucoup de repetition de code ici ...
-def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name, num):
+    # model learning not model_biorbd
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     filenames = sorted([filename for filename in os.listdir(folder_name)])
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+    row_fixed, col_fixed = compute_row_col(nbQ, 3)
     fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         
         row = q_index // 3
         col = q_index % 3
@@ -171,29 +172,28 @@ def plot_predictions_and_targets_from_filenames_muscle(mode, model, q_ranges, fi
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
         axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-        axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
+        axs[row, col].set_ylabel(f'{y_labels[0]}',fontsize='smaller')
         axs[row, col].legend()
     
-    fig.suptitle(f'Predictions and targets of Muscle length', fontweight='bold')
+    fig.suptitle(f'Predictions and targets of {y_labels[0]}', fontweight='bold')
     plt.tight_layout()  
-    create_and_save_plot(f"{file_path}", "plot_muscle_length_predictions_and_targets.png")
-    # plt.savefig(f"{file_path}/plot_muscle_length_predictions_and_targets.png")
+    create_and_save_plot(f"{file_path}", f"plot_{y_labels[0]}_predictions_and_targets.png")
     plt.show()
     
     return None
         
-def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name, num):
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     # on recupere les sheets et on les tris dans l'ordre
     filenames = sorted([filename for filename in os.listdir(folder_name)])
     # on fait des loaders pour chaque sheet
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+    row_fixed, col_fixed = compute_row_col(nbQ, 3)
     
     # pour chaque q-index = 1 fig a chaque fois
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         # on fait une nouvelle figure
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
@@ -230,23 +230,23 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q
         
             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
             plt.tight_layout()  
-            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
             plt.show()
     
     return None
 
-def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name, num):
 
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     # on recupere les sheets et on les tris dans l'ordre
     filenames = sorted([filename for filename in os.listdir(folder_name)])
     # on fait des loaders pour chaque sheet
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:len(q_ranges)])]
+    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
     
-    row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
+    row_fixed, col_fixed = compute_row_col(nbQ, 3)
     fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         
         row = q_index // 3
         col = q_index % 3
@@ -270,7 +270,7 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
     
     
     # pour chaque q-index = 1 fig a chaque fois
-    for q_index in range(len(q_ranges)) : 
+    for q_index in range(nbQ) : 
         # on fait une nouvelle figure
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
@@ -307,7 +307,7 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
         
             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
             plt.tight_layout()  
-            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_lever_arm_predictions_and_targets.png")
+            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
             plt.show()
     
     return None
@@ -330,3 +330,33 @@ def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) :
     plt.show()
     
 
+def plot_results_try_hyperparams(directory_path, x_info, y_info):
+    x_axis = []
+    y_axis = []
+    model_name_try = []
+    
+    # Get informations for plot
+    for directory in os.listdir(directory_path):
+        full_directory_path = os.path.join(directory_path, directory)
+        if os.path.isdir(full_directory_path) and os.path.exists(f"{full_directory_path}/model_informations.txt") :
+            x_axis_value, y_axis_value = read_info_model(f"{full_directory_path}/model_informations.txt", [x_info, y_info])
+            x_axis.append(x_axis_value)
+            y_axis.append(y_axis_value)
+            model_name_try.append(directory) 
+    
+    # Generate unique colors for each point using a colormap
+    num_points = len(x_axis)
+    colors = plt.cm.jet(np.linspace(0, 1, num_points))
+
+    plt.figure(figsize=(10, 5))
+    for i in range(num_points):
+        plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i], label=model_name_try[i])
+        plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right')
+    
+    plt.xlabel(x_info)
+    plt.ylabel(y_info)
+    plt.title(f"{x_info} vs {y_info}", fontweight='bold')
+    plt.grid(True)
+    create_and_save_plot(f"{directory_path}", f"{x_info} vs {y_info}.png")
+    plt.show()
+    
