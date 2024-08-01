@@ -27,7 +27,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    
    writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges_muscle, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
  
    # Limits of q
    min_vals = [row[0] for row in q_ranges_muscle]
@@ -76,7 +76,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
    muscle_index = find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
 
    q_test_limite = [[0.,0.,0.],[0.,0.,0.],[0.,0.,0.]]
    for k in range (3) :
@@ -125,7 +125,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    
    writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges_muscle, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
 
    q_ref = np.array([q_ranges_muscle[0][1], q_ranges_muscle[1][1], q_ranges_muscle[2][1], 0.0]) 
 
@@ -199,7 +199,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
    
    writer = ExcelBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, q_ranges_muscle, muscle_index, cylinders)
+   initialisation_generation(model, muscle_index, cylinders)
  
    # Limits of q
    min_vals = [row[0] for row in q_ranges_muscle]

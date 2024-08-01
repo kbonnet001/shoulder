@@ -73,7 +73,7 @@ def load_saved_model(file_path) :
 
     return model
     
-def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, test_loader, file_path, 
+def visualize_prediction(mode, nbQ, y_labels, train_loader, val_loader, test_loader, file_path, 
                          folder_name_for_prediction) : 
     
     """
@@ -97,11 +97,11 @@ def visualize_prediction(mode, q_ranges, y_labels, train_loader, val_loader, tes
     plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
     
     if mode == Mode.DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
     elif mode == Mode.MUSCLE_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, q_ranges, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
     else : # MUSCLE or TORQUE
-        plot_predictions_and_targets_from_filenames(mode, model, y_labels, q_ranges, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
 
 
 
