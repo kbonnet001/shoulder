@@ -83,7 +83,7 @@ def main_superised_learning(Hyperparams, nbQ, num_datas_for_dataset, folder_name
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
     
     
-def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = True) : 
+def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = False) : 
     
     """Try hyperparameters, keep all train-evaluated models in a list and return best hyperparams
     
