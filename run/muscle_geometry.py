@@ -6,7 +6,7 @@ from wrapping.Cylinder import Cylinder
 from neural_networks.discontinuities import *
 import torch.nn as nn
 from neural_networks.Loss import *
-from pyorerun import LiveModelAnimation
+# from pyorerun import LiveModelAnimation
 
 from neural_networks.data_generation import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
@@ -23,7 +23,7 @@ from neural_networks.save_model import load_saved_model
 #################### 
 # Code des tests
 import biorbd
-import bioviz
+# import bioviz
 
 import unittest
 
@@ -147,18 +147,18 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 model_name = "train_muscle_PECM2"
 mode = Mode.TORQUE
 batch_size = 128
-n_layers = [1]
-n_nodes = [[25]]
-activations = [[nn.GELU()]]
-activation_names = [["GELU"]]
+n_layers = [2]
+n_nodes = [[128, 128], [256, 256], [512, 512], [1024, 1024]]
+activations = [[nn.GELU(), nn.GELU()]]
+activation_names = [["GELU", "GELU"]]
 L1_penalty = [0.01]
 L2_penalty = [0.01]
-learning_rate = [1e-3]
+learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
     # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss, {'delta': [0.2, 1.0], 'factor': [1.0]}),
+    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
     # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
     # (nn.MSELoss, {})
 ]
@@ -194,7 +194,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 10
+num_datas_for_dataset = 10000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
