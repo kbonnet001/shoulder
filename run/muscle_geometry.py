@@ -144,13 +144,13 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "train_muscle_PECM2"
+model_name = "train_torque_1c_64_2"
 mode = Mode.TORQUE
-batch_size = 128
-n_layers = [2]
-n_nodes = [[128, 128], [256, 256], [512, 512], [1024, 1024]]
-activations = [[nn.GELU(), nn.GELU()]]
-activation_names = [["GELU", "GELU"]]
+batch_size = 64
+n_layers = [1]
+n_nodes = [[512], [1024], [2048], [4096], [8192], [16384]]
+activations = [[nn.GELU()]]
+activation_names = [["GELU"]]
 L1_penalty = [0.01]
 L2_penalty = [0.01]
 learning_rate = [1e-2]
