@@ -154,6 +154,7 @@ activation_names = [["GELU", "GELU"]]
 L1_penalty = [0.01]
 L2_penalty = [0.01]
 learning_rate = [1e-2]
+
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
@@ -162,7 +163,7 @@ criterion = [
     # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
     # (nn.MSELoss, {})
 ]
-p_dropout = [0.2]
+p_dropout = [0.2, 0.5]
 use_batch_norm = True
 
 # model_name="essai_muscle_train"
