@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from neural_networks.Model import Model
-from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames, plot_predictions_and_targets_from_filenames_dlmt_dq, plot_predictions_and_targets_from_filenames_lmt_dlmt_dq
+# from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames, plot_predictions_and_targets_from_filenames_dlmt_dq, plot_predictions_and_targets_from_filenames_lmt_dlmt_dq
 from neural_networks.file_directory_operations import create_and_save_plot
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 import json
@@ -72,36 +72,9 @@ def load_saved_model(file_path) :
     model.eval()
 
     return model
-    
-def visualize_prediction(mode, nbQ, y_labels, train_loader, val_loader, test_loader, file_path, 
-                         folder_name_for_prediction) : 
-    
-    """
-    Load saved model and plot-save visualisations 
-    
-    INPUTS 
-    - mode : Mode
-    - q_ranges : array, range of each qi (min,max)
-    - y_labels : list string, labels of each type value in exit y
-    - train_loader : DataLoader, data trainning (80% of 80%)
-    - val_loader : DataLoader, data validation (20% of 80%)
-    - test_loader : DataLoader, data testing (20%)
-    - file_path : string, path where the file 'model_config.json' of the model could be find
-    - folder_name_for_prediction : string, path where files of folder 'plot_all_q_variation_' could be find
-    """
-    
-    model = load_saved_model(file_path)
-    
-    plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
-    plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
-    plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
-    
-    if mode == Mode.DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
-    elif mode == Mode.MUSCLE_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
-    else : # MUSCLE or TORQUE
-        plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
+
+
+
 
 
 def main_function_model(file_path, inputs) : 

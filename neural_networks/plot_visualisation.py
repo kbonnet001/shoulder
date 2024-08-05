@@ -7,6 +7,8 @@ import os
 from neural_networks.data_preparation import create_data_loader
 from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 from neural_networks.other import compute_row_col
+from neural_networks.Mode import Mode
+from neural_networks.save_model import load_saved_model
 
 def mean_distance(predictions, targets):
     """
@@ -314,6 +316,38 @@ def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_label
     return None
 
 # -------------------------------------
+def visualize_prediction_trainning(model, file_path, y_labels, train_loader, val_loader, test_loader ) : 
+    
+    plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
+    plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
+    plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
+
+def visualize_prediction(mode, nbQ, y_labels, file_path, folder_name_for_prediction) : 
+    
+    """
+    Load saved model and plot-save visualisations 
+    
+    INPUTS 
+    - mode : Mode
+    - q_ranges : array, range of each qi (min,max)
+    - y_labels : list string, labels of each type value in exit y
+    - train_loader : DataLoader, data trainning (80% of 80%)
+    - val_loader : DataLoader, data validation (20% of 80%)
+    - test_loader : DataLoader, data testing (20%)
+    - file_path : string, path where the file 'model_config.json' of the model could be find
+    - folder_name_for_prediction : string, path where files of folder 'plot_all_q_variation_' could be find
+    """
+
+    model = load_saved_model(file_path)
+    
+    if mode == Mode.DLMT_DQ : 
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
+    elif mode == Mode.MUSCLE_DLMT_DQ : 
+        plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
+    else : # MUSCLE or TORQUE
+        plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
+
+# -------------------------------------
 def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) : 
     
     plt.plot(qs, segment_lengths, linestyle='-', color='b')
@@ -391,49 +425,5 @@ def plot_results_try_hyperparams(directory_path, x_info, y_info):
     plt.legend()
     create_and_save_plot(f"{directory_path}", f"{x_info} vs {y_info}.png")
     plt.show()
-    
-
-# import matplotlib.pyplot as plt
-# import numpy as np
-
-# # Exemple de données
-# num_points = 10
-# y_axis = np.random.rand(num_points)
-# x_axis = np.random.rand(num_points)
-# colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
-# model_name_try = [f"Model {i}" for i in range(num_points)]
-
-# # Détection des points du front de Pareto
-# pareto_indices = []
-# for i in range(num_points):
-#     dominated = False
-#     for j in range(num_points):
-#         if (x_axis[j] <= x_axis[i] and y_axis[j] <= y_axis[i]) and (x_axis[j] < x_axis[i] or y_axis[j] < y_axis[i]):
-#             dominated = True
-#             break
-#     if not dominated:
-#         pareto_indices.append(i)
-
-# # Tracé des points
-# for i in range(num_points):
-#     plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i], label=model_name_try[i])
-#     plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right')
-
-# # Mise en évidence des points du front de Pareto
-# for i in pareto_indices:
-#     plt.scatter(y_axis[i], x_axis[i], edgecolor='black', facecolor='none', s=100)  # Mettre en évidence avec un bord noir
-#     plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right', weight='bold')
-
-# # Optionnellement, tracer une ligne pour visualiser le front
-# pareto_points = sorted([(x_axis[i], y_axis[i]) for i in pareto_indices])
-# pareto_x, pareto_y = zip(*pareto_points)
-# plt.plot(pareto_y, pareto_x, linestyle='--', color='black', alpha=0.6)
-
-# # Affichage du graphique
-# plt.xlabel('Axis X')
-# plt.ylabel('Axis Y')
-# plt.title('Scatter Plot with Pareto Front')
-# plt.legend(loc='best')
-# plt.show()
 
     

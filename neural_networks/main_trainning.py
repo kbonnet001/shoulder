@@ -1,4 +1,4 @@
-from neural_networks.data_preparation import create_loaders_from_folder
+from neural_networks.data_preparation import create_loaders_from_folder, get_y_labels
 from neural_networks.data_tranning import train_model_supervised_learning
 from neural_networks.activation_functions import *
 from torch.utils.data import DataLoader
@@ -66,22 +66,26 @@ def main_superised_learning(Hyperparams, nbQ, num_datas_for_dataset, folder_name
     
     # Create a folder for save plots
     create_directory(f"{folder_name}/{muscle_name}/_Model") # Muscle/Model
-    
-    train_loader, val_loader, test_loader, input_size, output_size, y_labels \
-    = create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, f"{folder_name}/{muscle_name}", 
-                                 muscle_name, with_noise, plot_preparation)
+    y_labels=None
     
     # train_model if retrain == True or if none file_path already exist
     if retrain or os.path.exists(f"{folder_name}/{muscle_name}/_Model/{file_path}") == False: 
         
-        _, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
+        train_loader, val_loader, test_loader, input_size, output_size, y_labels \
+         = create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, f"{folder_name}/{muscle_name}", 
+                                 muscle_name, with_noise, plot_preparation)
+        
+        model, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
                                                   Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                                                   plot, save)
-        
-    visualize_prediction(Hyperparams.mode, nbQ, y_labels, train_loader, val_loader, test_loader, 
+        visualize_prediction_trainning(model, file_path, y_labels, train_loader, val_loader, test_loader) 
+    
+    if y_labels is None: 
+        y_labels = get_y_labels(Hyperparams.mode,f"{folder_name}/{muscle_name}/{muscle_name}.xlsx")
+    
+    visualize_prediction(Hyperparams.mode, nbQ, y_labels, 
                          f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
-    
     
 def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = False) : 
     

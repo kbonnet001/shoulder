@@ -93,6 +93,28 @@ def data_standardization(filename, limit = 0):
 
 # -------------------------------------------------------------------------
 
+def get_y_labels(mode,file_path_df) : 
+  df_datas = pd.read_excel(file_path_df)
+
+  # Separate inputs from targets
+  if mode == Mode.DLMT_DQ :
+    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    y_labels = selected_columns
+  
+  elif mode == Mode.MUSCLE_DLMT_DQ : 
+    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns.insert(0, 'segment_length')
+    y_labels = selected_columns
+    
+  elif mode == Mode.TORQUE : 
+    y_labels = ['torque']
+    
+  else : # defaut mode = MUSCLE
+    y_labels = ['segment_length']
+    
+  return y_labels
+  
+
 def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     """
     Load data from df and create X and y tensors for PyTorch
@@ -179,9 +201,9 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
   file_path_df = os.path.join(folder_name, f"{muscle_name}.xlsx")
     
   if not os.path.exists(file_path_df):
-      print("Error : File need extension .xlsx or .xls\n\
-        If the file exist, maybe it's open in a window. Please close it and try again.")
-      sys.exit(1)
+      error = "Error : File need extension .xlsx or .xls\n\
+        If the file exist, maybe it's open in a window. Please close it and try again."
+      sys.exit(error)
   else : 
       print(f"Processing file: {file_path_df}")
 
