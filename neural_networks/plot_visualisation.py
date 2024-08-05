@@ -33,7 +33,8 @@ def compute_pourcentage_error(predictions, targets) :
     OUPUT : 
         float: mean pourcentage of error predictions
     """
-    error_pourcentage = torch.mean((torch.abs(predictions - targets)) / torch.abs(predictions))*100
+    # error_pourcentage = torch.mean((torch.abs(predictions - targets)) / targets) * 100
+    error_pourcentage = torch.mean((torch.abs(predictions - targets))) / torch.mean(targets) * 100
     return error_pourcentage.item()
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path):

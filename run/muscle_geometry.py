@@ -144,27 +144,26 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "train_torque_2c_64"
-mode = Mode.TORQUE
-batch_size = 64
-n_layers = [2]
-n_nodes = [[512, 512], [1024, 1024], [2048, 2048], [4096, 4096], [8192, 8192]]
-activations = [[nn.GELU(), nn.GELU()]]
-activation_names = [["GELU", "GELU"]]
-L1_penalty = [0.01]
-L2_penalty = [0.01]
-learning_rate = [1e-2]
-
-num_epochs = 1000
-# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-criterion = [
-    # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
-    # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
-    # (nn.MSELoss, {})
-]
-p_dropout = [0.2, 0.5]
-use_batch_norm = True
+# model_name = "train_muscle_PECM2"
+# mode = Mode.TORQUE
+# batch_size = 128
+# n_layers = [2]
+# n_nodes = [[128, 128], [256, 256], [512, 512], [1024, 1024]]
+# activations = [[nn.GELU(), nn.GELU()]]
+# activation_names = [["GELU", "GELU"]]
+# L1_penalty = [0.01]
+# L2_penalty = [0.01]
+# learning_rate = [1e-2]
+# num_epochs = 1000
+# # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+# criterion = [
+#     # (LogCoshLoss, {'factor': [1.0, 1.8]}),
+#     (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
+#     # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
+#     # (nn.MSELoss, {})
+# ]
+# p_dropout = [0.2]
+# use_batch_norm = True
 
 # model_name="essai_muscle_train"
 # mode = Mode.MUSCLE
@@ -174,26 +173,26 @@ use_batch_norm = True
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-# model_name="correction_retrain_2" 
-# mode = Mode.TORQUE
-# batch_size=128
-# n_layers=1
-# n_nodes=[10]
-# activations=[nn.GELU()]
-# # activations = [nn.Sigmoid()]
+model_name="correction_pourcentage_2" 
+mode = Mode.TORQUE
+batch_size=64
+n_layers=1
+n_nodes=[128]
+activations=[nn.GELU()]
+# activations = [nn.Sigmoid()]
 
-# activation_names = ["GELU"]
+activation_names = ["GELU"]
 
-# L1_penalty=0.01
-# L2_penalty=0.01
-# learning_rate=0.01
-# num_epochs=1000 
-# optimizer=0.0
-# # criterion = LogCoshLoss(factor=1.8)
-# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-# # criterion = nn.MSELoss()
-# p_dropout=0.2
-# use_batch_norm=True
+L1_penalty=0.01
+L2_penalty=0.01
+learning_rate=0.01
+num_epochs=1000 
+optimizer=0.0
+# criterion = LogCoshLoss(factor=1.8)
+criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+# criterion = nn.MSELoss()
+p_dropout=0.2
+use_batch_norm=True
 
 num_datas_for_dataset = 10000
 folder = "datas"
@@ -208,13 +207,13 @@ print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-# main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_datas_with_tau", 
-#                         muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-#                         plot_preparation=False, plot=True, save=True) 
+main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_datas_with_tau", 
+                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+                        plot_preparation=False, plot=True, save=True) 
 
-list_simulation, best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
-                            "PECM2", with_noise)
+# list_simulation, best_hyperparameters_loss \
+# = find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
+#                             "PECM2", with_noise)
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 

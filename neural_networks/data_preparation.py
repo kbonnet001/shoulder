@@ -139,8 +139,8 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
       y_labels = ['torque']
       
     else : # defaut mode = MUSCLE
-      X = df_datas.loc[:, 'muscle_selected':'insertion_muscle_z'].values
-      X = np.delete(X, (0, -1, -2, -3, -4, -5, -6), axis=1) # on enleve les coordonnes de origin et insertion
+      selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
+      X = df_datas.loc[:, selected_columns_q].values # q only
       
       y = df_datas.loc[:, 'segment_length'].values
       y_labels = ['segment_length']
