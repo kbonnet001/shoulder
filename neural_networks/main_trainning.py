@@ -26,7 +26,7 @@ def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_seconde
     """
     
     #dans cette situation, hyperparams c'est des listes de trucs aue l'on veut tester
-    n_combinations = (len(Hyperparams.n_layers) * len(Hyperparams.n_nodes) * len(Hyperparams.activations) *
+    n_combinations = (len(Hyperparams.n_nodes) * len(Hyperparams.activations) *
                       len(Hyperparams.L1_penalty) * len(Hyperparams.L2_penalty) * len(Hyperparams.learning_rate) * 
                       len(Hyperparams.dropout_prob) * sum(len(list(product(*params.values()))) for name, params in Hyperparams.criterion))
 
@@ -154,12 +154,12 @@ def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, m
     best_criterion_params_loss = None
     num_try = 0
     
-    for params in product(Hyperparams.n_layers, Hyperparams.n_nodes, Hyperparams.activations, Hyperparams.activation_names, 
+    for params in product(Hyperparams.n_nodes, Hyperparams.activations, Hyperparams.activation_names, 
                           Hyperparams.L1_penalty, Hyperparams.L2_penalty,Hyperparams.learning_rate, Hyperparams.dropout_prob):
         
-        try_hyperparams = ModelHyperparameters("Try Hyperparams",Hyperparams.mode, Hyperparams.batch_size, params[0], 
-                                               params[1], params[2], params[3], params[4], params[5], params[6], 
-                                               Hyperparams.num_epochs, None, params[7], Hyperparams.use_batch_norm)
+        try_hyperparams = ModelHyperparameters("Try Hyperparams",Hyperparams.mode, Hyperparams.batch_size, 
+                                               params[0], params[1], params[2], params[3], params[4], params[5], 
+                                               Hyperparams.num_epochs, None, params[6], Hyperparams.use_batch_norm)
         
         for criterion_class, criterion_param_grid in Hyperparams.criterion:
             for criterion_params_comb in product(*criterion_param_grid.values()):
@@ -185,7 +185,7 @@ def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, m
                     
                     # Best hyperparameters
                     best_hyperparameters_loss = ModelHyperparameters("Best_hyperparameter", Hyperparams.mode, 
-                                                                     Hyperparams.batch_size, try_hyperparams.n_layers,
+                                                                     Hyperparams.batch_size,
                                                                      try_hyperparams.n_nodes, try_hyperparams.activations, 
                                                                      try_hyperparams.activation_names, 
                                                                      try_hyperparams.L1_penalty, 
