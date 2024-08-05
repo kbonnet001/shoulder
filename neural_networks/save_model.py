@@ -104,7 +104,6 @@ def visualize_prediction(mode, nbQ, y_labels, train_loader, val_loader, test_loa
         plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
 
 
-
 def main_function_model(file_path, inputs) : 
     """
     Model prediction with a saved model

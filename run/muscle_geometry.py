@@ -15,7 +15,7 @@ from neural_networks.k_cross_validation import cross_validation, try_best_hyperp
 from neural_networks.functions_data_generation import compute_q_ranges
 from wrapping.muscles_length_jacobian import plot_length_jacobian
 from neural_networks.Mode import Mode
-from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters
+from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters, plot_results_try_hyperparams
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
 from neural_networks.Timer import measure_time
 from neural_networks.save_model import load_saved_model
@@ -207,9 +207,12 @@ print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_datas_with_tau", 
-                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-                        plot_preparation=False, plot=True, save=True) 
+# main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_datas_with_tau", 
+#                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+#                         plot_preparation=False, plot=True, save=True) 
+
+plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c",
+                                 "execution_time", "val_loss")
 
 # list_simulation, best_hyperparameters_loss \
 # = find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 

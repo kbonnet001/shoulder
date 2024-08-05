@@ -329,7 +329,19 @@ def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) :
     plt.yticks(segment_lengths[::5]) 
     plt.grid(True)
     plt.show()
-    
+
+def find_points_front_pareto(num_points, x_axis, y_axis) :
+    pareto_indices = []
+    for i in range(num_points):
+        dominated = False
+        for j in range(num_points):
+            if (x_axis[j] <= x_axis[i] and y_axis[j] <= y_axis[i]) and (x_axis[j] < x_axis[i] or y_axis[j] < y_axis[i]):
+                dominated = True
+                break
+        if not dominated:
+            pareto_indices.append(i)
+    return pareto_indices
+
 
 def plot_results_try_hyperparams(directory_path, x_info, y_info):
     x_axis = []
@@ -350,14 +362,78 @@ def plot_results_try_hyperparams(directory_path, x_info, y_info):
     colors = plt.cm.jet(np.linspace(0, 1, num_points))
 
     plt.figure(figsize=(10, 5))
-    for i in range(num_points):
-        plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i], label=model_name_try[i])
-        plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right')
+    plt.xscale('log')
+    plt.yscale('log')
     
-    plt.xlabel(x_info)
-    plt.ylabel(y_info)
+    # Détection des points du front de Pareto
+    pareto_indices = find_points_front_pareto(num_points, x_axis, y_axis)
+
+    # Tracé des points
+    for i in range(num_points):
+        plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i])
+        if i in pareto_indices: 
+            plt.scatter(y_axis[i], x_axis[i], edgecolor='black', facecolor='none', s=100)
+            plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right', weight='bold')
+        else : 
+            plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right')
+
+    # Tracer une ligne pour visualiser le front
+    pareto_points = sorted([(x_axis[i], y_axis[i]) for i in pareto_indices])
+    pareto_x, pareto_y = zip(*pareto_points)
+    plt.plot(pareto_y, pareto_x, linestyle='--', color='black', alpha=0.6, label = "Pareto_front")
+    plt.text(pareto_y[0] + 0.5, pareto_x[0] + 0.5, f"Best solution\n of objectif\n '{y_info}'", fontsize=9, ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
+    plt.text(pareto_y[-1] - 0.5, pareto_x[-1] + 4, f"Best solution\n of objectif\n '{x_info}'", fontsize=9, ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
+    
+    plt.xlabel(f"{x_info}" + (" (s)" if x_info == "execution_time" else ""))
+    plt.ylabel(f"{y_info}" + (" (s)" if y_info == "execution_time" else ""))
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
+    plt.legend()
     create_and_save_plot(f"{directory_path}", f"{x_info} vs {y_info}.png")
     plt.show()
+    
+
+# import matplotlib.pyplot as plt
+# import numpy as np
+
+# # Exemple de données
+# num_points = 10
+# y_axis = np.random.rand(num_points)
+# x_axis = np.random.rand(num_points)
+# colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
+# model_name_try = [f"Model {i}" for i in range(num_points)]
+
+# # Détection des points du front de Pareto
+# pareto_indices = []
+# for i in range(num_points):
+#     dominated = False
+#     for j in range(num_points):
+#         if (x_axis[j] <= x_axis[i] and y_axis[j] <= y_axis[i]) and (x_axis[j] < x_axis[i] or y_axis[j] < y_axis[i]):
+#             dominated = True
+#             break
+#     if not dominated:
+#         pareto_indices.append(i)
+
+# # Tracé des points
+# for i in range(num_points):
+#     plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i], label=model_name_try[i])
+#     plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right')
+
+# # Mise en évidence des points du front de Pareto
+# for i in pareto_indices:
+#     plt.scatter(y_axis[i], x_axis[i], edgecolor='black', facecolor='none', s=100)  # Mettre en évidence avec un bord noir
+#     plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right', weight='bold')
+
+# # Optionnellement, tracer une ligne pour visualiser le front
+# pareto_points = sorted([(x_axis[i], y_axis[i]) for i in pareto_indices])
+# pareto_x, pareto_y = zip(*pareto_points)
+# plt.plot(pareto_y, pareto_x, linestyle='--', color='black', alpha=0.6)
+
+# # Affichage du graphique
+# plt.xlabel('Axis X')
+# plt.ylabel('Axis Y')
+# plt.title('Scatter Plot with Pareto Front')
+# plt.legend(loc='best')
+# plt.show()
+
     
