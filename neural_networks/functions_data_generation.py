@@ -2,9 +2,7 @@ import numpy as np
 from wrapping.algorithm import single_cylinder_obstacle_set_algorithm, double_cylinder_obstacle_set_algorithm
 from wrapping.plot_cylinder import plot_one_cylinder_obstacle, plot_double_cylinder_obstacle
 from scipy.linalg import norm
-from openpyxl import load_workbook
 from neural_networks.discontinuities import *
-import copy
 
 def compute_q_ranges_segment(model, segment_selected) : 
     # segment_names

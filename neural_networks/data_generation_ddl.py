@@ -3,16 +3,16 @@ import matplotlib.pyplot as plt
 from neural_networks.ExcelBatchWriter import ExcelBatchWriter
 from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
-from neural_networks.plot_visualisation import plot_mvt_discontinuities_in_red
 from neural_networks.file_directory_operations import create_directory, create_and_save_plot
 import copy
 import random
 from wrapping.muscles_length_jacobian import compute_dlmt_dq, plot_length_jacobian
 from wrapping.muscle_forces_and_torque import compute_torque, compute_muscle_force_origin_insertion_nul, compute_torque_from_lmt_and_dlmt_dq
 import os
-from neural_networks.other import compute_row_col
+from neural_networks.other import compute_row_col, plot_mvt_discontinuities_in_red
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
 import pandas as pd
+
 
 def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    

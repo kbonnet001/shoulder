@@ -5,6 +5,7 @@ from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 import copy
 
+
 def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas

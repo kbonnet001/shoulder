@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def compute_row_col(sum, div) : 
     """Compute ideal row and col for subplots
@@ -39,3 +41,19 @@ def rice_rule(data):
 def scott_rule(data):
     bin_width = 3.5 * np.std(data) / (len(data) ** (1/3))
     return int((np.max(data) - np.min(data)) / bin_width)
+
+def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) : 
+    
+    plt.plot(qs, segment_lengths, linestyle='-', color='b')
+    qs_plot = [qs[idx] for idx in range(len(qs)) if idx not in to_remove]
+    segment_lengths_plot = [segment_lengths[idx] for idx in range(len(segment_lengths)) if idx not in to_remove]
+    plt.plot(qs_plot, segment_lengths_plot, marker='o', color='b')
+    for idx in to_remove:
+        plt.plot(qs[idx:idx+1], segment_lengths[idx:idx+1], marker='x', color='r')  # Discontinuities are in red
+    plt.xlabel(f'q{i}')
+    plt.ylabel('Muscle_length')
+    plt.title(f'Muscle Length as a Function of q{i} Values')
+    plt.xticks(qs[::5])
+    plt.yticks(segment_lengths[::5]) 
+    plt.grid(True)
+    plt.show()

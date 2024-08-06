@@ -1,10 +1,6 @@
 import numpy as np
 import biorbd
-from neural_networks.functions_data_generation import update_points_position, compute_q_ranges, find_index_muscle, compute_segment_length
 from neural_networks.file_directory_operations import *
-import copy
-from wrapping.muscles_length_jacobian import compute_dlmt_dq
-from neural_networks.other import compute_row_col
 
 def compute_muscle_force_origin_insertion_nul(muscle_index, lmt, model_one_muscle = biorbd.Model("models/oneMuscle.bioMod")) :
     """

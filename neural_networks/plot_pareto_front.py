@@ -2,7 +2,6 @@ import matplotlib as plt
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from itertools import chain
 from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 import copy
 

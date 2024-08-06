@@ -342,7 +342,8 @@ def plot_datas_distribution(muscle_name, files_path, nbQ, X_tensors, y_tensors, 
         axs[row, col].legend()
     
     if len(y_labels) == 1 : 
-      axs[row_fixed-1, col_fixed-1].hist([y_tensors[k] for k in range (len(y_tensors))], bins=20, alpha=0.5, stacked=True,
+      # y_tensors = y_tensors.squeeze(1)
+      axs[row_fixed-1, col_fixed-1].hist([y_tensors[k].squeeze(1) for k in range (len(y_tensors))], bins=20, alpha=0.5, stacked=True,
                                       label=graph_labels)
       axs[row_fixed-1, col_fixed-1].set_xlabel('Value')
       axs[row_fixed-1, col_fixed-1].set_ylabel('Frequency')
