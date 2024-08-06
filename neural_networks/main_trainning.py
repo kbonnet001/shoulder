@@ -1,17 +1,16 @@
-from neural_networks.data_preparation import create_loaders_from_folder, get_y_and_labels
+from neural_networks.data_preparation import create_loaders_from_folder
 from neural_networks.data_tranning import train_model_supervised_learning
 from neural_networks.activation_functions import *
-from torch.utils.data import DataLoader
-from neural_networks.EarlyStopping import EarlyStopping
 import os
 from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
 from itertools import product
 from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.file_directory_operations import create_directory, save_text_to_file,save_informations_model, read_info_model
+from neural_networks.file_directory_operations import create_directory, save_text_to_file,save_informations_model
 import time
-import pandas as pd
+from neural_networks.plot_pareto_front import plot_results_try_hyperparams
+
 
 def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes = 60) : 
     """Compute an estimation of execution code. 
