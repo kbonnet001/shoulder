@@ -93,26 +93,34 @@ def data_standardization(filename, limit = 0):
 
 # -------------------------------------------------------------------------
 
-def get_y_labels(mode,file_path_df) : 
-  df_datas = pd.read_excel(file_path_df)
+def get_y_and_labels(mode, df_datas, get_y = True) : 
+  
+  y = None
 
-  # Separate inputs from targets
   if mode == Mode.DLMT_DQ :
     selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-    y_labels = selected_columns
   
   elif mode == Mode.MUSCLE_DLMT_DQ : 
+    # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
     selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
     selected_columns.insert(0, 'segment_length')
-    y_labels = selected_columns
     
   elif mode == Mode.TORQUE : 
-    y_labels = ['torque']
+    selected_columns = ['torque']
+  
+  elif mode == Mode.TORQUE_MUS_DLMT_DQ : 
+    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns.insert(0, 'segment_length')
+    selected_columns.insert(len(selected_columns), 'torque')
     
   else : # defaut mode = MUSCLE
-    y_labels = ['segment_length']
+    selected_columns = ['segment_length']
+  
+  y_labels = selected_columns
+  if get_y : 
+    y = df_datas.loc[:, selected_columns].values
     
-  return y_labels
+  return y, y_labels
   
 
 def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
@@ -132,40 +140,11 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     # Load and standardize df
     # df_datas = data_standardization(df_data, limit)
     df_datas = pd.read_excel(file_path_df)
+    
+    selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
+    X = df_datas.loc[:, selected_columns_q].values # q only
 
-    # Separate inputs from targets
-    if mode == Mode.DLMT_DQ :
-      selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
-      X = df_datas.loc[:, selected_columns_q].values # q only
-    
-      # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
-      selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-      y = df_datas.loc[:, selected_columns].values
-      y_labels = selected_columns
-    
-    elif mode == Mode.MUSCLE_DLMT_DQ : 
-      selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
-      X = df_datas.loc[:, selected_columns_q].values # q only
-    
-      # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
-      selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-      selected_columns.insert(0, 'segment_length')
-      y = df_datas.loc[:, selected_columns].values
-      y_labels = selected_columns
-      
-    elif mode == Mode.TORQUE : 
-      selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
-      X = df_datas.loc[:, selected_columns_q].values # q only
-    
-      y = df_datas.loc[:, 'torque'].values
-      y_labels = ['torque']
-      
-    else : # defaut mode = MUSCLE
-      selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
-      X = df_datas.loc[:, selected_columns_q].values # q only
-      
-      y = df_datas.loc[:, 'segment_length'].values
-      y_labels = ['segment_length']
+    y, y_labels = get_y_and_labels(mode, df_datas, get_y = True)
     
     # # One-hot encoding for the 'index_muscle' column
     # encoder = OneHotEncoder(sparse_output=False, categories=[all_possible_categories])
@@ -331,11 +310,11 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
 
 # ----------------------------------------------------------------------------------------------
 
-def create_data_loader(mode, filename, limit, all_possible_categories) : 
-  X_tensor, y_tensor, _ = data_preparation_create_tensor(mode, filename, all_possible_categories)
+def create_data_loader(mode, filename, all_possible_categories) : 
+  X_tensor, y_tensor, y_labels = data_preparation_create_tensor(mode, filename, all_possible_categories)
   dataset = MuscleDataset(X_tensor, y_tensor)
   loader = DataLoader(dataset, 32, shuffle = False)
-  return loader 
+  return loader, y_labels
 
 def plot_datas_distribution(muscle_name, files_path, nbQ, X_tensors, y_tensors, y_labels, graph_labels):
     """To visualise tensors distribution

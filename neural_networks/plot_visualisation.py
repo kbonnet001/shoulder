@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 import os
-from neural_networks.data_preparation import create_data_loader
+from neural_networks.data_preparation import create_data_loader, get_y_and_labels
 from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 from neural_networks.other import compute_row_col
 from neural_networks.Mode import Mode
 from neural_networks.save_model import load_saved_model
+import pandas as pd
 
 def mean_distance(predictions, targets):
     """
@@ -37,7 +38,7 @@ def compute_pourcentage_error(predictions, targets) :
     """
     # error_pourcentage = torch.mean((torch.abs(predictions - targets)) / targets) * 100
     error_pourcentage = torch.mean((torch.abs(predictions - targets))) / torch.mean(targets) * 100
-    return error_pourcentage.item()
+    return torch.abs(error_pourcentage).item()
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path):
     """Plot loss and accuracy (train and validation)
@@ -151,15 +152,47 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     plt.show()
 
 # ------------------------------------------
-# beaucoup de repetition de code ici ...
-def plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name, num):
-    # model learning not model_biorbd
+def get_predictions_and_targets_from_selected_y_labels(model, loader, y_labels, y_selected) :
+    # on fait les predictions avec le mode reel 
+    predictions, targets = get_predictions_and_targets(model, loader)
 
+    if y_labels == y_selected : 
+        return predictions, targets
+    else : 
+        # grace à y_labels et y_selected, on sait quelle colonne prendre
+        # y_labels c'est la ref, donc synchro avec le mode reel
+        selected_indices = [y_labels.index(label) for label in y_selected]
+        
+        selected_predictions = [[row[i] for i in selected_indices] for row in predictions]
+        selected_targets = [[row[i] for i in selected_indices] for row in targets]
+        
+        return selected_predictions, selected_targets
+
+def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
+    # le truc general fait au debut de chaque function plot predictions and targets
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     filenames = sorted([filename for filename in os.listdir(folder_name)])
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
     
+    loaders = []
+    for filename in filenames[:nbQ]:
+        loader, y_labels = create_data_loader(mode, f"{folder_name}/{filename}", all_possible_categories)
+        loaders.append(loader)
+        
     row_fixed, col_fixed = compute_row_col(nbQ, 3)
+    
+    df_datas = pd.read_excel(f"{folder_name}/{filenames[0]}", nrows=0)
+    _, y_selected = get_y_and_labels(mode_selected, df_datas, False)
+    
+    return filenames, loaders, row_fixed, col_fixed, y_labels, y_selected
+#
+# beaucoup de repetition de code ici ...
+
+def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ, file_path, folder_name, num):
+    # model learning not model_biorbd
+    # pour plot une truc une colonne comme lmt, torque, etc
+
+    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, mode_selected, folder_name, nbQ)
+
     fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
     for q_index in range(nbQ) : 
@@ -167,40 +200,34 @@ def plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file
         row = q_index // 3
         col = q_index % 3
         
-        predictions, targets = get_predictions_and_targets(model, loaders[q_index])
-        acc = mean_distance(torch.tensor(predictions), torch.tensor(targets))
-        error_pourcentage = compute_pourcentage_error(torch.tensor(predictions), torch.tensor(targets))
+        predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels, y_selected)
+        acc = mean_distance(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
+        error_pourcentage = compute_pourcentage_error(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
 
         axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
         axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-        axs[row, col].set_ylabel(f'{y_labels[0]}',fontsize='smaller')
+        axs[row, col].set_ylabel(f'{y_selected[0]}',fontsize='smaller')
         axs[row, col].legend()
     
-    fig.suptitle(f'Predictions and targets of {y_labels[0]}', fontweight='bold')
+    fig.suptitle(f'Predictions and targets of {y_selected[0]}', fontweight='bold')
     plt.tight_layout()  
-    create_and_save_plot(f"{file_path}", f"plot_{y_labels[0]}_predictions_and_targets.png")
+    create_and_save_plot(f"{file_path}", f"plot_{y_selected[0]}_predictions_and_targets.png")
     plt.show()
     
     return None
         
-def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, nbQ, file_path, folder_name, num):
 
-    all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
-    # on recupere les sheets et on les tris dans l'ordre
-    filenames = sorted([filename for filename in os.listdir(folder_name)])
-    # on fait des loaders pour chaque sheet
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
-    
-    row_fixed, col_fixed = compute_row_col(nbQ, 3)
+    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, mode_selected, folder_name, nbQ)
     
     # pour chaque q-index = 1 fig a chaque fois
     for q_index in range(nbQ) : 
         # on fait une nouvelle figure
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
-        predictions, targets = get_predictions_and_targets(model, loaders[q_index])
+        predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels, y_selected)
         
         if row_fixed == 1 and col_fixed == 1 : 
             acc = mean_distance(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
@@ -210,13 +237,13 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, n
             plt.plot(targets[:num], label='True values', marker='o')
             plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
             plt.xlabel('q variation')
-            plt.ylabel(f"{y_labels[0]}")
+            plt.ylabel(f"{y_selected[0]}")
             plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%", fontweight='bold')
             plt.legend()
         
         else : 
             # puis on fait chaque plot de la figure
-            for i in range (len(y_labels)) : 
+            for i in range (len(y_selected)) : 
                 acc = mean_distance(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
                 error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
                 
@@ -237,92 +264,14 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, n
             plt.show()
     
     return None
-
-def plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name, num):
-
-    all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
-    # on recupere les sheets et on les tris dans l'ordre
-    filenames = sorted([filename for filename in os.listdir(folder_name)])
-    # on fait des loaders pour chaque sheet
-    loaders = [create_data_loader(mode, f"{folder_name}/{filename}", 0, all_possible_categories ) for filename in (filenames[:nbQ])]
-    
-    row_fixed, col_fixed = compute_row_col(nbQ, 3)
-    fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
-    
-    for q_index in range(nbQ) : 
-        
-        row = q_index // 3
-        col = q_index % 3
-        
-        predictions, targets = get_predictions_and_targets(model, loaders[q_index])
-        acc = mean_distance(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
-        error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
-
-        axs[row, col].plot([target[0] for target in targets][:num], label='True values', marker='o', markersize=2)
-        axs[row, col].plot([prediction[0] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)    
-        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
-        axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-        axs[row, col].set_ylabel('Muscle_length (m)',fontsize='smaller')
-        axs[row, col].legend()
-    
-    fig.suptitle(f'Predictions and targets of Muscle length', fontweight='bold')
-    plt.tight_layout()  
-    create_and_save_plot(f"{file_path}", "plot_muscle_length_predictions_and_targets.png")
-    # plt.savefig(f"{file_path}/plot_muscle_length_predictions_and_targets.png")
-    plt.show()
-    
-    
-    # pour chaque q-index = 1 fig a chaque fois
-    for q_index in range(nbQ) : 
-        # on fait une nouvelle figure
-        fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
-        # on recupere les predictions et targets de UN sheet --> 1 fig, len(q_ranges) plot
-        predictions, targets = get_predictions_and_targets(model, loaders[q_index])
-        
-        if row_fixed == 1 and col_fixed == 1 : 
-            acc = mean_distance(torch.tensor([prediction[1] for prediction in predictions]), torch.tensor([target[1] for target in targets]))
-            error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[1] for prediction in predictions]), torch.tensor([target[1] for target in targets]))
-            
-            plt.figure(figsize=(10, 5))
-            plt.plot(targets[:num], label='True values', marker='o')
-            plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
-            plt.xlabel('q variation')
-            plt.ylabel(f"{y_labels[1]}")
-            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%", fontweight='bold')
-            plt.legend()
-        
-        else : 
-            # puis on fait chaque plot de la figure
-            for i in range (len(y_labels)-1) : 
-                acc = mean_distance(torch.tensor([prediction[i+1] for prediction in predictions]), torch.tensor([target[i+1] for target in targets]))
-                error_pourcentage = compute_pourcentage_error(torch.tensor([prediction[i+1] for prediction in predictions]), torch.tensor([target[i+1] for target in targets]))
-                
-                # marche mais c,est moche :/
-                row = i // 3
-                col = i % 3
-            
-                axs[row, col].plot([target[i+1] for target in targets][:num], label='True values', marker='o', markersize=2)
-                axs[row, col].plot([prediction[i+1] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcentage:.3f}%",fontsize='smaller')
-                axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-                axs[row, col].set_ylabel(f'dlmt_dq{i}',fontsize='smaller')
-                axs[row, col].legend()
-        
-            fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
-            plt.tight_layout()  
-            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
-            plt.show()
-    
-    return None
-
 # -------------------------------------
-def visualize_prediction_trainning(model, file_path, y_labels, train_loader, val_loader, test_loader ) : 
+def visualize_prediction_trainning(model, file_path, y_labels, train_loader, val_loader, test_loader) : 
     
     plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
     plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
     plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
 
-def visualize_prediction(mode, nbQ, y_labels, file_path, folder_name_for_prediction) : 
+def visualize_prediction(mode, nbQ, file_path, folder_name_for_prediction) : 
     
     """
     Load saved model and plot-save visualisations 
@@ -341,11 +290,16 @@ def visualize_prediction(mode, nbQ, y_labels, file_path, folder_name_for_predict
     model = load_saved_model(file_path)
     
     if mode == Mode.DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode, model, nbQ, file_path, folder_name_for_prediction, 100)
     elif mode == Mode.MUSCLE_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, nbQ, file_path, folder_name_for_prediction, 100)
+    elif mode == Mode.TORQUE_MUS_DLMT_DQ : 
+        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, Mode.TORQUE, model, nbQ, file_path, folder_name_for_prediction, 100)
     else : # MUSCLE or TORQUE
-        plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, mode, model, nbQ, file_path, folder_name_for_prediction, 100)
 
 # -------------------------------------
 def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) : 

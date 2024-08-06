@@ -144,11 +144,11 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-# model_name = "train_muscle_PECM2"
+# model_name = "agfsfg"
 # mode = Mode.TORQUE
 # batch_size = 128
 # n_layers = [2]
-# n_nodes = [[128, 128], [256, 256], [512, 512], [1024, 1024]]
+# n_nodes = [[10], [10, 10]]
 # activations = [[nn.GELU(), nn.GELU()]]
 # activation_names = [["GELU", "GELU"]]
 # L1_penalty = [0.01]
@@ -173,10 +173,9 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-model_name="correction_pourcentage_2" 
-mode = Mode.TORQUE
+model_name="torque_aweaf" 
+mode = Mode.TORQUE_MUS_DLMT_DQ
 batch_size=64
-n_layers=1
 n_nodes=[128]
 activations=[nn.GELU()]
 # activations = [nn.Sigmoid()]
@@ -194,25 +193,25 @@ criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 p_dropout=0.2
 use_batch_norm=True
 
-num_datas_for_dataset = 10000
+num_datas_for_dataset = 100
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 with_noise = False
 
-Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_layers, n_nodes, activations, activation_names, 
+Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_nodes, activations, activation_names, 
                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
                                              use_batch_norm)
 print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-# main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_datas_with_tau", 
-#                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-#                         plot_preparation=False, plot=True, save=True) 
+main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_datas_with_tau", 
+                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+                        plot_preparation=False, plot=True, save=True) 
 
-plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c",
-                                 "execution_time", "val_loss")
+# plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c",
+#                                  "execution_time", "val_loss")
 
 # list_simulation, best_hyperparameters_loss \
 # = find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 

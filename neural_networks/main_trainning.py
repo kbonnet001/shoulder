@@ -1,4 +1,4 @@
-from neural_networks.data_preparation import create_loaders_from_folder, get_y_labels
+from neural_networks.data_preparation import create_loaders_from_folder, get_y_and_labels
 from neural_networks.data_tranning import train_model_supervised_learning
 from neural_networks.activation_functions import *
 from torch.utils.data import DataLoader
@@ -11,6 +11,7 @@ from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 from neural_networks.file_directory_operations import create_directory, save_text_to_file,save_informations_model, read_info_model
 import time
+import pandas as pd
 
 def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes = 60) : 
     """Compute an estimation of execution code. 
@@ -78,13 +79,10 @@ def main_superised_learning(Hyperparams, nbQ, num_datas_for_dataset, folder_name
         model, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
                                                   Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                                                   plot, save)
-        visualize_prediction_trainning(model, file_path, y_labels, train_loader, val_loader, test_loader) 
+        visualize_prediction_trainning(model, f"{folder_name}/{muscle_name}/_Model/{file_path}", y_labels, train_loader,
+                                       val_loader, test_loader) 
     
-    if y_labels is None: 
-        y_labels = get_y_labels(Hyperparams.mode,f"{folder_name}/{muscle_name}/{muscle_name}.xlsx")
-    
-    visualize_prediction(Hyperparams.mode, nbQ, y_labels, 
-                         f"{folder_name}/{muscle_name}/_Model/{file_path}", 
+    visualize_prediction(Hyperparams.mode, nbQ, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                          f"{folder_name}/{muscle_name}/plot_all_q_variation_")
     
 def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = False) : 

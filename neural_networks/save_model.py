@@ -73,10 +73,6 @@ def load_saved_model(file_path) :
 
     return model
 
-
-
-
-
 def main_function_model(file_path, inputs) : 
     """
     Model prediction with a saved model
