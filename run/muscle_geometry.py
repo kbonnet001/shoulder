@@ -145,13 +145,13 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "train_torque_2c_64_2"
+model_name = "train_torque_3c_64"
 mode = Mode.TORQUE
 batch_size = 64
 # n_layers = [2]
-n_nodes = [[128, 64], [128, 128], [256, 128], [256, 256], [512, 256], [1024, 512], [2048, 1024], [4096, 2048], [8192, 4096]]
-activations = [[nn.GELU(), nn.GELU()]]
-activation_names = [["GELU", "GELU"]]
+n_nodes = [[128, 128, 128], [256, 256, 256], [512, 512, 512], [1024, 1024, 1024], [2048, 2048, 2048]]
+activations = [[nn.GELU(), nn.GELU(), nn.GELU()]]
+activation_names = [["GELU", "GELU", "GELU"]]
 L1_penalty = [0.01]
 L2_penalty = [0.01]
 learning_rate = [1e-2]
@@ -201,7 +201,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 100
+num_datas_for_dataset = 10000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -221,17 +221,17 @@ print(Hyperparameter_essai1)
 # plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c",
 #                                  "execution_time", "val_loss")
 
-plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c", 
-                                          "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c"], 
-                                         "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
+# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c"], 
+#                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
-plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
-                                          "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 
-                                         "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
+# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 
+#                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
-# list_simulation, best_hyperparameters_loss \
-# = find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
-#                             "PECM2", with_noise)
+list_simulation, best_hyperparameters_loss \
+= find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
+                            "PECM2", with_noise)
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
