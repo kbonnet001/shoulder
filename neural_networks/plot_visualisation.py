@@ -40,7 +40,7 @@ def compute_pourcentage_error(predictions, targets) :
     error_pourcentage = torch.mean((torch.abs(predictions - targets)) / targets) * 100
     return error_pourcentage.item(), torch.abs(error_pourcentage).item()
 
-def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path):
+def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path, show_plot = False):
     """Plot loss and accuracy (train and validation)
 
     INPUT :
@@ -72,7 +72,8 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_
     plt.tight_layout()
     
     create_and_save_plot(file_path, "plot_loss_and_accuracy")
-    plt.show()
+    if show_plot == False : 
+        plt.close()
 
 # -----------------------------
 def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
@@ -260,7 +261,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ,
 
         axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
+        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
         axs[row, col].set_ylabel(f'{y_selected[0]}',fontsize='smaller')
         axs[row, col].legend()
@@ -318,7 +319,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
             
                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
                 axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")}, acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
+                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
                 axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
                 axs[row, col].set_ylabel(f'dlmt_dq{i}',fontsize='smaller')
                 axs[row, col].legend()

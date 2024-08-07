@@ -316,6 +316,22 @@ def create_data_loader(mode, filename, all_possible_categories) :
   loader = DataLoader(dataset, 32, shuffle = False)
   return loader, y_labels
 
+def dataloader_to_tensor(loader):
+    # Listes pour stocker les données et les labels
+    all_data = []
+    all_labels = []
+    
+    for data, labels in loader:
+        all_data.append(data)
+        all_labels.append(labels)
+    
+    # Concaténer toutes les batchs en un seul tensor
+    all_data_tensor = torch.cat(all_data)
+    all_labels_tensor = torch.cat(all_labels)
+    
+    return all_data_tensor, all_labels_tensor
+
+
 def plot_datas_distribution(muscle_name, files_path, nbQ, X_tensors, y_tensors, y_labels, graph_labels):
     """To visualise tensors distribution
     Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import

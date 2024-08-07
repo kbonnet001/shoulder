@@ -18,7 +18,7 @@ def find_points_front_pareto(num_points, x_axis, y_axis) :
     return pareto_indices
 
 
-def plot_results_try_hyperparams( directory_path, x_info, y_info):
+def plot_results_try_hyperparams(directory_path, x_info, y_info):
     x_axis = []
     y_axis = []
     model_name_try = []
@@ -38,7 +38,7 @@ def plot_results_try_hyperparams( directory_path, x_info, y_info):
 
     plt.figure(figsize=(10, 5))
     plt.xscale('log')
-    plt.yscale('log')
+    # plt.yscale('log')
     
     # Détection des points du front de Pareto
     pareto_indices = find_points_front_pareto(num_points, x_axis, y_axis)
@@ -59,8 +59,8 @@ def plot_results_try_hyperparams( directory_path, x_info, y_info):
     plt.text(pareto_y[0] + 0.5, pareto_x[0] + 0.5, f"Best solution\n of objectif\n '{y_info}'", fontsize=9, ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
     plt.text(pareto_y[-1] - 0.5, pareto_x[-1] + 4, f"Best solution\n of objectif\n '{x_info}'", fontsize=9, ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
     
-    plt.xlabel(f"{x_info}" + (" (s)" if x_info == "execution_time" else ""))
-    plt.ylabel(f"{y_info}" + (" (s)" if y_info == "execution_time" else ""))
+    plt.xlabel(f"{x_info}" + (" (s)" if x_info.startswith("execution_time")else ""))
+    plt.ylabel(f"{y_info}" + (" (s)" if y_info.startswith("execution_time") else ""))
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
     plt.legend()
@@ -133,5 +133,5 @@ def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_pat
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
     plt.legend()
-    create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]}.png")
+    create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]} vs {file_names[2]}.png")
     plt.show()

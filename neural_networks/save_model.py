@@ -2,22 +2,40 @@ import torch
 import torch.nn as nn
 from neural_networks.Model import Model
 import json
-from neural_networks.Timer import measure_time
-   
+from neural_networks.Timer import measure_time    
+import os
+
+def del_saved_model(file_path) : 
     
-def save_model(model, input_size, output_size, Hyperparams, file_path) : 
+    # Paths for model and config files
+    model_path = os.path.join(file_path, "model")
+    config_path = os.path.join(file_path, "model_config.json")
+    
+    # Remove existing files if they exist
+    if os.path.exists(model_path):
+        os.remove(model_path)
+    if os.path.exists(config_path):
+        os.remove(config_path)
+
+def save_model(model, input_size, output_size, Hyperparams, file_path): 
     """
     Save a model with its parameters and hyperparameters
     
-    INPUTS : 
-    - model : model to save
-    - input_size : int, size of input X
-    - output_size : int, size of output y
-    - Hyperparams : ModelHyperparameters, all hyperparameter 
-    - file_path : string, path 
+    INPUTS: 
+    - model: model to save
+    - input_size: int, size of input X
+    - output_size: int, size of output y
+    - Hyperparams: ModelHyperparameters, all hyperparameter 
+    - file_path: string, path 
     """
     
-    # Save model configuation
+    # Paths for model and config files
+    model_path = os.path.join(file_path, "model")
+    config_path = os.path.join(file_path, "model_config.json")
+    
+    del_saved_model(file_path)
+
+    # Save model configuration
     config = {
         'input_size': input_size,
         'output_size': output_size,
@@ -29,9 +47,10 @@ def save_model(model, input_size, output_size, Hyperparams, file_path) :
         'dropout_prob': Hyperparams.dropout_prob
     }
 
-    with open(f'{file_path}/model_config.json', 'w') as f:
+    with open(config_path, 'w') as f:
         json.dump(config, f)
-    torch.save(model.state_dict(), f"{file_path}/model")
+    torch.save(model.state_dict(), model_path)
+
 
 def load_saved_model(file_path) : 
     
@@ -82,14 +101,19 @@ def main_function_model(file_path, inputs) :
     OUTPUT :
     - output : pytorch tensor, model's prediction(s) 
     """
+    # You must have a torch tensor !
+    if not isinstance(inputs, torch.Tensor):
+        inputs = torch.tensor([inputs])
     
-    # Load model from file_path, model eval
-    model = load_saved_model(file_path)
+    if len(inputs.size()) == 1 : # security when y is 1
+        inputs = inputs.unsqueeze(0)
+        
+    # Load model from file_path, model eval    
+    with measure_time() as model_load_timer:
+      model = load_saved_model(file_path)
     
-    with measure_time() as timer:
-        # You must have a torch tensor !
-        inputs_tensor = torch.tensor([inputs])
-        outputs = model(inputs_tensor).squeeze()
+    with measure_time() as model_timer:
+        outputs = model(inputs).squeeze()
     
-    print(f"output(s) = {outputs}, time execution (without loading model time) = {timer.execution_time}")
-    return outputs
+    print(f"output(s) = {outputs}, time execution (without loading model time) = {model_timer.execution_time}")
+    return outputs, model_load_timer, model_timer

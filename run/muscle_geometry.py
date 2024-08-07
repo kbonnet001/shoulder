@@ -98,7 +98,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 #----------------
 # data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
-data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10, 0, "dajhjhdsjh", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10, 0, "dajhjhdsjh", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
 
 # --------------------
@@ -145,13 +145,13 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "train_torque_3c_64_2"
+model_name = "tgwarzgfds"
 mode = Mode.TORQUE
 batch_size = 64
 # n_layers = [2]
-n_nodes = [[1024, 512, 512], [2048, 1024, 512], [2048, 1024, 1024], [2048, 2048, 1024], [4096, 2048, 1024]]
-activations = [[nn.GELU(), nn.GELU(), nn.GELU()]]
-activation_names = [["GELU", "GELU", "GELU"]]
+n_nodes = [[10], [20]]
+activations = [[nn.GELU()]]
+activation_names = [["GELU"]]
 L1_penalty = [0.01]
 L2_penalty = [0.01]
 learning_rate = [1e-2]
@@ -201,7 +201,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 10000
+num_datas_for_dataset = 100
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -222,7 +222,8 @@ print(Hyperparameter_essai1)
 #                                  "execution_time", "val_loss")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c"], 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_3c"], 
 #                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
@@ -381,7 +382,7 @@ q_initial = np.array([0.0 for k in range (8)])
 
 # from neural_networks.save_model import main_function_model
 
-# file_path = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/msucle_dlnt_dq'
+# file_path = 'data_generation_datas_with_dlmt_dq/PECM2/_Model/torque_train_1_couche_8192'
 # q1 = [-0.0786849353613072, 
 #      0.0714227230995303, 
 #      -0.368636743434153, 

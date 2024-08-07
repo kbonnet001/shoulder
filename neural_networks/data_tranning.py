@@ -100,7 +100,7 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
     return epoch_loss, epoch_acc
 
 def train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
-                                    file_path, plot = False, save = False) : 
+                                    file_path, plot = False, save = False, show_plot = False) : 
     """Train and evaluate a model
     
     INPUTS : 
@@ -176,7 +176,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     print(f'Test Loss: {test_loss:.8f}, Test Acc: {test_acc:.8f}')
     
     if plot : 
-        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path)
+        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path, show_plot)
         
     # Save model
     if save : 
