@@ -1,11 +1,7 @@
 import torch
 import torch.nn as nn
 from neural_networks.Model import Model
-# from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames, plot_predictions_and_targets_from_filenames_dlmt_dq, plot_predictions_and_targets_from_filenames_lmt_dlmt_dq
-from neural_networks.file_directory_operations import create_and_save_plot
-from neural_networks.ModelHyperparameters import ModelHyperparameters
 import json
-from neural_networks.Mode import Mode
 from neural_networks.Timer import measure_time
    
     
@@ -77,7 +73,7 @@ def main_function_model(file_path, inputs) :
     """
     Model prediction with a saved model
     Please, look at this function as an example 
-    One load before all is beter than one load for each time you use the model prediction, ... 
+    One load before all is beter than one load for each time you use the model prediction ... 
 
     INPUTS : 
     - file_path : string, path where the file 'model_config.json' of the model could be find

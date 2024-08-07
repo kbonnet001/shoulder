@@ -3,10 +3,7 @@ import os
 from neural_networks.data_preparation import data_preparation_create_tensor, compute_samples
 from torch.utils.data import DataLoader, random_split, Subset
 from neural_networks.MuscleDataset import MuscleDataset
-from neural_networks.Model import Model
-import torch.optim as optim
 from neural_networks.data_tranning import *
-from neural_networks.EarlyStopping import EarlyStopping
 from neural_networks.main_trainning import train_model_supervised_learning
 import numpy as np
 

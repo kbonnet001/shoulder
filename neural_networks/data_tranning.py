@@ -1,11 +1,9 @@
 import torch
-import matplotlib.pyplot as plt
 from neural_networks.Model import Model
 import torch.optim as optim
 from neural_networks.EarlyStopping import EarlyStopping
 from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
-from neural_networks.file_directory_operations import create_and_save_plot
 import math
 
 def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
