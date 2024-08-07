@@ -260,6 +260,10 @@ def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, m
     # Plot visualisation to compare all model trained (pareto front)
     plot_results_try_hyperparams(f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}",
                                  "execution_time_train", "val_loss")
+    plot_results_try_hyperparams(f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}",
+                                 "execution_time_load_saved_model", "val_loss")
+    plot_results_try_hyperparams(f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}",
+                                 "execution_time_use_saved_model", "val_loss")
     
     # Finally, plot figure predictions targets with the best modele saved
     main_superised_learning(best_hyperparameters_loss, nbQ, num_datas_for_dataset, folder, muscle_name, False,

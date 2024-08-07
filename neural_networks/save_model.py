@@ -115,5 +115,5 @@ def main_function_model(file_path, inputs) :
     with measure_time() as model_timer:
         outputs = model(inputs).squeeze()
     
-    print(f"output(s) = {outputs}, time execution (without loading model time) = {model_timer.execution_time}")
+    # print(f"output(s) = {outputs}, time execution (without loading model time) = {model_timer.execution_time}")
     return outputs, model_load_timer, model_timer

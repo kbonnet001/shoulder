@@ -146,7 +146,7 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # print("")
 
 model_name = "tgwarzgfds"
-mode = Mode.TORQUE
+mode = Mode.DLMT_DQ
 batch_size = 64
 # n_layers = [2]
 n_nodes = [[10], [20]]
