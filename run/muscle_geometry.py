@@ -10,7 +10,7 @@ from neural_networks.Loss import *
 
 from neural_networks.data_generation import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.data_generation_ddl import data_for_learning_ddl, plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
+from neural_networks.data_generation_ddl import plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
 from wrapping.muscles_length_jacobian import plot_length_jacobian
@@ -96,15 +96,9 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-# data_for_learning_without_discontinuites_ddl(muscles_selected[0], cylinders[0], model_biorbd, 5010, "data_generation_data_more_ddl_6/PECM2", num_points = 100, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "shdhgds", num_points = 20, 
+                        plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10, 0, "dajhjhdsjh", num_points = 20, plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
-
-
-# --------------------
-# data_for_learning_without_discontinuites(muscles_selected, cylinders, model_biorbd, q_ranges, 5000, 
-#                 "df_PECM3_datas_without_error_part_5000.xlsx", num_points = 50, plot_discontinuities = False, 
-#                 plot=False, plot_cadran = False)
    
 # -----------------------------------------------------------------
 
@@ -218,12 +212,12 @@ print(Hyperparameter_essai1)
 #                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
 #                         plot_preparation=False, plot=True, save=True) 
 
-list_simulation, best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
-                            "PECM2", with_noise)
+# list_simulation, best_hyperparameters_loss \
+# = find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
+#                             "PECM2", with_noise)
 
-# plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c",
-#                                  "execution_time", "val_loss")
+# plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c_all",
+#                                  "execution_time_train", "val_loss")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c", 
 #                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c", 

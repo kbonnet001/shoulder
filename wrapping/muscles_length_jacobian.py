@@ -27,7 +27,7 @@ def compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi=1e-8) :
     
    """ Compute the partial derivative of lmt as a function of q 
    
-   NOTE : We can't use directly "compute_segment_length" because it just return le length in regard of wrapping
+   NOTE : We can't use directly "compute_segment_length" because it just return length in regard of wrapping
    But in this case, if there is no wrapping, we compute dlmt_dq thank via points. 
    None alternatives exist for a situation "wrapping + via points" 
    so the resultats with biorbd could be very different (discontnuities)
