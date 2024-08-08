@@ -145,25 +145,25 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "tgwarzgfds"
+model_name = "dlmt_dq_64_1c"
 mode = Mode.DLMT_DQ
 batch_size = 64
 # n_layers = [2]
-n_nodes = [[10], [20]]
+n_nodes = [[32], [64], [128], [256], [512], [1024], [2048]]
 activations = [[nn.GELU()]]
 activation_names = [["GELU"]]
-L1_penalty = [0.01]
-L2_penalty = [0.01]
+L1_penalty = [0.01, 0.001]
+L2_penalty = [0.01, 0.001]
 learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
-    # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
-    # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
+    (LogCoshLoss, {'factor': [1.0, 1.8]}),
+    (ModifiedHuberLoss, {'delta': [0.2, 1.0], 'factor': [1.0, 2.0]}),
+    (ExponentialLoss, {'alpha': [0.5, 1.0]}),
     # (nn.MSELoss, {})
 ]
-p_dropout = [0.2]
+p_dropout = [0.2, 0.5]
 use_batch_norm = True
 
 # model_name="essai_muscle_train"
@@ -201,7 +201,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 100
+num_datas_for_dataset = 10000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -218,6 +218,10 @@ print(Hyperparameter_essai1)
 #                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
 #                         plot_preparation=False, plot=True, save=True) 
 
+list_simulation, best_hyperparameters_loss \
+= find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
+                            "PECM2", with_noise)
+
 # plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c",
 #                                  "execution_time", "val_loss")
 
@@ -230,9 +234,6 @@ print(Hyperparameter_essai1)
 #                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 
 #                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
-list_simulation, best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
-                            "PECM2", with_noise)
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
