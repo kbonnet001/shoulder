@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 def create_directory(directory_path):
     """
-    create a new folder
+    Create a new folder
 
-    INPUT :
+    Args :
         directory_path (str): path of the new folder
     """
     if not os.path.exists(directory_path):
@@ -18,7 +18,7 @@ def create_and_save_plot(directory_path, file_name):
     """
     Save a Matplotlib fig in a specific folder
 
-    INPUTS :
+    Args :
         directory_path (str): Path where the fig will be save.
         file_name (str): Name of the figure
     """

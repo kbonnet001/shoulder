@@ -15,6 +15,8 @@ class ExcelBatchWriterWithNoise:
             data = {
                 "muscle_selected": [],
                 **{f"q_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
+                **{f"qdot_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
+                **{f"alpha_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
                 "origin_muscle_x": [],
                 "origin_muscle_y": [],
                 "origin_muscle_z": [],

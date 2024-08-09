@@ -7,77 +7,17 @@ from neural_networks.file_directory_operations import create_directory, create_a
 import copy
 import random
 from wrapping.muscles_length_jacobian import compute_dlmt_dq, plot_length_jacobian
-from wrapping.muscle_forces_and_torque import compute_torque, compute_muscle_force_origin_insertion_nul
+from wrapping.muscle_forces_and_torque import compute_fm, compute_torque, compute_fm_muscle_index
 import os
 from neural_networks.other import compute_row_col, plot_mvt_discontinuities_in_red
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
 import pandas as pd
 
-
-def data_for_learning_ddl (muscle_selected, cylinders, model, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
-   
-   """Create a data frame for prepare datas
-   
-   Datas are generated ponctually, independantly and uniformly
-   This function isn't use because we need to generate mvt to keep only good datas
-   But, this is the classical method to generate datas, so it can be use for a new y (exit) if it's appropriate...
-   Thus, this function is an example if you try to create an other generate datas function
-   
-   INPUTS
-   - muscle_selected : string, name of the muscle selected. 
-                        Please chose an autorized name in this list : 
-                        ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
-                        'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
-   - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-   - model : model 
-   - dataset_size : int, number of data we would like
-   - filename : string, name of the file to create
-   - data_without_error : bool (default = False), True to ignore data with error wrapping 
-   - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
-   - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
-   
-   q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-   muscle_index = find_index_muscle(model, muscle_selected)
-   initialisation_generation(model, muscle_index, cylinders)
-       
-   # Limits of q
-   min_vals = [row[0] for row in q_ranges]
-   max_vals = [row[1] for row in q_ranges] 
-   
-   writer = ExcelBatchWriter(filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
-
-   k = 0
-   while k < dataset_size : 
-      print("k = ", k)
-
-      # Generate a random q
-      q = np.random.uniform(low=min_vals, high=max_vals)
-      
-      origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
-      
-      # ------------------------------------------------
-
-      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
-   
-      if (data_ignored == False and data_without_error == True) or (data_without_error == False) : 
-         # Add line to data frame
-         writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length)
-         print("hop dans le sheet")
-         
-         k+=1
-
-   # Ensure remaining lines are written to file
-   writer.close()
-   
-   return None
-
-# ----------------------
-
 def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
    """Create a directory with an excel file for one q and png of mvt
    
-   INPUTS
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -108,30 +48,32 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    for k in range (num_points+1) : 
       print("plot one q variation, k = ", k)
       
+      # q, qdot, alpha
       qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
       q[i] = qi
-      
-      print("q = ", q)
+      qdot = np.array([0.0 for _ in range(model.nbQ())]) # default
+      alpha = 1 # default
       
       origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
 
-      # ------------------------------------------------
-
+      # compute lmt
       if k in [0,num_points/2, num_points] and plot_limit :
          segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
          
       else :  
          segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
       
-      print("segment_length = ", segment_length)
+      # compute others y
       qs.append(qi)
       segment_lengths.append(segment_length)
       dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-      muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
-      torque = compute_torque(dlmt_dq, muscle_force)
+      muscle_force = compute_fm_muscle_index(model, muscle_index, q, qdot, alpha)
+      torque, _ = compute_torque(dlmt_dq, muscle_force)
       
-      writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
+      # add line
+      writer.add_line(muscle_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
 
+   # plot
    plt.plot(qs, segment_lengths, marker='o', linestyle='-', color='b')
    plt.xlabel(f'q{i}')
    plt.ylabel('Muscle_length')
@@ -151,7 +93,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
    
    """Create a directory with all excel files for all q (with a q_fixed)
    
-   INPUTS
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -189,40 +131,41 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
          for k in range (num_points+1) : 
             print("plot all q variation, k = ", k)
             
+            # q, qdot, alpha
             qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
             q[q_index] = qi
             
-            print("q = ", q)
+            qdot = np.array([0.0 for _ in range(model.nbQ())])
+            alpha = 1
             
             origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
 
-            # ------------------------------------------------
-
+            # compute lmt
             if k in [0,num_points/2, num_points] and plot_limit :
                segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
                
             else :  
                segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
             
+            # compute others y
             qs.append(qi)
             segment_lengths.append(segment_length)
             dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-            muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
-            torque = compute_torque(dlmt_dq, muscle_force)
+            muscle_force = compute_fm_muscle_index(model, muscle_index, q, qdot, alpha)
+            torque, _ = compute_torque(dlmt_dq, muscle_force)
             
-            writer.add_line(muscle_index, q, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
+            # add line
+            writer.add_line(muscle_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
          
-      
          writer.close()
    
-   return None
 
 def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path="") :
    
    """Create and save a plot png, y as a Function of q Values
    Examples for y : 'segment_length', 'muscle_force', 'torque'
 
-   INPUTS
+   Args
    - model : model 
    - q_fixed : array 4*1, q fixed, reference
    - y : string : colomn selected for the plot (y axis)
@@ -249,6 +192,8 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path="") :
          qs = []
          df = pd.read_excel(file_q_index)
 
+         # selected_columns = [f'q_{q_ranges_names_with_dofs[q_index]}']
+         # y = df.loc[:, selected_columns].values
          qs.append(df.iloc[1:, q_index + 1].values)
          y.append(df.loc[1:, y_label].values)
          
@@ -284,7 +229,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    You can also use this function to add more lines (choose a bigger "dataset_size" value)
    If you choose a smaller "dataset_size" value, nothing will happen 
    
-   INPUTS
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -302,26 +247,27 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
    
+   # Create to writer to save datas, one with "purs datas" (no errors, discontinuties, etc) and an other with errors
+   # To see distribution of datas (please, choose plot_discontinuities = True)
    writer = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}.xlsx", q_ranges_names_with_dofs, batch_size=100)
    writer_datas_ignored = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
-   min_vals = [row[0] for row in q_ranges]
-   max_vals = [row[1] for row in q_ranges] 
+   min_vals_q = [row[0] for row in q_ranges]
+   max_vals_q = [row[1] for row in q_ranges] 
 
    num_line = writer.get_num_line()
    while num_line < dataset_size : 
-      print("num line = ", num_line)
 
       # Generate a random q 
-      q_ref = np.random.uniform(low=min_vals, high=max_vals)
+      q_ref = np.random.uniform(low=min_vals_q, high=max_vals_q)
       
       i = random.randint(0, model.nbQ() - 1)
-      print("i = ", i)
       
       qs = []
       segment_lengths = []
       datas_ignored = []
+      f_sup_limits = []
       lines = []
       to_remove = []
       
@@ -329,37 +275,47 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
       
       # Generate points (num_points) of a mvt relatively to qi
       for k in range (num_points) : 
-         print("k = ", k)
          
-         # Incrémenter qi
+         # q, qdot, alpha
          qi = k * ((q_ranges[i][1] - q_ranges[i][0]) / num_points) + q_ranges[i][0]
          q[i] = qi
+         qdot = np.array([random.uniform(-10*np.pi, 10*np.pi) for _ in range (len(q_ranges))])
+         alpha = random.uniform(0, 1) 
 
-         print("q = ", q)
-      
+         # compute lmt, fm, tau
          origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
          
-         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_cylinder_3D, plot_cadran)  
-         
+         segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, 
+                                                               plot_cylinder_3D, plot_cadran)  
          dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-         muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, segment_length)
-         torque = compute_torque(dlmt_dq, muscle_force)
+         muscle_force = compute_fm_muscle_index(model, muscle_index, q, qdot, alpha)
+         torque, f_sup_limit = compute_torque(dlmt_dq, muscle_force)
          
+         # keep informations to verify after if datas are correct
          qs.append(qi)
          segment_lengths.append(segment_length)
          datas_ignored.append(data_ignored)
+         f_sup_limits.append(f_sup_limit)
          
-         lines.append([muscle_index, copy.deepcopy(q), origin_muscle, insertion_muscle, segment_length, 
+         # add the new line
+         lines.append([muscle_index, copy.deepcopy(q), copy.deepcopy(qdot), alpha, origin_muscle, insertion_muscle, segment_length, 
                        copy.deepcopy(dlmt_dq), muscle_force, torque])
-         
+      
+      # Verify if datas are correct, no discontinuties, no errors
       # Find indexes with discontinuties
       discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
       for discontinuity in discontinuities : 
          min, max = data_to_remove_part(discontinuity, qs, num_points, 3)
          to_remove.extend(range(min, max + 1))
+      # Find error wrapping
       positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
       if len(positions) != 0 : 
          min, max = find_discontinuities_from_error_wrapping_range(positions, num_points, range = 3)
+         to_remove.extend(range(min, max + 1))
+      # Find error f_sup_limit 
+      positions_f_sup_limit = [n for n, ignored in enumerate(f_sup_limits) if ignored]
+      if len(positions_f_sup_limit) != 0 : 
+         min, max = find_discontinuities_from_error_wrapping_range(positions_f_sup_limit, num_points, range = 0)
          to_remove.extend(range(min, max + 1))
       
       # Sort to keep only one occurancy of each indexes
@@ -369,6 +325,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          # To check points removed (in red)
          plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove)
       
+      # add lines in excel file
       for l_idx in range (len(lines)) :
          if l_idx in to_remove : 
             writer_datas_ignored.add_line(*lines[l_idx])
@@ -389,7 +346,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
    
    """Generate datas for all muscles selected, one file of "dataset_size" lines per muscle
    
-   INPUTS
+   Args
    - muscles_selected : [string], names of muscles selected. 
                         Please chose autorized names in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -410,17 +367,18 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
    create_directory(directory)
    
    for k in range(len(muscles_selected)) : 
-      # create_directory(f"{directory}/{muscles_selected[k]}")
-      # if dataset_size != 0 :
-      #    data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
-      #                                              f"{directory}/{cylinders[k][0].muscle}", num_points, 
-      #                                              plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
+      # Create a folder for muscle selected
+      create_directory(f"{directory}/{muscles_selected[k]}")
+      if dataset_size != 0 :
+         data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
+                                                   f"{directory}/{cylinders[k][0].muscle}", num_points, 
+                                                   plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
       
-      # if dataset_size_noise != 0 :
-      #    data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.xlsx", dataset_size_noise)
+      if dataset_size_noise != 0 :
+         data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.xlsx", dataset_size_noise)
       
       # Plot visualization
-      q_fixed = np.array([0.0 for _ in range (8)])
+      q_fixed = np.array([0.0 for _ in range (model.nbQ())])
       
       create_all_q_variation_files(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
                      plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}")
@@ -429,13 +387,13 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
       plot_all_q_variation(model, q_fixed, 'torque', "", file_path=f"{directory}/{cylinders[k][0].muscle}")
       
       plot_length_jacobian(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}/plot_all_q_variation_", 100)
-      
+      print("stop")
 
 def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, batch_size = 1000, noise_std_dev = 0.01) :
    """
    Create datas with noise un add on file _with_noise.xlsx
    
-   INPUTS : 
+   Args : 
    - model : biorbd model
    - excel_file_path : string, path of the original file with all pure datas (= without noise and not ignored)
    - dataset_size_noise : int, num of lines to have in the file
@@ -443,7 +401,7 @@ def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, bat
       PLEASE, choose an appropriate value, len(df) must be a multiple of batch_size to add the correct num of row 
    - noise_std-dev : (default = 0.01) float, standard deviation of added noise 
    
-   OUTPUT : 
+   Returns : 
    None, create or complete a file [...]_with_noise.xlsx
    """
    _, q_ranges_names_with_dofs = compute_q_ranges(model)

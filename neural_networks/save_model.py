@@ -21,7 +21,7 @@ def save_model(model, input_size, output_size, Hyperparams, file_path):
     """
     Save a model with its parameters and hyperparameters
     
-    INPUTS: 
+    Args: 
     - model: model to save
     - input_size: int, size of input X
     - output_size: int, size of output y
@@ -57,10 +57,10 @@ def load_saved_model(file_path) :
     """
     Load a saved model from file_path
     
-    INPUT : 
+    Args : 
     - file_path : string, path where the file 'model_config.json' of the model could be find
     
-    OUTPUT : 
+    Returns : 
     - model : model loaded in eval mode
     """
     
@@ -94,11 +94,11 @@ def main_function_model(file_path, inputs) :
     Please, look at this function as an example 
     One load before all is beter than one load for each time you use the model prediction ... 
 
-    INPUTS : 
+    Args : 
     - file_path : string, path where the file 'model_config.json' of the model could be find
     - inputs : [], inputs, check is the dimention is correct before
     
-    OUTPUT :
+    Returns :
     - output : pytorch tensor, model's prediction(s) 
     """
     # You must have a torch tensor !

@@ -38,7 +38,7 @@ def plot_results_try_hyperparams(directory_path, x_info, y_info):
 
     plt.figure(figsize=(10, 5))
     plt.xscale('log')
-    # plt.yscale('log')
+    plt.yscale('log')
     
     # Détection des points du front de Pareto
     pareto_indices = find_points_front_pareto(num_points, x_axis, y_axis)

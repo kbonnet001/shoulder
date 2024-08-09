@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 def compute_row_col(sum, div) : 
     """Compute ideal row and col for subplots
     
-    INPUTS : 
+    Args : 
     - sum : int, sum of all number of plot to do in the figure
     - div : int, number of col max 
     
-    OUTPUTS : 
+    Returns : 
     - row : int, number of row for subplot
     - col : int, number of col for subplot """
     

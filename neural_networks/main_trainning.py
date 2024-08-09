@@ -17,11 +17,11 @@ def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_seconde
     """Compute an estimation of execution code. 
     This is a linear estimation, it's not very accurate :/
     
-    INPUTS : 
+    Args : 
     - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user 
     - time_per_configuration_secondes : (default 60), positive float in second for train-eval one model
     
-    OUTPUT : 
+    Returns : 
     - total_time_estimated_secondes : time estimation in secondes
     - total_time_estimated_minutes : time estimation in minutes
     - total_time_estimated_hours : time estimation in hours
@@ -107,7 +107,7 @@ def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, m
     
     """Try hyperparameters, keep all train-evaluated models in a list and return best hyperparams
     
-    INPUTS : 
+    Args : 
     - Hyperparams : (ModelHyperparameters) all hyperparameters to try, choosen by user
     PLEASE, look at examples below
     - nbQ : int, number of q in biorbd model
@@ -120,7 +120,7 @@ def find_best_hyperparameters(Hyperparams, nbQ, num_datas_for_dataset, folder, m
         However, the best model (in regard of val loss) will always be save 
 
     
-    OUTPUT : 
+    Returns : 
     - list_simulation : list of all hyperparameters try and results of train-eval (loss and acc)
     - best_hyperparameters : ModelHyperparameters, best hyperparameters (regarding of min val_loss)
     NOTE : best_hyperparameters is in the "single syntaxe", in that case, it is possible to use it with 
