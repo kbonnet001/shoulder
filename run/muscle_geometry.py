@@ -145,25 +145,25 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "dlmt_dq_64_1c"
+model_name = "dlmt_dq_64_2c"
 mode = Mode.DLMT_DQ
 batch_size = 64
 # n_layers = [2]
-n_nodes = [[32], [64], [128], [256], [512], [1024], [2048]]
-activations = [[nn.GELU()]]
-activation_names = [["GELU"]]
+n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512], [1024, 1024], [2048, 2048]]
+activations = [[nn.GELU(), nn.GELU()]]
+activation_names = [["GELU", "GELU"]]
 L1_penalty = [0.01, 0.001]
 L2_penalty = [0.01, 0.001]
-learning_rate = [1e-2]
+learning_rate = [1e-2, 1e-3]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
     (LogCoshLoss, {'factor': [1.0, 1.8]}),
     (ModifiedHuberLoss, {'delta': [0.2, 1.0], 'factor': [1.0, 2.0]}),
-    (ExponentialLoss, {'alpha': [0.5, 1.0]}),
+    # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
     # (nn.MSELoss, {})
 ]
-p_dropout = [0.2, 0.5]
+p_dropout = [0.2]
 use_batch_norm = True
 
 # model_name="essai_muscle_train"
