@@ -20,14 +20,14 @@ def single_cylinder_obstacle_set_algorithm(origin_point, insertion_point, Cylind
     Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
    -----------------------------------------------------------
    
-   INPUT
+   Args
    - origin_point : array 3*1 position of the first point
    - insertion_point : array 3*1 position of the second point
    - radius : radius of the cylinder
    - side : side of the wrapping, -1 for the left side, 1 for the right side
    - matrix : array 4*4 rotation_matrix and vect
    
-   OUTPUT
+   Returns
    - v1o : array 3*1 position of the first obstacle tangent point (in conventionnal frame)
    - v2o : array 3*1 position of the second obstacle tangent point (in conventionnal frame)
    - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
@@ -80,7 +80,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
     Comput. Methods Biomech. Biomed. Engin. 3 (2000), pp. 1–30.
    -----------------------------------------------------------
    
-   INPUT
+   Args
    - P : array 3*1 position of the first point
    - S : array 3*1 position of the second point
    - Cylinder_U.matrix : array 4*4 rotation_matrix and vect for cylinder U
@@ -91,7 +91,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    - side_V : side of the wrapping (cylinder V), -1 for the left side, 1 for the right side
    - rotation_Cylinder_U.matrixV : array 3*3 rotation matrix to change frame (U --> V)
    
-   OUTPUT
+   Returns
    - Qo : array 3*1 position of the first obstacle tangent point (in conventional frame)
    - Go : array 3*1 position of the second obstacle tangent point (in conventional frame)
    - Ho : array 3*1 position of the third obstacle tangent point (in conventional frame)

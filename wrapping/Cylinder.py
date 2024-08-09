@@ -9,18 +9,31 @@ class Cylinder:
         
         - radius : radius of the cylinder
         - side (-1 or 1) : Choose 1 for the right-handed side, -1 for the left-handed side (with respect to the z-axis)
+        - c1(_initial) : coord center circle 1 (botom or top). Initial coord in q_initial (0)
+        - c2(_initial) : coord center circle 2 (top or botom). Initial coord in q_initial (0)
         - matrix_initial : array 4*4 rotation matrix and translation vector initialy
         - matrix : array 4*4 rotation matrix and translation vector
+        - point_on_cylinder : (default False) bool, True if the origin or insertion point is on the surface of the cylinder.
+            Warning: Some adjustments may be necessary for proper functionality.
+            Originally, this option was introduced to prevent the point from entering the cylinder and to adjust 
+            the cylinder's radius so that the point always remains on the surface. 
+            This is specifically effective for PECM2 and PECM3 with wrapping two cylinders. 
+            Pay attention to the order of the cylinders in the "cylinders" list.
+            Example:
+            - cylinders = [cylinder_1, cylinder_2]
+            - cylinder_1.point_on_cylinder = True ---> the origin_point is on the surface
+            - cylinder_2.point_on_cylinder = True ---> the insertion_point is on the surface
         - segment : (default = None) segment of the cylinder. Please choose an authorized name in this list: 
                     ['thorax', 'spine', 'clavicle_effector_right', 'clavicle_right', 'scapula_effector_right', 
                      'scapula_right', 'humerus_right', 'ulna_effector_right', 'ulna_right', 'radius_effector_right', 
                      'radius_right', 'hand_right']
+        - muscle : string, muscle name
         - segment_index : (default = None) int, index position of the segment in the segment list of model
         - gcs_seg_0 : (default = None) array 4*4, rotation matrix and translation vector of the segment initialy"""
         
         self.radius = radius
-        self.side = side
-        self.c1_initial = c1
+        self.side = side # -1 or 1
+        self.c1_initial = c1 
         self.c2_initial = c2
         self.c1 = c1
         self.c2 = c2
@@ -93,6 +106,21 @@ class Cylinder:
         return None
     
     def compute_new_radius(self, coordinates_points_on_cylinder) : 
+        """ 
+        
+        Warning: Some adjustments may be necessary for proper functionality.
+            Originally, this option was introduced to prevent the point from entering the cylinder and to adjust 
+            the cylinder's radius so that the point always remains on the surface. 
+            This is specifically effective for PECM2 and PECM3 with wrapping two cylinders. 
+            Pay attention to the order of the cylinders in the "cylinders" list.
+            Example:
+            - cylinders = [cylinder_1, cylinder_2]
+            - cylinder_1.point_on_cylinder = True ---> the origin_point is on the surface
+            - cylinder_2.point_on_cylinder = True ---> the insertion_point is on the surface
+
+        Args:
+            coordinates_points_on_cylinder (_type_): _description_
+        """
         if self.point_on_cylinder == True : 
             coordinates_points_on_cylinder_local = transpose_switch_frame(coordinates_points_on_cylinder, self.matrix)
             self.radius = np.linalg.norm(coordinates_points_on_cylinder_local[:2])
@@ -208,11 +236,11 @@ class Cylinder:
     def rotation_direction(self, matrix_initial, matrix_update):
         """Determine the rotation direction around the z-axis between two matrices.
 
-        INPUT:
+        Args:
         - matrix_initial: 4x4 initial rotation-translation matrix
         - matrix_update: 4x4 updated rotation-translation matrix
 
-        OUTPUT:
+        Returns:
         - 1 if the rotation is clockwise
         - -1 if the rotation is counterclockwise
         """
@@ -263,10 +291,10 @@ def find_cylinder_frame(center_circle) :
 
         """Find the frame of the cylinder
         
-        INPUT
+        Arg
         - center_circle : 2*array 3*1 coordinates of the first and second circles of the cylinder
         
-        OUTPUT
+        Returns
         - cylinder_frame : array 3*3 ortonormal frame for the cylinder"""
 
         vect = center_circle[1] - center_circle[0]

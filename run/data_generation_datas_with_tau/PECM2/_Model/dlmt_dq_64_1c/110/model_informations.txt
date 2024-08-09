@@ -1,0 +1,18 @@
+num_try = 110
+val_loss = 0.0022546555660665035
+val_acc = 0.004483591765165329
+execution_time_train = 41.026785135269165
+execution_time_load_saved_model = 0.001506295084953308
+execution_time_use_saved_model = 0.00016407608985900878
+mode = Mode.DLMT_DQ
+batch_size = 64
+n_nodes = [64]
+activations = [GELU(approximate='none')]
+L1_penalty = 0.001
+L2_penalty = 0.01
+learning_rate = 0.01
+dropout_prob = 0.5
+use_batch_norm = True
+num_epochs_used = 190
+criterion_name = ExponentialLoss
+criterion_params = {'alpha': 0.5}

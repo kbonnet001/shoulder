@@ -13,6 +13,8 @@ class ExcelBatchWriter:
             data = {
                 "muscle_selected": [],
                 **{f"q_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
+                **{f"qdot_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
+                "alpha": [],
                 "origin_muscle_x": [],
                 "origin_muscle_y": [],
                 "origin_muscle_z": [],
@@ -26,11 +28,13 @@ class ExcelBatchWriter:
                  }
             pd.DataFrame(data).to_excel(filename, index=False)
 
-    def add_line(self, muscle_selected_index, q, origin_muscle, insertion_muscle, segment_length, dlmt_dq, muscle_force, torque):
+    def add_line(self, muscle_selected_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, dlmt_dq, muscle_force, torque):
         # Create a new line with the provided data
         new_line = {
             "muscle_selected": muscle_selected_index,
             **{f"q_{self.q_ranges_names_with_dofs[k]}":  q[k] for k in range(len(q))},
+            **{f"qdot_{self.q_ranges_names_with_dofs[k]}":  qdot[k] for k in range(len(qdot))},
+            "alpha": alpha,
             "origin_muscle_x": origin_muscle[0],
             "origin_muscle_y": origin_muscle[1],
             "origin_muscle_z": origin_muscle[2],

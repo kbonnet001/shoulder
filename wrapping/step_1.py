@@ -5,13 +5,13 @@ import numpy as np
 
 def switch_frame(points, matrix) :
 
-  """ Express point in a new frame/ global frame
+  """ Express point in a new frame/ local to global frame
   
-   INPUT
+   Args
    - point : array 3*1 coordinates of the point
    - matrix : array 4*4 rotation_matrix and vect
   
-   OUTPUT
+   Returns
    - point_new_frame : array 3*1 coordinates of the point in the nex frame
    ----------------------------------
    transformation_matrix = np.array([[rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2], vect[0]],
@@ -28,13 +28,13 @@ def switch_frame(points, matrix) :
 
 def transpose_switch_frame(points, matrix) :
 
-  """Express point in its previous frame/ in local frame
+  """Express point in its previous frame/ gobal to local frame
   
-  INPUT
+  Args
   - point : array 3*1 coordinates of the point
   - matrix : array 4*4 rotation_matrix and vect
   
-  OUTPUT
+  Returns
   - point_previous_frame : array 3*1 coordinates of the point in its previous frame
   ----------------------------------
   transformation_matrix = np.array([[rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2], vect_transition[0]],
@@ -50,14 +50,14 @@ def transpose_switch_frame(points, matrix) :
       return (np.linalg.inv(matrix)@ np.concatenate((points, [1])))[:3]
 
 def switch_frame_UV(points, matrix_U, matrix_V) : 
-  """Express point, its local frame, to an other local frame
+  """Express point, its local frame U, to an other local frame V
   
-  INPUT
+  Args
   - point : array 3*1 coordinates of the point
   - matrix_U : array 4*4 rotation_matrix and vect, local frame of point
   - matrix_V : array 4*4 rotation_matrix and vect, new local frame 
   
-  OUTPUT
+  Returns
   - point_new_local_frame : array 3*1 coordinates of the point in the new local frame"""
   
   points = switch_frame(points, matrix_U)

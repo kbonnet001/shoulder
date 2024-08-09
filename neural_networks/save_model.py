@@ -1,27 +1,41 @@
 import torch
 import torch.nn as nn
 from neural_networks.Model import Model
-from neural_networks.plot_visualisation import plot_predictions_and_targets, plot_predictions_and_targets_from_filenames, plot_predictions_and_targets_from_filenames_dlmt_dq, plot_predictions_and_targets_from_filenames_lmt_dlmt_dq
-from neural_networks.file_directory_operations import create_and_save_plot
-from neural_networks.ModelHyperparameters import ModelHyperparameters
 import json
-from neural_networks.Mode import Mode
-from neural_networks.Timer import measure_time
-   
+from neural_networks.Timer import measure_time    
+import os
+
+def del_saved_model(file_path) : 
     
-def save_model(model, input_size, output_size, Hyperparams, file_path) : 
+    # Paths for model and config files
+    model_path = os.path.join(file_path, "model")
+    config_path = os.path.join(file_path, "model_config.json")
+    
+    # Remove existing files if they exist
+    if os.path.exists(model_path):
+        os.remove(model_path)
+    if os.path.exists(config_path):
+        os.remove(config_path)
+
+def save_model(model, input_size, output_size, Hyperparams, file_path): 
     """
     Save a model with its parameters and hyperparameters
     
-    INPUTS : 
-    - model : model to save
-    - input_size : int, size of input X
-    - output_size : int, size of output y
-    - Hyperparams : ModelHyperparameters, all hyperparameter 
-    - file_path : string, path 
+    Args: 
+    - model: model to save
+    - input_size: int, size of input X
+    - output_size: int, size of output y
+    - Hyperparams: ModelHyperparameters, all hyperparameter 
+    - file_path: string, path 
     """
     
-    # Save model configuation
+    # Paths for model and config files
+    model_path = os.path.join(file_path, "model")
+    config_path = os.path.join(file_path, "model_config.json")
+    
+    del_saved_model(file_path)
+
+    # Save model configuration
     config = {
         'input_size': input_size,
         'output_size': output_size,
@@ -33,19 +47,20 @@ def save_model(model, input_size, output_size, Hyperparams, file_path) :
         'dropout_prob': Hyperparams.dropout_prob
     }
 
-    with open(f'{file_path}/model_config.json', 'w') as f:
+    with open(config_path, 'w') as f:
         json.dump(config, f)
-    torch.save(model.state_dict(), f"{file_path}/model")
+    torch.save(model.state_dict(), model_path)
+
 
 def load_saved_model(file_path) : 
     
     """
     Load a saved model from file_path
     
-    INPUT : 
+    Args : 
     - file_path : string, path where the file 'model_config.json' of the model could be find
     
-    OUTPUT : 
+    Returns : 
     - model : model loaded in eval mode
     """
     
@@ -72,60 +87,33 @@ def load_saved_model(file_path) :
     model.eval()
 
     return model
-    
-def visualize_prediction(mode, nbQ, y_labels, train_loader, val_loader, test_loader, file_path, 
-                         folder_name_for_prediction) : 
-    
-    """
-    Load saved model and plot-save visualisations 
-    
-    INPUTS 
-    - mode : Mode
-    - q_ranges : array, range of each qi (min,max)
-    - y_labels : list string, labels of each type value in exit y
-    - train_loader : DataLoader, data trainning (80% of 80%)
-    - val_loader : DataLoader, data validation (20% of 80%)
-    - test_loader : DataLoader, data testing (20%)
-    - file_path : string, path where the file 'model_config.json' of the model could be find
-    - folder_name_for_prediction : string, path where files of folder 'plot_all_q_variation_' could be find
-    """
-    
-    model = load_saved_model(file_path)
-    
-    plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path, "train_loader")
-    plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path, "val_loader")
-    plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path, "test_loader")
-    
-    if mode == Mode.DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
-    elif mode == Mode.MUSCLE_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_lmt_dlmt_dq(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
-    else : # MUSCLE or TORQUE
-        plot_predictions_and_targets_from_filenames(mode, model, y_labels, nbQ, file_path, folder_name_for_prediction, 100)
-
-
 
 def main_function_model(file_path, inputs) : 
     """
     Model prediction with a saved model
     Please, look at this function as an example 
-    One load before all is beter than one load for each time you use the model prediction, ... 
+    One load before all is beter than one load for each time you use the model prediction ... 
 
-    INPUTS : 
+    Args : 
     - file_path : string, path where the file 'model_config.json' of the model could be find
     - inputs : [], inputs, check is the dimention is correct before
     
-    OUTPUT :
+    Returns :
     - output : pytorch tensor, model's prediction(s) 
     """
+    # You must have a torch tensor !
+    if not isinstance(inputs, torch.Tensor):
+        inputs = torch.tensor([inputs])
     
-    # Load model from file_path, model eval
-    model = load_saved_model(file_path)
+    if len(inputs.size()) == 1 : # security when y is 1
+        inputs = inputs.unsqueeze(0)
+        
+    # Load model from file_path, model eval    
+    with measure_time() as model_load_timer:
+      model = load_saved_model(file_path)
     
-    with measure_time() as timer:
-        # You must have a torch tensor !
-        inputs_tensor = torch.tensor([inputs])
-        outputs = model(inputs_tensor).squeeze()
+    with measure_time() as model_timer:
+        outputs = model(inputs).squeeze()
     
-    print(f"output(s) = {outputs}, time execution (without loading model time) = {timer.execution_time}")
-    return outputs
+    # print(f"output(s) = {outputs}, time execution (without loading model time) = {model_timer.execution_time}")
+    return outputs, model_load_timer, model_timer

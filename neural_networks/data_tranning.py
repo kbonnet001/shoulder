@@ -1,25 +1,23 @@
 import torch
-import matplotlib.pyplot as plt
 from neural_networks.Model import Model
 import torch.optim as optim
 from neural_networks.EarlyStopping import EarlyStopping
 from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
-from neural_networks.file_directory_operations import create_and_save_plot
 import math
 
 def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     """
     Train the model on the training dataset.
 
-    INPUT :
+    Args :
     - model (nn.Module): The neural network model to be trained.
     - train_loader (DataLoader): DataLoader for the training dataset, which provides batches of data.
     - optimizer (torch.optim.Optimizer): The optimization algorithm to update the model's weights.
     - criterion (torch.nn.Module): The loss function to minimize during training.
     - device (torch.device, optional): The device on which to perform computations (CPU or CUDA). Default is CUDA if available.
 
-    OUTPUT :
+    Returns :
     - epoch_loss (float): The average loss over the training dataset for the current epoch.
     - epoch_acc (float): The accuracy of the model on the training dataset for the current epoch.
     """
@@ -60,13 +58,13 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
     """
     Evaluate the model on the validation or test dataset.
 
-    INPUT :
+    Args :
     - model (nn.Module): The neural network model to be evaluated.
     - data_loader (DataLoader): DataLoader for the validation or test dataset, which provides batches of data.
     - criterion (torch.nn.Module): The loss function to calculate the error between the model predictions and true values.
     - device (torch.device, optional): The device on which to perform computations (CPU or CUDA). Default is CUDA if available.
 
-    OUTPUT :
+    Returns :
     - epoch_loss (float): The average loss over the validation or test dataset.
     - epoch_acc (float): The accuracy of the model on the validation or test dataset.
     """
@@ -102,10 +100,10 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
     return epoch_loss, epoch_acc
 
 def train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
-                                    file_path, plot = False, save = False) : 
+                                    file_path, plot = False, save = False, show_plot = False) : 
     """Train and evaluate a model
     
-    INPUTS : 
+    Args : 
     - train_loader : DataLoader, data trainning (80% of 80%)
     - val_loader : DataLoader, data validation (20% of 80%)
     - test_loader : DataLoader, data testing (20%)
@@ -116,7 +114,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     - plot : (default False) bool, True to show and save plots
     - save : (default False) bool, True to save the model
     
-    OUTPUTS : 
+    Returns : 
     - val_loss : float, loss validation
     - val_acc : float, accuracy (mean distance) validation"""
     
@@ -178,7 +176,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     print(f'Test Loss: {test_loss:.8f}, Test Acc: {test_acc:.8f}')
     
     if plot : 
-        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path)
+        plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path, show_plot)
         
     # Save model
     if save : 

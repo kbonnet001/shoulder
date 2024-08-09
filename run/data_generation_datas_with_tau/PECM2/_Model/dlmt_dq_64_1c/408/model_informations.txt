@@ -1,0 +1,18 @@
+num_try = 408
+val_loss = 5.908052015001886e-05
+val_acc = 0.00563517352566123
+execution_time_train = 64.47840404510498
+execution_time_load_saved_model = 0.0016414440870285035
+execution_time_use_saved_model = 0.0001747204065322876
+mode = Mode.DLMT_DQ
+batch_size = 64
+n_nodes = [2048]
+activations = [GELU(approximate='none')]
+L1_penalty = 0.01
+L2_penalty = 0.001
+learning_rate = 0.01
+dropout_prob = 0.5
+use_batch_norm = True
+num_epochs_used = 205
+criterion_name = LogCoshLoss
+criterion_params = {'factor': 1.0}

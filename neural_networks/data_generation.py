@@ -5,12 +5,13 @@ from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 import copy
 
+
 def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas
    Datas are generated ponctually, independantly and uniformly
    
-   INPUT
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -64,7 +65,7 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
    """Test limits of q for the muscle selected
    It's just a way to observe extreme configuations
    
-   INPUT
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -106,7 +107,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    
    """Create a data frame for prepare datas
    
-   INPUT
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -182,7 +183,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
    """Create a data frame for prepare datas without any discontinuities or error wrapping 
    Generate a mvt and then, remove problematic datas
    
-   INPUT
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',

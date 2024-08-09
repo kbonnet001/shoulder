@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 def create_directory(directory_path):
     """
-    create a new folder
+    Create a new folder
 
-    INPUT :
+    Args :
         directory_path (str): path of the new folder
     """
     if not os.path.exists(directory_path):
@@ -18,7 +18,7 @@ def create_and_save_plot(directory_path, file_name):
     """
     Save a Matplotlib fig in a specific folder
 
-    INPUTS :
+    Args :
         directory_path (str): Path where the fig will be save.
         file_name (str): Name of the figure
     """
@@ -41,13 +41,15 @@ def save_text_to_file(text, file_path):
         file.write(text)
 
 
-def save_informations_model(file_path, num_try, val_loss, val_acc, execution_time, try_hyperparams, epoch, criterion_name, criterion_params) : 
+def save_informations_model(file_path, num_try, val_loss, val_acc, train_timer, mean_model_load_timer, mean_model_timer, try_hyperparams, epoch, criterion_name, criterion_params) : 
     
     text = (
         f"num_try = {num_try}\n"
         f"val_loss = {val_loss}\n"
         f"val_acc = {val_acc}\n"
-        f"execution_time = {execution_time}\n"
+        f"execution_time_train = {train_timer}\n"
+        f"execution_time_load_saved_model = {mean_model_load_timer}\n"
+        f"execution_time_use_saved_model = {mean_model_timer}\n"
         f"mode = {try_hyperparams.mode}\n"
         f"batch_size = {try_hyperparams.batch_size}\n"
         f"n_nodes = {try_hyperparams.n_nodes}\n"

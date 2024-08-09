@@ -2,9 +2,7 @@ import numpy as np
 from wrapping.algorithm import single_cylinder_obstacle_set_algorithm, double_cylinder_obstacle_set_algorithm
 from wrapping.plot_cylinder import plot_one_cylinder_obstacle, plot_double_cylinder_obstacle
 from scipy.linalg import norm
-from openpyxl import load_workbook
 from neural_networks.discontinuities import *
-import copy
 
 def compute_q_ranges_segment(model, segment_selected) : 
     # segment_names
@@ -40,13 +38,22 @@ def ensure_unique_column_names(dofs_list) :
 
 
 def compute_q_ranges(model):
+   """ Get ranges of each q and names
+
+   Args:
+       model (biorbd model): biorbd model
+
+   Returns:
+       q_ranges : list of ranges [min_q_value, max_q_value]
+       q_ranges_names_with_dofs : list of names
+   """
+   # get ranges of each segment (2, 4, 6, 7)
    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
-   # on calcule tous les q ranges de chaque articulation (2, 4, 6, 7)
+   
    q_ranges = []
    q_ranges_names_with_dofs = []
-   # Find name of segments and matrix of cylinders  
    
-   for segment_index in range(len(segment_names)) :
+   for segment_index in range(model.nbSegment()) :
       q_ranges_segment = [[ranges.min(), ranges.max()] for ranges in model.segment(segment_index).QRanges()]
       q_ranges+= q_ranges_segment
       humerus_dof_names = [model.segment(segment_index).nameDof(i).to_string() for i in 
@@ -57,11 +64,17 @@ def compute_q_ranges(model):
    return q_ranges, q_ranges_names_with_dofs
 
 def initialisation_generation(model, muscle_index, cylinders) :
-   
+   """
+   Initialisation before generation 
+
+   Args:
+       model (biorbad model): biorbd model
+       muscle_index (int): index of muscle selected
+       cylinders ([Cylinder]): list of cylinders of the muscle selected
+   """
    segment_names = [model.segment(i).name().to_string() for i in range(model.nbSegment())]
 
-   # q_initial = np.array([0.,-0.01,0.,0.05])
-   # q_initial = np.array([0.0, 0.0, 0.0, 0.0]) 
+   # initial position
    q_initial = np.array([0.0 for i in range(model.nbQ())])
    
    for cylinder in cylinders : 
@@ -70,15 +83,26 @@ def initialisation_generation(model, muscle_index, cylinders) :
    origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q_initial) # global initial
    points = [origin_muscle, insertion_muscle]
    for k in range(len(cylinders)) : 
+      # warning, work only for PECM2 PECM3, 2 cylinders
+      # more information in "compute_new_radius" description
       cylinders[k].compute_new_radius(points[k])
 
 
 def update_points_position(model, point_index, muscle_index, q) : 
+   """Update coordinates points
+
+   Args:
+       model (biorbd.Model): The biorbd model.
+       point_index (list[int]): List of point indices indicating which points' coordinates are desired.
+       muscle_index (int): Index of the selected muscle.
+       q (array): Array of generalized coordinates (q).
+
+   Returns:
+       points: list of array, coordinates of points_index
+   """
    # Updates
-   # en gros, on fait un update par rapport à un muscle avec muscle index et le q doit correspondre
    model.updateMuscles(q) 
    mus = model.muscle(muscle_index) 
-   
    model.UpdateKinematicsCustom(q)
 
    # Find coordinates of origin point (P) and insertion point (S)
@@ -97,11 +121,11 @@ def find_index_muscle(model, muscle):
    
    """ Find index of the muscle selected in the name list
    
-   INPUT : 
+   Args : 
+   - model : biorbd model
    - muscle : string, name of the muscle selected
-   - muscle_names : string, list of muscle names
    
-   OUTPUT : 
+   Returns : 
    - position : int, position of the muscle in the list"""
 
    # Find index of the muscle selected
@@ -118,7 +142,7 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
 
    """Compute segment length
    
-   INPUT : 
+   Args : 
    - model : model
    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
    - q : array 4*2, q randomly generated
@@ -130,7 +154,7 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    - gcs_seg_V_0 : gcs 0 (inital) of the segment V (if it exist)
    - plot = bool, (default = False) plot cylinder(s), points and muscle path
    
-   OUTPUT : 
+   Returns : 
    - segment_length : length of muscle path """
    
    print("on fait l'algo avec celui ci insertion_muscle = ", insertion_muscle)

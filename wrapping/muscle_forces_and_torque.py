@@ -1,136 +1,147 @@
 import numpy as np
-import biorbd
-from neural_networks.functions_data_generation import update_points_position, compute_q_ranges, find_index_muscle, compute_segment_length
 from neural_networks.file_directory_operations import *
-import copy
-from wrapping.muscles_length_jacobian import compute_dlmt_dq
-from neural_networks.other import compute_row_col
 
-def compute_muscle_force_origin_insertion_nul(muscle_index, lmt, model_one_muscle = biorbd.Model("models/oneMuscle.bioMod")) :
+def compute_fm(model_biorbd, q, qdot, alpha):
     """
-    Compute muscle force with lmt
-    This is a temporarily function !
+    Compute muscle forces for a given model, joint positions, velocities, and activations.
     
-    We suppose that origin point = 0, 0, 0 and insertion point = 0, 0, 0
-    Then, insertion point = 0, 0, lmt
-    Please, paid attention to the file 'oneMuscle.bioMod'
-    For the moment, there is only PECM2 and PECM3 with modified origin and insertion points
-    
+    Warning:
+        This function does not consider muscle wrapping, so the calculation of lmt is done 
+        using the via point method (biorbd). Updates are needed to incorporate wrapping 
+        effects in biorbd.
+
+    Args:
+        model_biorbd (biorbd.Model): The biorbd model.
+        q (np.ndarray): Joint positions (angles) for the model.
+        qdot (np.ndarray): Joint velocities for the model.
+        alpha (np.ndarray): Muscle activations for the muscles in the model [0,1]
+
+    Returns:
+        np.ndarray: The computed muscle forces.
     """
-    q = np.array([0])
-    qdot = np.array([0])
     
-    mus = model_one_muscle.muscle(muscle_index) 
-    mus.position().setInsertionInLocal(np.array([0, 0, lmt])) 
-    
-    states = model_one_muscle.stateSet()
+    # Get the list of muscle states from the model
+    states = model_biorbd.stateSet()
     for state in states:
-        state.setActivation(1) # 1 ==> 100% activation
-    f = model_one_muscle.muscleForces(states, q, qdot).to_array()
-
-    print(f"f: {f[muscle_index]}")
-    if f[muscle_index] >= 5000 : 
-        print("ERROR : force >= 5000 !!!")
+        state.setActivation(alpha)  
     
-    return f[muscle_index]
+    # Compute the muscle forces based on the given states, joint positions, and velocities
+    f = model_biorbd.muscleForces(states, q, qdot).to_array()
     
+    return f
 
-def compute_torque(dlmt_dq, f) : 
-    print("dlmt_dq = ", dlmt_dq)
-    print("f = ", f)
-    # torque = []
-    # for i in range(len(f)) : 
-    #     torque.append(sum(np.dot(- np.transpose(dlmt_dq[i]), f[i])))
-    return sum(np.dot(- np.transpose(dlmt_dq), f))
-
-def compute_torque_from_lmt_and_dlmt_dq(muscle_index, lmt, dlmt_dq) : 
-    model_one_muscle = biorbd.Model("models/oneMuscle.bioMod")
-    f = compute_muscle_force_origin_insertion_nul(muscle_index, lmt, model_one_muscle)
-    return compute_torque(dlmt_dq, f)
-
-
-# def plot_muscle_force_and_torque_q_variation(muscle_selected, cylinders, model, q_fixed, directory_path, num_points = 100) :
-   
-#     """Create a directory with all excel files and png of mvt for all q
-
-#     INPUTS
-#     - muscle_selected : string, name of the muscle selected. 
-#                             Please chose an autorized name in this list : 
-#                             ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
-#                             'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
-#     - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
-#     - model : model 
-#     - q_fixed : array 4*1, q fixed, reference
-#     - filename : string, name of the file to create
-#     - num_points : int (default = 50) number of point to generate per mvt
-#     - plot_all : bool (default false), True if we want all plots of point P, S (and Q, G, H and T) with cylinder(s)
-#     - plot_limit : bool (default = False), True to plot points P, S (and Q, G, H and T) with cylinder(s) 
-#                                                                                             (first, middle and last one)
-#     - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
-
-#     # Create a folder for save excel files and plots
-
-#     q_ranges, q_ranges_names_with_dofs = compute_q_ranges(model)
-#     muscle_index= find_index_muscle(model, muscle_selected)
-#     q = copy.deepcopy(q_fixed)
-
-#     row_fixed, col_fixed = compute_row_col(len(q_ranges), 3)
-#     fig1, axs1 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
-#     fig2, axs2 = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
-
-#     for q_index in range (len(q_ranges)) : 
-#         forces = []
-#         torques = []
-#         qs = []
-        
-#         q = copy.deepcopy(q_fixed)
-        
-#         for k in range (num_points+1) : 
-#             print("plot muscle force and torque, k = ", k)
-            
-#             qi = k * ((q_ranges[q_index][1] - q_ranges[q_index][0]) / num_points) + q_ranges[q_index][0]
-#             q[q_index] = qi
-            
-#             print("q = ", q)
-
-#             # ------------------------------------------------
-#             origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
-#             lmt, _ = compute_segment_length(model, cylinders, muscle_index, q_ranges, q, origin_muscle, insertion_muscle, plot = False, plot_cadran = False)  
-         
-            
-#             dlmt_dq = compute_dlmt_dq(model, q_ranges, q, cylinders, muscle_index, delta_qi = 1e-8)
-#             muscle_force = compute_muscle_force_origin_insertion_nul(muscle_index, lmt)
-#             torque = compute_torque(dlmt_dq, muscle_force)
-
-#             qs.append(qi)
-#             forces.append(muscle_force)
-#             torques.append(torque)
-        
-#         row = q_index // 3
-#         col = q_index % 3
-
-#         axs1[row, col].plot(qs, forces, marker='o', linestyle='-', color='b', markersize=3)
-#         axs1[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-#         axs1[row, col].set_ylabel('Muscle_force',fontsize='smaller')
-#         axs1[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
-#         axs1[row, col].set_xticks(qs[::5])
-#         axs1[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
-        
-#         axs2[row, col].plot(qs, torques, marker='o', linestyle='-', color='b', markersize=3)
-#         axs2[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-#         axs2[row, col].set_ylabel('Torque',fontsize='smaller')
-#         axs2[row, col].set_title(f'{q_ranges_names_with_dofs[q_index]}',fontsize='smaller')
-#         axs2[row, col].set_xticks(qs[::5])
-#         axs2[row, col].set_xticklabels([f'{x:.4f}' for x in qs[::5]],fontsize='smaller')
-
-#     fig1.suptitle(f'Muscle Force as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
-#     plt.tight_layout()  
-#     create_and_save_plot(f"{directory_path}", "muscle_force_q_variation.png")
-#     plt.show()
+def compute_torque(dlmt_dq, f, limit=5000):
+    """
+    Compute the torque based on the Jacobian of muscle length changes and muscle forces.
     
-#     fig2.suptitle(f'Torque as a Function of q Values\nq_fixed = {q_fixed}', fontweight='bold')
-#     plt.tight_layout()  
-#     create_and_save_plot(f"{directory_path}", "torque_q_variation.png")
-#     plt.show()
+    Args:
+        dlmt_dq (np.ndarray): The Jacobian matrix of muscle length changes with respect to joint positions.
+        f (np.ndarray): The muscle forces.
+        limit (float, optional): The threshold above which muscle forces are considered excessive. Defaults to 5000.
+    
+    Returns:
+        tuple: A tuple containing:
+            - The computed torque.
+            - A boolean flag indicating if any muscle force exceeds the limit.
+    """
+    
+    f_sup_limit = False
+    
+    if np.any(f >= limit):
+        f_sup_limit = True
 
-#     return None
+    # Compute the torque using the Jacobian and muscle forces
+    torque = np.dot(-np.transpose(dlmt_dq), f)
+    total_torque = np.sum(torque)
+    
+    return total_torque, f_sup_limit
+
+def get_fm_and_torque(model_biorbd, muscle_index, q, qdot, alpha):
+    """
+    Compute the muscle force and joint torque for a specific muscle in the model.
+
+    Args:
+        model_biorbd (biorbd.Model): The biorbd model.
+        muscle_index (int): Index of the muscle for which to compute force and torque.
+        q (np.ndarray): Joint positions.
+        qdot (np.ndarray): Joint velocities.
+        alpha (np.ndarray): Muscle activations.
+
+    Returns:
+        tuple: A tuple containing:
+            - The force of the specified muscle.
+            - The joint torque generated by the specified muscle.
+            - A boolean flag indicating if the muscle force exceeds the limit.
+    """
+    
+    # Initialize the flag for muscle force exceeding the limit
+    f_sup_limit = False
+    
+    # Compute muscle forces
+    fm = compute_fm(model_biorbd, q, qdot, alpha)
+    
+    # Compute the joint torques based on the muscle forces
+    tau = model_biorbd.muscularJointTorque(fm).to_array()
+    
+    # Check if the force of the specified muscle exceeds the limit
+    if fm[muscle_index] >= 5000:
+        print("ERROR: Muscle force >= 5000 !!!")
+        f_sup_limit = True
+    
+    # Return the muscle force, joint torque, and the limit flag
+    return fm[muscle_index], tau[muscle_index], f_sup_limit
+#############################################################
+
+# def compute_muscle_force_origin_insertion_nul(muscle_index, q, qdot, alpha, lmt, model_one_muscle = biorbd.Model("models/oneMuscle.bioMod")) :
+#     """
+#     Compute muscle force with lmt
+#     This is a temporarily function !
+    
+#     We suppose that origin point = 0, 0, 0 and insertion point = 0, 0, 0
+#     Then, insertion point = 0, 0, lmt
+#     Please, paid attention to the file 'oneMuscle.bioMod'
+#     For the moment, there is only PECM2 and PECM3 with modified origin and insertion points
+    
+#     """
+#     # q = np.array([q]) # doit etre de taille 1
+#     q = np.array([0])
+#     qdot = np.array([0])
+    
+#     mus = model_one_muscle.muscle(muscle_index) #
+#     mus.position().setInsertionInLocal(np.array([0, 0, lmt])) #
+#     # print(mus.musclesPointsInGlobal(model_one_muscle, q)[0].to_array())
+#     # print(mus.musclesPointsInGlobal(model_one_muscle, q)[-1].to_array())
+    
+#     states = model_one_muscle.stateSet()
+#     for state in states:
+#         state.setActivation(alpha) # example 1 ==> 100% activation
+#     f = model_one_muscle.muscleForces(states, q, qdot).to_array()
+
+#     print(f"f: {f[muscle_index]}")
+#     if f[muscle_index] >= 5000 : 
+#         print("ERROR : force >= 5000 !!!")
+    
+#     return f[muscle_index] 
+    
+# def compute_fm_nul(muscle_index, q, qdot, alpha, lmt) : 
+#     fm = []
+#     for q_i, qdot_i, alpha_i in zip(q, qdot, alpha) :
+#         fm.append(compute_muscle_force_origin_insertion_nul(muscle_index, q_i, qdot_i, alpha_i, lmt))
+#     return np.array(fm)
+
+# def compute_fm_muscle_index(model_biorbd, muscle_index, q, qdot, alpha) : 
+#     f = compute_fm(model_biorbd, q, qdot, alpha)
+
+#     print(f"f: {f[muscle_index]}")
+#     if f[muscle_index] >= 5000 : 
+#         print("ERROR : force >= 5000 !!!")
+    
+#     return f[muscle_index] 
+
+# def comupte_torque(model_biorbd, f) : 
+#     return model_biorbd.muscularJointTorque(f).to_array()
+
+# def compute_torque_from_lmt_and_dlmt_dq(muscle_index, q, qdot, alpha, lmt, dlmt_dq) : 
+#     model_one_muscle = biorbd.Model("models/oneMuscle.bioMod")
+#     f = compute_muscle_force_origin_insertion_nul(muscle_index, q, qdot, alpha, lmt, model_one_muscle)
+#     return compute_torque(dlmt_dq, f)
