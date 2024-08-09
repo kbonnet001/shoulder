@@ -6,12 +6,12 @@ def find_if_data_ignored(cylinders, points, bool_inactive) :
     Note that with two cylinders and iterative method, an origin/insertion point 
     could be the tangent point of the other cylinder
 
-    INPUTS : 
+    Args : 
     - cylinders : list of all cylinder (Cylinder) of muscle
     - points : [origin_point, insertion_point], list of coordinates array 1*3
     - bool_inactive : bool, True if tangent points are inactive
     
-    OUTPUT 
+    Returns 
     data_ignored : bool
         if any cylinders pass throught origin/insertion point, the data must be ignored 
     """
@@ -29,12 +29,12 @@ def find_discontinuities_from_error_wrapping_range(positions, size, range = 5) :
     So, if the cylinder pass throught origin/insertion point more than 1 time, 
     all datas beetween "True positions" groups will be also remove ... 
     
-    INPUTS : 
+    Args : 
     - positions : [int], indexes of the generated data where a discontinuity was founded (wrapping error)
     - size : int, size of the generated mouvement
     - range : int (default = 5), num of index to remove before and after the discontinuity
     
-    OUTPUT : 
+    Returns : 
     - [min_index, max_index] : [int, int], index min and index max to remove """
     
     min_index = max(0, min(positions) - range)
@@ -44,13 +44,13 @@ def find_discontinuities_from_error_wrapping_range(positions, size, range = 5) :
 
 def find_discontinuty(x, y, epsilon = 0.002, plot_discontinuities = False) : 
     """Find all discontinuities of a curve with distance beetween points
-    INPUTS : 
+    Args : 
     - x : [float], x axis (qi)
     - y : [float], y axis (muscle length)
     - epsilon : float (default = 0.002), a small value to add at theshold
     - plot_discontinuities : bool (default = False) plot the mouvement with discontinuity
     
-    OUTPUT : 
+    Returns : 
     - discontinuities : [int], list of all index where a discontinuity is founded"""
 
     # Compute distances beetween consecutives points
@@ -75,12 +75,12 @@ def find_discontinuty(x, y, epsilon = 0.002, plot_discontinuities = False) :
 def data_to_remove_range(discontinuity, size, range = 5):
     """Compute all points to remove relatively to the index "discontinuity
     range --> cut some point before and some point after the discontinuity"
-    INPUTS : 
+    Args : 
     - discontinuity : int, index of the generated data where a discontinuity was founded (mvt not physiological)
     - size : int, size of the generated mouvement
     - range : int (default = 5), num of index to remove before and after the discontinuity
     
-    OUTPUT : 
+    Returns : 
     - [min_index, max_index] : [int, int], index min and index max to remove """
     
     min_index = max(0, discontinuity - range)
@@ -90,12 +90,12 @@ def data_to_remove_range(discontinuity, size, range = 5):
 def data_to_remove_part(discontinuity, qs, size, range = 5):
     """Compute all points to remove relatively to the index "discontinuity
     part --> keep only the more physiological datas"
-    INPUTS : 
+    Args : 
     - discontinuity : int, index of the generated data where a discontinuity was founded (mvt not physiological)
     - size : int, size of the generated mouvement
     - range : int (default = 5), num of index to remove before and after the discontinuity
     
-    OUTPUT : 
+    Returns : 
     - [min_index, max_index] : [int, int], index min and index max to remove """
     if qs[discontinuity] < 0 : 
         return [0, min(size - 1, discontinuity + range)]

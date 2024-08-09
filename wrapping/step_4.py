@@ -5,12 +5,12 @@
 
 #   """Compute xy coordinates of segment lengths in plane
   
-#   INPUT
+#   Args
 #   - v1 : array 3*1 position of the first obstacle tangent point
 #   - v2 : array 3*1 position of the second obstacle tangent point
 #   - r : radius of the cylinder * side
   
-#   OUTPUT
+#   Returns
 #   - ||v1v2||(x,y) : xy coordinates of segment lengths in plane"""
 
 #   if r == 0:
@@ -25,12 +25,12 @@
 
 #   """Compute length of path segments v1 v2
   
-#   INPUT
+#   Args
 #   - v1 : array 3*1 position of the first obstacle tangent point
 #   - v2 : array 3*1 position of the second obstacle tangent point
 #   - v1_v2_length_xy : xy coordinates of segment lengths in plane
   
-#   OUTPUT
+#   Returns
 #   - ||v1v2|| : length of path segments between v1 and v2"""
 
 #   return np.sqrt(v1_v2_length_xy**2+(v2[2]-v1[2])**2)
@@ -39,7 +39,7 @@
 
 #   """Compute length of path segments
   
-#   INPUT
+#   Arg
 #   - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
 #   - origin_point : array 3*1 position of the first point
 #   - final_point : array 3*1 position of the second point
@@ -47,7 +47,7 @@
 #   - v2 : array 3*1 position of the second obstacle tangent point
 #   - r : radius of the cylinder * side
   
-#   OUTPUT
+#   Returns
 #   - segment_length : length of path segments"""
 
 #   if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin_point to final_point

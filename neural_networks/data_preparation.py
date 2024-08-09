@@ -39,11 +39,11 @@ def print_informations_environment() :
 def compute_samples(dataset, train_ratio) :
   """Compute samples with a train_ratio to separate tensor
 
-  INPUT
+  Args
   - dataset : MuscleDataset
   - train_ratio : float (0 to 1)
 
-  OUTPUT
+  Returns
   - n_train_samples : int, number of sample for tranning
   - n_test_samples : int, number of sample for testing """
 
@@ -58,7 +58,7 @@ def data_standardization(filename, limit = 0):
   The output filename have a "limit" of datas beetween 0.xx and 0.xx
   Simply, try to avoid normal distribution of y 
   
-  INPUTS : 
+  Args : 
   - filename : name path of the dataframe
   - limit : (defaul = 0) int, limit off data by steps
   
@@ -128,12 +128,12 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     Load data from df and create X and y tensors for PyTorch
     NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
     
-    INPUT:
+    Args:
     - file_path_df : path for excel file with datas
     - limit: Placeholder parameter for standardization
     - all_possible_categories: List of all possible categories for the 'index_muscle' column
     
-    OUTPUT:
+    Returns:
     - X_tensor: X tensor with all features (columns except the last one)
     - y_tensor: y tensor with the target values (last column)
     """
@@ -163,14 +163,14 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
   """Create loaders : 
     80 % : train (80%) + validation (20%)
     20% : test
-    INPUTS : 
+    Args : 
     - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user
     - q_ranges : [q] q ranges of all q selected
     - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
     - with_noise : (default = True), bool, true to put datas with noise in dataset for learning
     - plot : (default = False) bool, True to show datas distribution
     
-    OUTPUTS : 
+    Returns : 
     - train_loader : DataLoader, data trainning (80% of 80%)
     - val_loader : DataLoader, data validation (20% of 80%)
     - test_loader : DataLoader, data testing (20%)
@@ -221,7 +221,7 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
           y_tensors.append(y_tensor_ignored)
           graph_labels.append("datas ignored")
  
-        plot_datas_distribution(muscle_name,folder_name, nbQ, X_tensors, y_tensors, y_labels, graph_labels)
+        plot_datas_distribution(Hyperparams.mode, muscle_name,folder_name, nbQ, X_tensors, y_tensors, y_labels, graph_labels)
       
       # Normalize each row (sample) to have unit norm, avoid it if datas have physical unit
       # X_tensor = F.normalize(X_tensor)  
@@ -259,12 +259,12 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
 #   Create loaders : 
 #     80 % : train (80%) + validation (20%)
 #     20% : test
-#     INPUTS : 
+#     Args : 
 #     - batch_size : int, 16, 32, 64, 128 ...
 #     - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
 #     - plot : (default = False) bool, True to show datas distribution
     
-#     OUTPUTS : 
+#     Returns : 
 #     - train_loader : DataLoader, data trainning (80% of 80%)
 #     - val_loader : DataLoader, data validation (20% of 80%)
 #     - test_loader : DataLoader, data testing (20%)
@@ -332,11 +332,11 @@ def dataloader_to_tensor(loader):
     return all_data_tensor, all_labels_tensor
 
 
-def plot_datas_distribution(muscle_name, files_path, nbQ, X_tensors, y_tensors, y_labels, graph_labels):
+def plot_datas_distribution(mode, muscle_name, files_path, nbQ, X_tensors, y_tensors, y_labels, graph_labels):
     """To visualise tensors distribution
     Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
 
-    INPUT : 
+    Args : 
     - muscle_name : name of the excel file with datas of the muscle (good datas) 
     - files_path : file_path to save the plot
     - nbQ : number of q in model file biorbd
@@ -395,5 +395,5 @@ def plot_datas_distribution(muscle_name, files_path, nbQ, X_tensors, y_tensors, 
 
     fig.suptitle(f'Distribution of q and y_tensor - {muscle_name}', fontweight='bold')
     plt.tight_layout()  
-    create_and_save_plot(files_path, f"_plot_datas_distribution_{muscle_name}")
+    create_and_save_plot(files_path, f"_plot_datas_distribution_{muscle_name}_{str(mode).split(".")[-1]}")
     plt.show()

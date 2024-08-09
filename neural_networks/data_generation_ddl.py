@@ -17,7 +17,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    
    """Create a directory with an excel file for one q and png of mvt
    
-   INPUTS
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -93,7 +93,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
    
    """Create a directory with all excel files for all q (with a q_fixed)
    
-   INPUTS
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -165,7 +165,7 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path="") :
    """Create and save a plot png, y as a Function of q Values
    Examples for y : 'segment_length', 'muscle_force', 'torque'
 
-   INPUTS
+   Args
    - model : model 
    - q_fixed : array 4*1, q fixed, reference
    - y : string : colomn selected for the plot (y axis)
@@ -229,7 +229,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    You can also use this function to add more lines (choose a bigger "dataset_size" value)
    If you choose a smaller "dataset_size" value, nothing will happen 
    
-   INPUTS
+   Args
    - muscle_selected : string, name of the muscle selected. 
                         Please chose an autorized name in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -247,6 +247,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
    
+   # Create to writer to save datas, one with "purs datas" (no errors, discontinuties, etc) and an other with errors
+   # To see distribution of datas (please, choose plot_discontinuities = True)
    writer = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}.xlsx", q_ranges_names_with_dofs, batch_size=100)
    writer_datas_ignored = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
  
@@ -344,7 +346,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
    
    """Generate datas for all muscles selected, one file of "dataset_size" lines per muscle
    
-   INPUTS
+   Args
    - muscles_selected : [string], names of muscles selected. 
                         Please chose autorized names in this list : 
                         ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
@@ -365,6 +367,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
    create_directory(directory)
    
    for k in range(len(muscles_selected)) : 
+      # Create a folder for muscle selected
       create_directory(f"{directory}/{muscles_selected[k]}")
       if dataset_size != 0 :
          data_for_learning_without_discontinuites_ddl(muscles_selected[k], cylinders[k], model, dataset_size, 
@@ -390,7 +393,7 @@ def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, bat
    """
    Create datas with noise un add on file _with_noise.xlsx
    
-   INPUTS : 
+   Args : 
    - model : biorbd model
    - excel_file_path : string, path of the original file with all pure datas (= without noise and not ignored)
    - dataset_size_noise : int, num of lines to have in the file
@@ -398,7 +401,7 @@ def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, bat
       PLEASE, choose an appropriate value, len(df) must be a multiple of batch_size to add the correct num of row 
    - noise_std-dev : (default = 0.01) float, standard deviation of added noise 
    
-   OUTPUT : 
+   Returns : 
    None, create or complete a file [...]_with_noise.xlsx
    """
    _, q_ranges_names_with_dofs = compute_q_ranges(model)

@@ -15,11 +15,11 @@ def mean_distance(predictions, targets):
     """
     Compute mean distance beetween predictions and targets
 
-    INPUTS :
+    Args :
     - predictions (torch.Tensor): Model's predictions 
     - targets (torch.Tensor): Targets
 
-    OUTPUT : 
+    Returns : 
         float: mean distance
     """
     distance = torch.mean(torch.abs(predictions - targets))
@@ -29,11 +29,11 @@ def compute_pourcentage_error(predictions, targets) :
     """
     Compute mean relative error beetween predictions and targets
 
-    INPUTS :
+    Args :
     - predictions (torch.Tensor): Model's predictions 
     - targets (torch.Tensor): Targets
 
-    OUTPUTS : 
+    Returns : 
         error_pourcentage : float, relative error
         error_pourcentage_abs : float, relative error in abs
     """
@@ -43,7 +43,7 @@ def compute_pourcentage_error(predictions, targets) :
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path, show_plot = False):
     """Plot loss and accuracy (train and validation)
 
-    INPUT :
+    Args :
     - train_losses : [float], all values of train loss, variation during trainning
     - val_losses : [float], all values of validation loss, variation during trainning
     - train_accs : [float], all values of train accuracy (mean distance), variation during trainning
@@ -80,12 +80,12 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
     
     """Get predictions and targets from a model and data loader.
 
-    INPUTS:
+    Args:
     - model:The trained PyTorch model to be evaluated.
     - data_loader: DataLoader containing the dataset to evaluate.
     - device: The device to run the model on (default is CUDA if available, otherwise CPU).
 
-    OUTPUTS:
+    Returns:
     - predictions: A list of predictions made by the model.
     - targets: A list of true target values from the dataset.
     """
@@ -106,7 +106,7 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     
     """Plot the true values and predicted values for a given model and data loader.
     
-    INPUTS:
+    Args:
     - model: The trained PyTorch model to be evaluated.
     - y_labels : [string], all y (outputs of model) names columns 
     - loader: DataLoader containing the dataset to evaluate.
@@ -114,7 +114,7 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     - num: The number of samples to plot for comparison.
     - directory_path : string, path to save plot
 
-    OUTPUT:
+    Returns:
     - None: The function generates a plot showing the true values and predicted values.
     """
     num_rows, num_cols = compute_row_col(len(y_labels), 3)
@@ -163,13 +163,13 @@ def get_predictions_and_targets_from_selected_y_labels(model, loader, y_labels, 
     """Plot the true values and predicted values for a given model and data loader
     return only specifics columms of y_selected
     
-    INPUTS:
+    Args:
     - model: The trained PyTorch model to be evaluated.
     - loader: DataLoader containing the dataset to evaluate.
     - y_labels : [string], all y (outputs of model) names columns 
     - y_selected: [string], all y (outputs of model) names columns selected 
 
-    OUTPUTS:
+    Returns:
     - selected_predictions : only predictions from columns y selected
     - selected_targets : only targets from columns y selected
     """
@@ -196,14 +196,14 @@ def get_predictions_and_targets_from_selected_y_labels(model, loader, y_labels, 
 def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
     """Before all 'plot predictions', some preparations are necessary
 
-    INPUTS : 
+    Args : 
     - mode : Mode, mode of model
     - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
         Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
     - folder_name : string, path to folder with all excel files q variation
     - nbQ : int, number of q in biorbd model
 
-    OUTPUTS :
+    Returns :
     - filenames : [string], name of each excel file q all variation
     - loaders : DataLoader containing the dataset to evaluate
     - row_fixed : int, number of row for subplot
@@ -234,7 +234,7 @@ def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
 def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ, file_path, folder_name, num):
     """ Create plot to compare predictions and targets for ONE specific columns y (example : lmt, torque, ...)
 
-    INPUTS : 
+    Args : 
     - mode : Mode, mode of model
     - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
         Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
@@ -274,7 +274,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ,
 def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, nbQ, file_path, folder_name, num):
     """ Create plot to compare predictions and targets for DLMT_DQ
 
-    INPUTS : 
+    Args : 
     - mode : Mode, mode of model
     - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
         Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
@@ -334,7 +334,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
 def visualize_prediction_trainning(model, file_path, y_labels, train_loader, val_loader, test_loader) : 
     """Create plots 'predictions and targets' for train, validation and test loader
 
-    INPUTS :
+    Args :
     - model : pytorch model
     - file_path : string, path to save plot
     - y_labels : [string] all name of columns y (output of model)
@@ -352,7 +352,7 @@ def visualize_prediction(mode, nbQ, file_path, folder_name_for_prediction) :
     """
     Load saved model and plot-save visualisations 
     
-    INPUTS 
+    Args 
     - mode : Mode
     - nbQ : int, number of q in biorbd model
     - file_path : string, path where the file 'model_config.json' of the model could be find

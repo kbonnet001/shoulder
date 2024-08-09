@@ -11,10 +11,10 @@ def create_dataset_from_folder_cross_val(mode, folder_name):
   """Create loaders : 
     80 % : train + validation
     20% : test
-    INPUT : 
+    Args : 
     - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
     
-    OUTPUTS : 
+    Returns : 
     - train_val_loader : DataLoader, data train + val(80%)
     - test_loader : DataLoader, data testing (20%)
     - input_size : int, size of input X
@@ -48,13 +48,13 @@ def create_dataset_from_folder_cross_val(mode, folder_name):
 def new_k_loaders(batch_size, train_val_dataset, train_idx, val_idx) : 
     """Create train and val loader for a new k fold
     
-    INPUTS : 
+    Args : 
     - batch_size : int, 16, 32, 64, 128 ...
     - train_val_dataset : dataset, train and val datas (80%)
     - train_idx : [int], index train part
     - val_idx : [int], index val part 
     
-    OUTPUTS : 
+    Returns : 
     - train_loader : DataLoader, data trainning 
     - val_loader : DataLoader, data validation
     """
@@ -72,12 +72,12 @@ def cross_validation(folder_name, Hyperparams, num_folds) :
     """Cross validation to compute mean mean_distance of the model
     Compute performance with less biais
     
-    INPUTS : 
+    Args : 
     - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
     - Hyperparams : (ModelHyperparameters) all hyperparameters choosen by user
     - Num_folder : int, number of k folds
     
-    OUTPUTS : ?
+    Returns : ?
     """
     
     kfold = KFold(n_splits=num_folds, shuffle=True)

@@ -10,12 +10,12 @@ def create_cylinder(radius, height, num_points = 100) :
   
   """Create a cylinder
   
-  INPUT
+  Args
   - radius : radius of the cylinder
   - height : height of the cylinder
   - num_points : int number of points for representation (default 100)
   
-  OUTPUT
+  Returns
   - x_grid, y_grid, z_grid :  array nm_point*num_point coordinates of points for the representation of the cylinder"""
   
   z = np.linspace(-height/2, height/2, num_points)
@@ -29,13 +29,13 @@ def create_cylinder(radius, height, num_points = 100) :
 def apply_transformation(Cylinder, height, num_points = 100):
   """Apply a transformation to the cylinder with a matrix
   
-  INPUT
+  Args
   - matrix : array 4*4 rotation_matrix and vect
   - radius : radius of the cylinder
   - height : height of the cylinder
   - num_points : int number of points for representation (default 100)
   
-  OUTPUT
+  Returns
   - x_transformed, y_transformed, z_transformed :  array nm_point*num_point coordinates of points for the 
                                                     representation of the cylinder transformed"""
 
@@ -55,14 +55,14 @@ def data_cylinder(center_circle_1, center_circle_2, cylinder_frame, radius, num_
   """  Compute datas for plot the cylinder
   The cylinder is charaterized by coordinates of his two circle face and his radius
   
-  INPUT
+  Args
   - center_circle_2 : array 3*1 coordinates of the first circle of the cylinder
   - center_circle_2 : array 3*1 coordinates of the second circle of the cylinder
   - cylinder_frame : array 3*3 local frame of the cylinder
   - radius : radius of the cylinder
   - num_points : int number of points for representation (default 100)
   
-  OUTPUT
+  Returns
   - X, Y, Z :  array nm_point*num_point coordinates of points for the representation of the cylinder"""
 
   # Create a unit vector in direction of axis
@@ -83,14 +83,14 @@ def data_semi_circle(v1, v2, matrix, r, num_points=100) :
 
   """  Compute datas for plot the semi-circle between bounding fixed tangent points v1 and v2
   
-  INPUT
+  Args
   - v1 : array 3*1 position of the first obstacle tangent point
   - v2 : array 3*1 position of the second obstacle tangent point
   - matrix : array 4*4 rotation_matrix and vect
   - r : radius of the cylinder
   - num_points : int number of points for representation (default 100)
   
-  OUTPUT
+  Returns
   - semi_circle_points : array nm_point*n3 coordinates of points for the representation of the semi-circle"""
 
   # Change frame
@@ -119,7 +119,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obst
 
   """   Plot the representation of the single-cylinder obstacle-set algorithm
    
-  INPUT
+  Args
   - origin_point : array 3*1 position of the first point
   - final_point : array 3*1 position of the second point
   - center_circle : 2*array 3*1 coordinates of the first and second circles of the cylinder
@@ -129,7 +129,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obst
   - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
   - matrix : array 4*4 rotation_matrix and vect
   
-  OUTPUT
+  Returns
   - None : Plot axis, cylinder, points and muscle path"""
 
   # Set figure
@@ -145,7 +145,7 @@ def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obst
   ax.scatter(*v2, color='r', label="v2")
 
   # Cylinder
-  Xc,Yc,Zc = apply_transformation(Cylinder, 0.1, 100)  #0.1
+  Xc,Yc,Zc = apply_transformation(Cylinder, 0.2, 100)  #0.1
   ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
 
   if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin point to final point
@@ -166,13 +166,13 @@ def plot_one_cylinder_obstacle(origin_point, final_point, Cylinder, v1, v2, obst
   ax.grid(True)
 
   # Set ax limit
-  # ax.set_ylim(-0.1,0.1)
-  # ax.set_zlim(-0.2,0)
-  # ax.set_xlim(0,0.2)
+  ax.set_ylim(-0.1,0.1)
+  ax.set_zlim(-0.2,0)
+  ax.set_xlim(0,0.2)
   
-  ax.set_xlim(-5,5)
-  ax.set_ylim(-5,5)
-  ax.set_zlim(-5,5)
+  # ax.set_xlim(-5,5)
+  # ax.set_ylim(-5,5)
+  # ax.set_zlim(-5,5)
 
   plt.title("Single Cylinder Wrapping")
   plt.legend()
@@ -183,7 +183,7 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
 
   """Plot the representation of the double-cylinder obstacle-set algorithm
   
-  INPUT
+  Args
   - P : array 3*1 position of the first point
   - S : array 3*1 position of the second point
   - Cylinder_U.radius, : radius of the cylinder U
@@ -197,7 +197,7 @@ def plot_double_cylinder_obstacle(P, S, Cylinder_U, Cylinder_V, Q, G, H, T, Q_G_
   - Q_G_inactive : bool determine if Q and G or inactive (True) or not (False)
   - H_T_inactive : bool determine if H and T or inactive (True) or not (False)
   
-  OUTPUT
+  Returns
   - None : Plot axis, cylinder, points and muscle path"""
 
   # Set figure

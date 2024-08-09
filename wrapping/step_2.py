@@ -13,12 +13,12 @@ def find_tangent_points_xy(p0, p1, r) :
   
   To avoid error with a negative value in sqrt --> max(0, ...)
 
-  INPUT
+  Args
   - p0 : array 3*1 position of the first point
   - p1 : array 3*1 position of the second point
   - r : radius of the cylinder * side
 
-  OUTPUT
+  Returns
   - v1 = [v1_x, v1_y, 0] : array 3*1 position of the first obstacle tangent point
   - v2 = [v2_x, v2_y, 0] : array 3*1 position of the second obstacle tangent point"""
 
@@ -40,79 +40,38 @@ def compute_length_v1_v2_xy(v1,v2, r) :
 
   """Compute xy coordinates of segment lengths in plane
 
-  INPUT
+  Args
   - v1 : array 3*1 position of the first obstacle tangent point
   - v2 : array 3*1 position of the second obstacle tangent point
   - r : radius of the cylinder * side
 
-  OUTPUT
+  Returns
   - ||v1v2||(x,y) : xy coordinates of segment lengths in plane"""
 
   if r == 0:
     raise ValueError("Please choose an other radius, positive or negative are accepted. You musn't have r=0")
 
   if 2.5 > ((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2) > 2.0 : #2.5
+    # if out of range, security to avoid return nan
+    # security for 2 cylinders, iterative method to find tangents points
+    # to let the algo run a little more and find good points
+    # if points are not correct, not on the cylinder for example, other verification are made later
     print("((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2) = ", ((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2))
     return np.absolute(r*np.arccos(1.0 - 2.0))
   return np.absolute(r*np.arccos(1.0-((v1[0]-v2[0])**2+(v1[1]-v2[1])**2)/(2*r**2)))
-  # Coordonnées des points A et B
-  # x1, y1 = v1[0], v1[1]
-  # x2, y2 = v2[0], v2[1]
-  
-  # # Calculer les angles polaires des points A et B par rapport au centre (0,0)
-  # theta_A = np.arctan2(y1, x1)
-  # theta_B = np.arctan2(y2, x2)
-  
-  # # Calculer la différence d'angle
-  # delta_theta = theta_B - theta_A
-  
-  # # Ajuster l'angle pour qu'il soit dans l'intervalle [0, 2*pi]
-  # if delta_theta < 0:
-  #     delta_theta += 2 * np.pi
-  
-  # # Calculer la longueur de l'arc
-  # arc_length = r * delta_theta
-  
-  # return arc_length
-  
-  # # code similaire à celui du papier mais plus detaille
-  # # Coordonnées des points Q et T
-  # Qx, Qy = v1[:2]
-  # Tx, Ty = v2[:2]
-  
-  # # Calculer la différence entre les coordonnées
-  # diff_x = Qx - Tx
-  # diff_y = Qy - Ty
-  
-  # # Calculer le carré des différences
-  # diff_squared = diff_x**2 + diff_y**2
-  
-  # # Calculer la valeur à l'intérieur du arc cosinus
-  # value = 1.0 - diff_squared / (2 * r**2)
-  
-  # # Assurer que la valeur est dans l'intervalle [-1, 1]
-  # value = np.clip(value, -1, 1)
-  
-  # # Calculer l'arc cosinus
-  # arc_cosine = np.arccos(value)
-  
-  # # Multiplier par R et prendre la valeur absolue
-  # result = np.absolute(r * arc_cosine)
-  
-  # return result
   
 def z_coordinates_v1_v2(v1,v2,v1_v2_length_xy, origin_point, final_point) :
 
   """Compute z coordinates of v1 and v2
 
-  INPUT
+  Args
   - v1 : array 3*1 position of the first obstacle tangent point
   - v2 : array 3*1 position of the second obstacle tangent point
   - v1_v2_length_xy : xy coordinates of segment lengths in plane
   - origin_point : array 3*1 position of the first point
   - final_point : array 3*1 position of the second point
 
-  OUTPUT
+  Returns
   - v1_z = z coordinate of v1
   - v2_z = z coordinate of v2"""
 
@@ -131,12 +90,12 @@ def find_tangent_points(p0, p1, r) :
 
    """Compute xyz coordinates of v1 and v2
 
-   INPUT
+   Args
    - p0 : array 3*1 position of the first point
    - p1 : array 3*1 position of the second point
    - r : radius of the cylinder * side
 
-   OUTPUT
+   Returns
    - v1 = [v1_x, v1_y, v1_z] : array 3*1 position of the first obstacle tangent point
    - v2 = [v2_x, v2_y, v2_z] : array 3*1 position of the second obstacle tangent point"""
 
@@ -150,19 +109,14 @@ def find_tangent_points(p0, p1, r) :
 def point_tangent_on_surface_cylinder(p1, p2, p3, p4, radius_U, radius_V, epsilon=0.001):
   """Exception if P or S are in the cylinder
 
-  INPUT
+  Args
   - P : array 3*1 position of the first point
   - S : array 3*1 position of the second point
   - radius : radius of the cylinder
 
-  OUTPUT
+  Returns
   - point_inside : bool, True if P or S are in the cylinder, False otherwise"""
 
-  # print("np.linalg.norm(p1[:2]) = ", np.linalg.norm(p1[:2]))
-  # print("np.linalg.norm(p2[:2]) = ", np.linalg.norm(p2[:2]))
-  # print("np.linalg.norm(p1[:2]) = ", np.linalg.norm(p1[:3]))
-  # print("np.linalg.norm(p2[:2]) = ", np.linalg.norm(p2[:4]))
-  
   if (radius_U - epsilon < np.linalg.norm(p1[:2]) < radius_U + epsilon) and (
       radius_U - epsilon < np.linalg.norm(p2[:2]) < radius_U + epsilon) and (
       radius_V - epsilon < np.linalg.norm(p3[:2]) < radius_V + epsilon) and (
@@ -175,14 +129,14 @@ def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_f
 
   """Compute xyz coordinates of Q, G, H and T using iterative method
 
-  INPUT
+  Args
   - P_U_cylinder_frame : array 3*1 position of the first point in U cylinder frame
   - S_V_cylinder_frame : array 3*1 position of the second point in V cylinder frame
   - r_V : radius of the cylinder U * side_U
   - r_U : radius of the cylinder V * side_V
   - rotation_matrix_UV : array 4*4 rotation matrix and vect to change frame (U --> V)
 
-  OUTPUT
+  Returns
   - Q0 : array 3*1 position of the first obstacle tangent point (in V cylinder frame)
   - G0 : array 3*1 position of the second obstacle tangent point (in V cylinder frame)
   - H0 : array 3*1 position of the third obstacle tangent point (in U cylinder frame)
@@ -231,7 +185,7 @@ def segment_length_single_cylinder(obstacle_tangent_point_inactive, origin_point
 
   """Compute length of path segments
   
-  INPUT
+  Args
   - obstacle_tangent_point_inactive : bool determine if v1 and v1 or inactive (True) or not (False)
   - origin_point : array 3*1 position of the first point
   - final_point : array 3*1 position of the second point
@@ -239,7 +193,7 @@ def segment_length_single_cylinder(obstacle_tangent_point_inactive, origin_point
   - v2 : array 3*1 position of the second obstacle tangent point
   - r : radius of the cylinder * side
   
-  OUTPUT
+  Returns
   - segment_length : length of path segments"""
 
   if (obstacle_tangent_point_inactive == True) : # Muscle path is straight line from origin_point to final_point
@@ -256,12 +210,12 @@ def compute_length_v1_v2(v1,v2, v1_v2_length_xy) :
 
   """Compute length of path segments v1 v2
   
-  INPUT
+  Args
   - v1 : array 3*1 position of the first obstacle tangent point
   - v2 : array 3*1 position of the second obstacle tangent point
   - v1_v2_length_xy : xy coordinates of segment lengths in plane
   
-  OUTPUT
+  Returns
   - ||v1v2|| : length of path segments between v1 and v2"""
 
   return np.sqrt(v1_v2_length_xy**2+(v2[2]-v1[2])**2)
@@ -271,7 +225,7 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
 
   """Compute length of path segments
   
-  INPUT
+  Args
   - Q_G_inactive : bool determine if Q and G or inactive (True) or not (False)
   - H_T_inactive : bool determine if H and T or inactive (True) or not (False)
   - P : array 3*1 position of the first point
@@ -289,7 +243,7 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
   - matrix_U : array 4*4 rotation_matrix and vect for cylinder U
   - matrix_V : array 4*4 rotation_matrix and vect for cylinder V
   
-  OUTPUT
+  Returns
   - segment_length : length of path segments"""
 
   # Compute lengths

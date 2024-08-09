@@ -13,12 +13,12 @@ def dev_partielle_lmt_qi_points_without_wrapping (lmt1, lmt2, delta_qi) :
     
    """ Compute the partial derivative of lmt as a function of qi
    
-   INPUTS : 
+   Args : 
    - lmt1 : float, lmt1 = lmt(q + vect_delta_qi)
    - lmt2 : float, lmt2 = lmt(q - vect_delta_qi)
    - delta_qi : float, small variation of  q (for example, 1e-3, 1e-4, ...)
    
-   OUTPUT :
+   Returns :
    - dlmt_dqi : float, partial derivative of lmt as a function of qi   """
    
    return (lmt1 - lmt2) / (2*delta_qi)
@@ -32,7 +32,7 @@ def compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi=1e-8) :
    None alternatives exist for a situation "wrapping + via points" 
    so the resultats with biorbd could be very different (discontnuities)
    
-   INPUTS : 
+   Args : 
    - model : biorbd.Model
    - q : array qi 
    - cylinders : list of Cylinder, cylinders associate with muscle selected (=[] if no cylinders)
@@ -80,7 +80,7 @@ def plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
    """ Plot and save a comparaison of variation of dlmt_dq (with wrappings) and dlmt_dq_biorbd (with via points) 
    NOTE : you must have len(q_fixed) >=2
    
-   INPUTS : 
+   Args : 
    - model : biorbd.Model
    - q_fixed : array q value choosen by user
    - cylinders : list of Cylinder, cylinders associate with muscle selected (=[] if no cylinders)
@@ -88,7 +88,7 @@ def plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
    - filename : string, filename/file_path to save the plot
    - num_points : (default = 100) int, number of points for plot
    
-   OUTPUT : 
+   Returns : 
    - None, save plot"""
    
    print("plot_all_length_jacobian")
@@ -160,7 +160,7 @@ def plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
    """ Plot and save a comparaison of variation of dlmt_dq (with wrappings) and dlmt_dq_biorbd (with via points) 
    NOTE : you must have len(q_fixed) >=2
    
-   INPUTS : 
+   Args : 
    - model : biorbd.Model
    - q_fixed : array q value choosen by user
    - cylinders : list of Cylinder, cylinders associate with muscle selected (=[] if no cylinders)
@@ -168,7 +168,7 @@ def plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
    - filename : string, filename/file_path to save the plot
    - num_points : (default = 100) int, number of points for plot
    
-   OUTPUT : 
+   Returns : 
    - None, save plot"""
    
    print("plot_one_length_jacobian")
@@ -233,9 +233,25 @@ def plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
          create_and_save_plot(f"{filename}", f"dlmt_dq{q_index}.png")
          plt.show()
 
-def plot_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory_name, num_points = 100) :
-   directory = f"{directory_name}/plot_length_jacobian"
-   create_directory(directory)
-   
-   plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory, num_points)
-   plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory, num_points)
+def plot_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory_name, num_points=100):
+    """
+    Generate and save plots of the length Jacobian for a given muscle in a model.
+
+    Args:
+        model (biorbd.Model): The biorbd model.
+        q_fixed (list or np.ndarray): The fixed joint coordinates.
+        cylinders (list): List of cylinder objects used in the model.
+        muscle_selected (int): Index of the selected muscle.
+        directory_name (str): Directory name where plots will be saved.
+        num_points (int, optional): Number of points for the plot. Defaults to 100.
+    """
+    
+    # Create the directory for saving the plots
+    directory = f"{directory_name}/plot_length_jacobian"
+    create_directory(directory)
+    
+    # Plot the Jacobian for the selected muscle
+    plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory, num_points)
+    
+    # Plot the Jacobians for all muscles
+    plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, directory, num_points)
