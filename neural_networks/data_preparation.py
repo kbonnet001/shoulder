@@ -159,7 +159,7 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
 
     return X_tensor, y_tensor, y_labels
 
-def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_name, muscle_name, with_noise = True, plot=False):
+def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, folder_name, muscle_name, with_noise = True, plot=False):
   """Create loaders : 
     80 % : train (80%) + validation (20%)
     20% : test
@@ -187,7 +187,7 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
       print(f"Processing file: {file_path_df}")
 
       all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
-      X_tensor, y_tensor, y_labels = data_preparation_create_tensor(Hyperparams.mode, file_path_df, 
+      X_tensor, y_tensor, y_labels = data_preparation_create_tensor(mode, file_path_df, 
                                                                     all_possible_categories)
       X_tensors=[X_tensor]
       y_tensors=[y_tensor]
@@ -202,7 +202,7 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
       if with_noise :
         if os.path.exists(f"{file_path_df.replace(".xlsx", "_with_noise.xlsx")}"):
           X_tensor_with_noise, y_tensor_with_noise, _ = \
-            data_preparation_create_tensor(Hyperparams.mode, f"{file_path_df.replace(".xlsx", "_with_noise.xlsx")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".xlsx", "_with_noise.xlsx")}", 
                                            all_possible_categories)
       # if plot
       if plot : 
@@ -215,13 +215,13 @@ def create_loaders_from_folder(Hyperparams, nbQ, num_datas_for_dataset, folder_n
         
         if os.path.exists(f"{file_path_df.replace(".xlsx", "_datas_ignored.xlsx")}"):
           X_tensor_ignored, y_tensor_ignored, _ = \
-            data_preparation_create_tensor(Hyperparams.mode, f"{file_path_df.replace(".xlsx", "_datas_ignored.xlsx")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".xlsx", "_datas_ignored.xlsx")}", 
                                            all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
           graph_labels.append("datas ignored")
  
-        plot_datas_distribution(Hyperparams.mode, muscle_name,folder_name, nbQ, X_tensors, y_tensors, y_labels, graph_labels)
+        plot_datas_distribution(mode, muscle_name,folder_name, nbQ, X_tensors, y_tensors, y_labels, graph_labels)
       
       # Normalize each row (sample) to have unit norm, avoid it if datas have physical unit
       # X_tensor = F.normalize(X_tensor)  

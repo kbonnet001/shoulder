@@ -4,6 +4,8 @@ import numpy as np
 import os
 from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 import copy
+import pandas as pd
+from neural_networks.ExcelBatchWriterTestHyperparams import ExcelBatchWriterTestHyperparams
 
 def find_points_front_pareto(num_points, x_axis, y_axis) :
     pareto_indices = []
@@ -18,19 +20,14 @@ def find_points_front_pareto(num_points, x_axis, y_axis) :
     return pareto_indices
 
 
-def plot_results_try_hyperparams(directory_path, x_info, y_info):
-    x_axis = []
-    y_axis = []
-    model_name_try = []
+def plot_results_try_hyperparams(excel_file, x_info, y_info, id = "num_try"):
     
     # Get informations for plot
-    for directory in os.listdir(directory_path):
-        full_directory_path = os.path.join(directory_path, directory)
-        if os.path.isdir(full_directory_path) and os.path.exists(f"{full_directory_path}/model_informations.txt") :
-            x_axis_value, y_axis_value = read_info_model(f"{full_directory_path}/model_informations.txt", [x_info, y_info])
-            x_axis.append(x_axis_value)
-            y_axis.append(y_axis_value)
-            model_name_try.append(directory) 
+    if os.path.exists(excel_file) : 
+        df_datas = pd.read_excel(excel_file)
+        x_axis = df_datas.loc[:, x_info].values
+        y_axis = df_datas.loc[:, y_info].values
+        model_id = df_datas.loc[:, id].values
     
     # Generate unique colors for each point using a colormap
     num_points = len(x_axis)
@@ -48,9 +45,9 @@ def plot_results_try_hyperparams(directory_path, x_info, y_info):
         plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i])
         if i in pareto_indices: 
             plt.scatter(y_axis[i], x_axis[i], edgecolor='black', facecolor='none', s=100)
-            plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right', weight='bold')
+            plt.text(y_axis[i], x_axis[i], model_id[i], fontsize=9, ha='right', weight='bold')
         else : 
-            plt.text(y_axis[i], x_axis[i], model_name_try[i], fontsize=9, ha='right')
+            plt.text(y_axis[i], x_axis[i], model_id[i], fontsize=9, ha='right')
 
     # Tracer une ligne pour visualiser le front
     pareto_points = sorted([(x_axis[i], y_axis[i]) for i in pareto_indices])
@@ -64,32 +61,24 @@ def plot_results_try_hyperparams(directory_path, x_info, y_info):
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
     plt.legend()
-    create_and_save_plot(f"{directory_path}", f"{x_info} vs {y_info}.png")
+    create_and_save_plot(f"{os.path.dirname(excel_file)}", f"{x_info} vs {y_info}.png")
     plt.show()
 
-def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_path):
+def plot_results_try_hyperparams_comparaison(dir_paths, y_info, x_info, save_path, id = "num_try"):
     # dir_paths = [directory_path_1, directory_path_2]
     x_axis = []
     y_axis = []
-    model_names_try = []
+    model_id = []
     pareto_indices = []
     
     # Get informations for plot
-    for k in range(len(dir_paths)) : 
-        x_ax = []
-        y_ax = []
-        model_name_try = []
-        for directory in os.listdir(dir_paths[k]):
-            full_directory_path = os.path.join(dir_paths[k], directory)
-            if os.path.isdir(full_directory_path) and os.path.exists(f"{full_directory_path}/model_informations.txt") :
-                x_axis_value, y_axis_value = read_info_model(f"{full_directory_path}/model_informations.txt", [x_info, y_info])
-                x_ax.append(x_axis_value)
-                y_ax.append(y_axis_value)
-                model_name_try.append(directory) 
-        x_axis.append(copy.deepcopy(x_ax))
-        y_axis.append(copy.deepcopy(y_ax))
-        model_names_try.append(copy.deepcopy(model_name_try))
-
+    for full_directory_path in dir_paths:
+        # full_directory_path = os.path.join(dir_paths, excel_file)
+        if os.path.exists(f"{full_directory_path}") :
+            df_datas = pd.read_excel(full_directory_path)
+            x_axis.append(df_datas.loc[:, x_info].values) 
+            y_axis.append(df_datas.loc[:, y_info].values)
+            model_id.append(df_datas.loc[:, id].values)
     
     # Generate unique colors for each point using a colormap
     num_colors = len(dir_paths)
@@ -106,14 +95,23 @@ def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_pat
     # for n in range (len(dir_paths)) : 
     #     pareto_indices.append(find_points_front_pareto(len(x_axis[n]), x_axis[n], y_axis[n]))
 
-    # Tracé des points
+
+    # for x, y, m_id in zip(x_axis, y_axis, model_id) : 
+    #     for i in range(len(x_axis[0])):
+    #         if i == 0 :
+    #             plt.scatter(y[i], x[i], marker='P', color=colors[i], label = file_names[i])
+    #         else : 
+    #             plt.scatter(y[i], x[i], marker='P', color=colors[i])
+    #         plt.text(y[i], x[i], m_id[i], fontsize=9, ha='right')
+
+    # # Tracé des points
     for i in range(len(dir_paths)) : 
-        for j in range(len(x_axis[i])):
+        for j in range(len(x_axis[i])): #len(x_axis[i])
             if j == 0 : 
                 plt.scatter(y_axis[i][j], x_axis[i][j], marker=markers[i], color=colors[i], label = file_names[i])
             else : 
                 plt.scatter(y_axis[i][j], x_axis[i][j], marker=markers[i], color=colors[i])
-            plt.text(y_axis[i][j], x_axis[i][j], model_names_try[i][j], fontsize=9, ha='right')
+            plt.text(y_axis[i][j], x_axis[i][j], model_id[i][j], fontsize=9, ha='right')
 
             # if j in pareto_indices[i]: 
             #     plt.scatter(y_axis[i][j], x_axis[i][j], edgecolor='black', facecolor='none', s=100)
@@ -135,3 +133,27 @@ def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_pat
     plt.legend()
     create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]}.png")
     plt.show()
+
+def create_df_from_txt_saved_informations(directory_excel) : 
+    writer = ExcelBatchWriterTestHyperparams(f"{directory_excel}", batch_size=100)
+    
+    for directory in os.listdir(f"{os.path.dirname(directory_excel)}"):
+        full_directory_path = os.path.join(f"{os.path.dirname(directory_excel)}", directory)
+        if os.path.isdir(full_directory_path) and os.path.exists(f"{full_directory_path}/model_informations.txt") :
+            # x_axis_value, y_axis_value = read_info_model(f"{full_directory_path}/model_informations.txt", [x_info, y_info])
+            num_try, val_loss, val_acc, train_timer, mean_model_load_timer, \
+            mean_model_timer, mode, batch_size, n_nodes, activations, L1_penalty, L2_penalty, \
+            learning_rate, dropout_prob, use_batch_norm, epoch, criterion_name, criterion_params \
+            = read_info_model(f"{full_directory_path}/model_informations.txt", 
+                              ["num_try", "val_loss", "val_acc", "execution_time_train", "execution_time_load_saved_model", 
+                               "execution_time_use_saved_model", "mode", "batch_size", "n_nodes", "activations", "L1_penalty", 
+                               "L2_penalty", "learning_rate", "dropout_prob", "use_batch_norm", "num_epochs_used", "criterion_name", 
+                               "criterion_params"])
+            
+            writer.add_line_full(num_try, val_loss, val_acc, train_timer, mean_model_load_timer, 
+                 mean_model_timer, batch_size, n_nodes, activations, L1_penalty, L2_penalty, learning_rate, 
+                 dropout_prob, use_batch_norm, mode, epoch, criterion_name, criterion_params)
+    
+    writer.close()
+            
+            

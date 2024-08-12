@@ -19,7 +19,7 @@ from neural_networks.main_trainning import main_superised_learning, find_best_hy
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
 from neural_networks.Timer import measure_time
 from neural_networks.save_model import load_saved_model
-from neural_networks.plot_pareto_front import plot_results_try_hyperparams, plot_results_try_hyperparams_comparaison
+from neural_networks.plot_pareto_front import plot_results_try_hyperparams, plot_results_try_hyperparams_comparaison, create_df_from_txt_saved_informations
 
 #################### 
 # Code des tests
@@ -138,26 +138,26 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-# model_name = "dlmt_dq_64_1c"
-# mode = Mode.DLMT_DQ
-# batch_size = 64
-# # n_layers = [2]
-# n_nodes = [[32], [64], [128], [256], [512], [1024], [2048]]
-# activations = [[nn.GELU()]]
-# activation_names = [["GELU"]]
-# L1_penalty = [0.01, 0.001]
-# L2_penalty = [0.01, 0.001]
-# learning_rate = [1e-2]
-# num_epochs = 1000
-# # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-# criterion = [
-#     (LogCoshLoss, {'factor': [1.0, 1.8]}),
-#     (ModifiedHuberLoss, {'delta': [0.2, 1.0], 'factor': [1.0, 2.0]}),
-#     (ExponentialLoss, {'alpha': [0.5, 1.0]}),
-#     # (nn.MSELoss, {})
-# ]
-# p_dropout = [0.2, 0.5]
-# use_batch_norm = True
+model_name = "fdsdfsafdas"
+mode = Mode.DLMT_DQ
+batch_size = 64
+# n_layers = [2]
+n_nodes = [[32], [64]]
+activations = [[nn.GELU()]]
+activation_names = [["GELU"]]
+L1_penalty = [0.01]
+L2_penalty = [0.01]
+learning_rate = [1e-2]
+num_epochs = 1000
+# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+criterion = [
+    # (LogCoshLoss, {'factor': [1.0, 1.8]}),
+    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
+    # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
+    # (nn.MSELoss, {})
+]
+p_dropout = [0.2]
+use_batch_norm = True
 
 # model_name="essai_muscle_train"
 # mode = Mode.MUSCLE
@@ -174,59 +174,60 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # activations=[nn.GELU()]
 # activations = [nn.Sigmoid()]
 
-model_name="grfdfd" 
-mode = Mode.TORQUE_MUS_DLMT_DQ
-batch_size=64
-# n_layers=1
-n_nodes=[128]
-activations=[nn.GELU()]
-# activations = [nn.Sigmoid()]
+# model_name="grfdfd" 
+# mode = Mode.TORQUE_MUS_DLMT_DQ
+# batch_size=64
+# # n_layers=1
+# n_nodes=[128]
+# activations=[nn.GELU()]
+# # activations = [nn.Sigmoid()]
 
-activation_names = ["GELU"]
+# activation_names = ["GELU"]
 
-L1_penalty=0.01
-L2_penalty=0.01
-learning_rate=0.01
-num_epochs=1000 
-optimizer=0.0
-# criterion = LogCoshLoss(factor=1.8)
-criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-# criterion = nn.MSELoss()
-p_dropout=0.2
-use_batch_norm=True
+# L1_penalty=0.01
+# L2_penalty=0.01
+# learning_rate=0.01
+# num_epochs=1000 
+# optimizer=0.0
+# # criterion = LogCoshLoss(factor=1.8)
+# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+# # criterion = nn.MSELoss()
+# p_dropout=0.2
+# use_batch_norm=True
 
-num_datas_for_dataset = 10000
+num_datas_for_dataset = 100
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 with_noise = False
 
-Hyperparameter_essai1 = ModelHyperparameters(model_name, mode, batch_size, n_nodes, activations, activation_names, 
+Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
                                              use_batch_norm)
 print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-# main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_all", 
-#                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-#                         plot_preparation=True, plot=True, save=True) 
+# main_superised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_all", 
+#                         muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+#                         plot_preparation=False, plot=True, save=True) 
 
 # list_simulation, best_hyperparameters_loss \
-# = find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
+# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
 #                             "PECM2", with_noise)
 
 # plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c_all",
 #                                  "execution_time_train", "val_loss")
 
-plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c", 
-                                          "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c"], 
-                                         "execution_time_use_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
+plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.xlsx", 
+                                          "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.xlsx"], 
+                                         "execution_time_use_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "criterion_name")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
 #                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 
 #                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
+# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.xlsx") 
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
