@@ -173,7 +173,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    plt.grid(True)
    plt.show()
    
-   find_discontinuty(qs, segment_lengths, plot_discontinuities=True)
+   find_discontinuity(qs, segment_lengths, plot_discontinuities=True)
    
    writer.close()
    return None
@@ -244,7 +244,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
             lines.append([muscle_index, q, origin_muscle, insertion_muscle, segment_length])
          
          # Find indexes with discontinuties
-         discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
+         discontinuities = find_discontinuity(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
          for discontinuity in discontinuities : 
             # min, max = data_to_remove_range(discontinuity, num_points, 5)
             min, max = data_to_remove_part(discontinuity, qs, num_points, 5)

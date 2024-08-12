@@ -7,11 +7,53 @@ from neural_networks.file_directory_operations import create_directory, create_a
 import copy
 import random
 from wrapping.muscles_length_jacobian import compute_dlmt_dq, plot_length_jacobian
-from wrapping.muscle_forces_and_torque import compute_fm, compute_torque, compute_fm_muscle_index
+from wrapping.muscle_forces_and_torque import compute_fm, compute_torque
 import os
 from neural_networks.other import compute_row_col, plot_mvt_discontinuities_in_red
 from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
 import pandas as pd
+
+def get_lines_to_remove(qs, segment_lengths, datas_ignored, f_sup_limits, num_points, plot_discontinuities):
+    """
+    Determine which data points to remove based on discontinuities, ignored data, and errors.
+
+    Args:
+        qs (list): List of data points to check for discontinuities.
+        segment_lengths (list): Lengths of segments for finding discontinuities.
+        datas_ignored (list): Boolean list indicating which data points are ignored.
+        f_sup_limits (list): Boolean list indicating limits where errors occur.
+        num_points (int): Total number of data points.
+        plot_discontinuities (bool): Flag to plot discontinuities for visualization.
+
+    Returns:
+        list: List of indices to be removed.
+    """
+    
+    # Initialize the list to store indices to be removed
+    to_remove = []
+    
+    # Verify if data is correct and find discontinuities
+    discontinuities = find_discontinuity(qs, segment_lengths, plot_discontinuities=plot_discontinuities)
+    for discontinuity in discontinuities:
+        min_idx, max_idx = data_to_remove_part(discontinuity, qs, num_points, range_size=3)
+        to_remove.extend(range(min_idx, max_idx + 1))
+    
+    # Find indices with errors in ignored data
+    positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
+    if positions:
+        min_idx, max_idx = find_discontinuities_from_error_wrapping_range(positions, num_points, range_size=3)
+        to_remove.extend(range(min_idx, max_idx + 1))
+    
+    # Find indices with errors in f_sup_limits
+    positions_f_sup_limit = [n for n, ignored in enumerate(f_sup_limits) if ignored]
+    if positions_f_sup_limit:
+        min_idx, max_idx = find_discontinuities_from_error_wrapping_range(positions_f_sup_limit, num_points, range_size=0)
+        to_remove.extend(range(min_idx, max_idx + 1))
+    
+    # Remove duplicate indices and sort in descending order
+    to_remove = sorted(set(to_remove), reverse=True)
+    
+    return to_remove
 
 def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
@@ -67,8 +109,8 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
       qs.append(qi)
       segment_lengths.append(segment_length)
       dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-      muscle_force = compute_fm_muscle_index(model, muscle_index, q, qdot, alpha)
-      torque, _ = compute_torque(dlmt_dq, muscle_force)
+      muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
+      torque, _ = compute_torque(dlmt_dq, muscle_force) 
       
       # add line
       writer.add_line(muscle_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
@@ -84,7 +126,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    create_and_save_plot(f"{directory}", "one_q_variation.png")
    plt.show()
    
-   find_discontinuty(qs, segment_lengths, plot_discontinuities=True)
+   find_discontinuity(qs, segment_lengths, plot_discontinuities=True)
    
    writer.close()
    return None
@@ -151,7 +193,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
             qs.append(qi)
             segment_lengths.append(segment_length)
             dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-            muscle_force = compute_fm_muscle_index(model, muscle_index, q, qdot, alpha)
+            muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
             torque, _ = compute_torque(dlmt_dq, muscle_force)
             
             # add line
@@ -197,7 +239,7 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path="") :
          qs.append(df.iloc[1:, q_index + 1].values)
          y.append(df.loc[1:, y_label].values)
          
-         discontinuities = find_discontinuty(qs[0], y[0], plot_discontinuities=False)
+         discontinuities = find_discontinuity(qs[0], y[0], plot_discontinuities=False)
          
          row = q_index // 3
          col = q_index % 3
@@ -256,14 +298,14 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    min_vals_q = [row[0] for row in q_ranges]
    max_vals_q = [row[1] for row in q_ranges] 
 
-   num_line = writer.get_num_line()
+   num_line = writer.get_num_line() 
    while num_line < dataset_size : 
 
       # Generate a random q 
       q_ref = np.random.uniform(low=min_vals_q, high=max_vals_q)
-      
       i = random.randint(0, model.nbQ() - 1)
       
+      # to verify errors and dicontinuities
       qs = []
       segment_lengths = []
       datas_ignored = []
@@ -288,7 +330,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, 
                                                                plot_cylinder_3D, plot_cadran)  
          dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-         muscle_force = compute_fm_muscle_index(model, muscle_index, q, qdot, alpha)
+         muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
          torque, f_sup_limit = compute_torque(dlmt_dq, muscle_force)
          
          # keep informations to verify after if datas are correct
@@ -303,25 +345,9 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
       
       # Verify if datas are correct, no discontinuties, no errors
       # Find indexes with discontinuties
-      discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
-      for discontinuity in discontinuities : 
-         min, max = data_to_remove_part(discontinuity, qs, num_points, 3)
-         to_remove.extend(range(min, max + 1))
-      # Find error wrapping
-      positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
-      if len(positions) != 0 : 
-         min, max = find_discontinuities_from_error_wrapping_range(positions, num_points, range = 3)
-         to_remove.extend(range(min, max + 1))
-      # Find error f_sup_limit 
-      positions_f_sup_limit = [n for n, ignored in enumerate(f_sup_limits) if ignored]
-      if len(positions_f_sup_limit) != 0 : 
-         min, max = find_discontinuities_from_error_wrapping_range(positions_f_sup_limit, num_points, range = 0)
-         to_remove.extend(range(min, max + 1))
+      to_remove = get_lines_to_remove(qs, segment_lengths, datas_ignored, f_sup_limits, num_points, plot_discontinuities)
       
-      # Sort to keep only one occurancy of each indexes
-      to_remove = sorted(set(to_remove), reverse=True)
-      
-      if len(to_remove) != 0 and plot_graph : 
+      if plot_graph and len(to_remove) != 0 : 
          # To check points removed (in red)
          plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove)
       
@@ -409,3 +435,5 @@ def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, bat
    writer = ExcelBatchWriterWithNoise(f"{excel_file_path.replace(".xlsx", "")}_with_noise.xlsx", q_ranges_names_with_dofs,
                                       batch_size, noise_std_dev)
    writer.augment_data_with_noise_batch(dataset_size_noise)
+
+

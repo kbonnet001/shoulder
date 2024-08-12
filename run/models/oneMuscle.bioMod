@@ -31,7 +31,7 @@ endmusclegroup
     	maxVelocity	10
 	endmuscle
 
-	muscle	muscle2
+	muscle	muscle2 //PECM3
     	Type	hilldegroote
     	statetype   degroote
     	musclegroup	base_to_attachment

@@ -143,7 +143,7 @@ def compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle,
    """Compute segment length
    
    Args : 
-   - model : model
+   - model : model biorbd
    - cylinders : List of muscle's cylinder (0, 1 or 2 cylinders)
    - q : array 4*2, q randomly generated
    - origin_muscle : array 1*3, coordinate of the origin point

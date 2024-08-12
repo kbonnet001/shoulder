@@ -95,8 +95,8 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "hyterg", num_points = 20, 
-                        plot_cylinder_3D=True, plot_discontinuities = True, plot_cadran = True, plot_graph=True)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "hyterg", num_points = 20, 
+#                         plot_cylinder_3D=True, plot_discontinuities = True, plot_cadran = True, plot_graph=True)
 
    
 # -----------------------------------------------------------------
@@ -129,9 +129,9 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # exit(0)
 
 # # pour voir pyorerun
-model_path = "/home/lim/Documents/kloe/shoulder/run/models/Wu_DeGroote.bioMod"
-animation = LiveModelAnimation(model_path, with_q_charts=True)
-animation.rerun()
+# model_path = "/home/lim/Documents/kloe/shoulder/run/models/Wu_DeGroote.bioMod"
+# animation = LiveModelAnimation(model_path, with_q_charts=True)
+# animation.rerun()
 
 # -----------------------------------------------------------------
 
@@ -208,9 +208,9 @@ print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_all", 
-                        muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-                        plot_preparation=True, plot=True, save=True) 
+# main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_all", 
+#                         muscle_name = "PECM2", retrain=False, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
+#                         plot_preparation=True, plot=True, save=True) 
 
 # list_simulation, best_hyperparameters_loss \
 # = find_best_hyperparameters(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
@@ -219,10 +219,9 @@ main_superised_learning(Hyperparameter_essai1, model_biorbd.nbQ(), num_datas_for
 # plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c_all",
 #                                  "execution_time_train", "val_loss")
 
-# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_all_1c", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_2c", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_all_3c"], 
-#                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
+plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c", 
+                                          "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c"], 
+                                         "execution_time_use_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
 #                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 

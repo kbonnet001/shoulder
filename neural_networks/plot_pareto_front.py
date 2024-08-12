@@ -133,5 +133,5 @@ def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_pat
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
     plt.legend()
-    create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]} vs {file_names[2]}.png")
+    create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]}.png")
     plt.show()
