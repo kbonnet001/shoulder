@@ -53,6 +53,7 @@ def compute_torque(dlmt_dq, f, limit=5000):
     # Compute the torque using the Jacobian and muscle forces
     torque = np.dot(-np.transpose(dlmt_dq), f)
     total_torque = np.sum(torque)
+    # model_biorbd.muscularJointTorque(states, q, qdot).to_array()
     
     return total_torque, f_sup_limit
 

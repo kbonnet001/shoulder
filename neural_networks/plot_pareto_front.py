@@ -64,7 +64,7 @@ def plot_results_try_hyperparams(excel_file, x_info, y_info, id = "num_try"):
     create_and_save_plot(f"{os.path.dirname(excel_file)}", f"{x_info} vs {y_info}.png")
     plt.show()
 
-def plot_results_try_hyperparams_comparaison(dir_paths, y_info, x_info, save_path, id = "num_try"):
+def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_path, id = "num_try"):
     # dir_paths = [directory_path_1, directory_path_2]
     x_axis = []
     y_axis = []
@@ -76,8 +76,8 @@ def plot_results_try_hyperparams_comparaison(dir_paths, y_info, x_info, save_pat
         # full_directory_path = os.path.join(dir_paths, excel_file)
         if os.path.exists(f"{full_directory_path}") :
             df_datas = pd.read_excel(full_directory_path)
-            x_axis.append(df_datas.loc[:, x_info].values) 
-            y_axis.append(df_datas.loc[:, y_info].values)
+            x_axis.append(df_datas.loc[:, y_info].values) 
+            y_axis.append(df_datas.loc[:, x_info].values)
             model_id.append(df_datas.loc[:, id].values)
     
     # Generate unique colors for each point using a colormap
@@ -131,7 +131,8 @@ def plot_results_try_hyperparams_comparaison(dir_paths, y_info, x_info, save_pat
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
     plt.legend()
-    create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]} vs {file_names[2]}.png")
+    text_file_names = " vs ".join([file_name.split('.')[0] for file_name in file_names])
+    create_and_save_plot(f"{save_path}", f"{text_file_names}.png")
     plt.show()
 
 def create_df_from_txt_saved_informations(directory_excel) : 
