@@ -11,7 +11,7 @@ from neural_networks.file_directory_operations import create_directory, save_tex
 import time
 from neural_networks.plot_pareto_front import plot_results_try_hyperparams
 import numpy as np
-from neural_networks.ExcelBatchWriterTestHyperparams import ExcelBatchWriterTestHyperparams
+from neural_networks.CSVBatchWriterTestHyperparams import CSVBatchWriterTestHyperparams
 
 
 def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes = 60) : 
@@ -59,7 +59,7 @@ def main_superised_learning(Hyperparams, mode, nbQ, num_datas_for_dataset, folde
     PLEASE, look at examples below
     - nbQ : int, number of q in biorbd model
     - num_datas_for_dataset : int, number of datas for dataset (for trainning)
-    - folder_name : string, path/name of the folder contained all excel data file of muscles (one for each muscle)
+    - folder_name : string, path/name of the folder contained all csv data file of muscles (one for each muscle)
     - muscle_name : string, name of the muscle
     - retrain : bool, True to train the model again
     - file_path : string, name of the model will be save after tranning
@@ -113,7 +113,7 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
     PLEASE, look at examples below
     - nbQ : int, number of q in biorbd model
     - num_datas_for_dataset : int, number of datas for dataset (for trainning)
-    - folder : string, path/name of the folder contained all excel data file of muscles (one for each muscle)
+    - folder : string, path/name of the folder contained all csv data file of muscles (one for each muscle)
     - muscle_name : string, name of the muscle
     - with_noise : bool, True to train also with datas with noise, False to train with only pur datas
     - save_all : (default = False) bool, True to save ALL model tested. 
@@ -176,7 +176,7 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
     
     all_data_test_tensor, _ = dataloader_to_tensor(test_loader)
     
-    writer = ExcelBatchWriterTestHyperparams(f"{directory}/{Hyperparams.model_name}.xlsx", batch_size=100)
+    writer = CSVBatchWriterTestHyperparams(f"{directory}/{Hyperparams.model_name}.CSV", batch_size=100)
 
     list_simulation= []
     best_val_loss = float('inf')
@@ -265,10 +265,10 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
     # print("list_simulation = ", list_simulation)
     
     # Plot visualisation to compare all model trained (pareto front)
-    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.xlsx", "execution_time_train", "val_loss")
-    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.xlsx", "execution_time_load_saved_model", 
+    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.CSV", "execution_time_train", "val_loss")
+    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.CSV", "execution_time_load_saved_model", 
                                  "val_loss")
-    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.xlsx", "execution_time_use_saved_model", 
+    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.CSV", "execution_time_use_saved_model", 
                                  "val_loss")
     
     # Finally, plot figure predictions targets with the best model saved

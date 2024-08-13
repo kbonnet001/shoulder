@@ -65,9 +65,9 @@ def data_standardization(filename, limit = 0):
   OUPUT : 
   - dataframe : copy of input dataframe with some deleted lines"""
   
-  df2 = pd.read_excel(filename)
+  df2 = pd.read_csv(filename)
   if limit != 0 :
-    df = pd.read_excel(filename)
+    df = pd.read_csv(filename)
 
     distribution = np.zeros(30)
     k=0
@@ -153,7 +153,7 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
     
     Args:
-    - file_path_df : path for excel file with datas
+    - file_path_df : path for csv file with datas
     - limit: Placeholder parameter for standardization
     - all_possible_categories: List of all possible categories for the 'index_muscle' column
     
@@ -163,7 +163,7 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     """
     # Load and standardize df
     # df_datas = data_standardization(df_data, limit)
-    df_datas = pd.read_excel(file_path_df)
+    df_datas = pd.read_csv(file_path_df)
     
     x = get_x(mode, df_datas, get_origin_and_insertion = False)
 
@@ -189,7 +189,7 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
     Args : 
     - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user
     - q_ranges : [q] q ranges of all q selected
-    - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
+    - folder_name : string, name of the folder containing dataframe of muscles (.csv)
     - with_noise : (default = True), bool, true to put datas with noise in dataset for learning
     - plot : (default = False) bool, True to show datas distribution
     
@@ -200,10 +200,10 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
     - input_size : int, size of input X
     - output_size : int, size of output y (WARNING, always 1)"""
     
-  file_path_df = os.path.join(folder_name, f"{muscle_name}.xlsx")
+  file_path_df = os.path.join(folder_name, f"{muscle_name}.csv")
     
   if not os.path.exists(file_path_df):
-      error = "Error : File need extension .xlsx or .xls\n\
+      error = "Error : File need extension .csv \n\
         If the file exist, maybe it's open in a window. Please close it and try again."
       sys.exit(error)
   else : 
@@ -223,9 +223,9 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
 
       # datas with noise   
       if with_noise :
-        if os.path.exists(f"{file_path_df.replace(".xlsx", "_with_noise.xlsx")}"):
+        if os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"):
           X_tensor_with_noise, y_tensor_with_noise, _ = \
-            data_preparation_create_tensor(mode, f"{file_path_df.replace(".xlsx", "_with_noise.xlsx")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".csv", "_with_noise.csv")}", 
                                            all_possible_categories)
       # if plot
       if plot : 
@@ -236,9 +236,9 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
           y_tensors.append(y_tensor_with_noise)
           graph_labels.append("datas with noise")
         
-        if os.path.exists(f"{file_path_df.replace(".xlsx", "_datas_ignored.xlsx")}"):
+        if os.path.exists(f"{file_path_df.replace(".csv", "_datas_ignored.csv")}"):
           X_tensor_ignored, y_tensor_ignored, _ = \
-            data_preparation_create_tensor(mode, f"{file_path_df.replace(".xlsx", "_datas_ignored.xlsx")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".csv", "_datas_ignored.csv")}", 
                                            all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
@@ -250,7 +250,7 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
       # X_tensor = F.normalize(X_tensor)  
       
       # Selecte datas to put in the dataset
-      if with_noise and os.path.exists(f"{file_path_df.replace(".xlsx", "_with_noise.xlsx")}"): 
+      if with_noise and os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"): 
         dataset = MuscleDataset(torch.cat((X_tensor, X_tensor_with_noise), dim=0), torch.cat((y_tensor, y_tensor_with_noise), dim=0))
       else : 
         dataset = MuscleDataset(X_tensor, y_tensor)
@@ -284,7 +284,7 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
 #     20% : test
 #     Args : 
 #     - batch_size : int, 16, 32, 64, 128 ...
-#     - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
+#     - folder_name : string, name of the folder containing dataframe of muscles (.csv)
 #     - plot : (default = False) bool, True to show datas distribution
     
 #     Returns : 
@@ -297,7 +297,7 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
 #   datasets = []
     
 #   for filename in os.listdir(folder_name):
-#     if filename.endswith(".xlsx") or filename.endswith(".xls"):
+#     if filename.endswith(".csv") :
 #         file_path = os.path.join(folder_name, filename)
 #         print(f"Processing file: {file_path}")
 
@@ -360,7 +360,7 @@ def plot_datas_distribution(mode, muscle_name, files_path, nbQ, X_tensors, y_ten
     Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
 
     Args : 
-    - muscle_name : name of the excel file with datas of the muscle (good datas) 
+    - muscle_name : name of the csv file with datas of the muscle (good datas) 
     - files_path : file_path to save the plot
     - nbQ : number of q in model file biorbd
     - X_tensors : [X tensor], X tensor with all features (columns except the last one)

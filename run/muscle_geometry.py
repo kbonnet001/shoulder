@@ -95,8 +95,8 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 100, 0, "hyterg", num_points = 20, 
-#                         plot_cylinder_3D=True, plot_discontinuities = True, plot_cadran = True, plot_graph=True)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 40, 0, "dDSA", num_points = 20, 
+                        plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
 
    
 # -----------------------------------------------------------------
@@ -167,13 +167,6 @@ use_batch_norm = True
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-# model_name="torque_aweaf" 
-# mode = Mode.TORQUE_MUS_DLMT_DQ
-# batch_size=64
-# n_nodes=[128]
-# activations=[nn.GELU()]
-# activations = [nn.Sigmoid()]
-
 # model_name="grfdfd" 
 # mode = Mode.TORQUE_MUS_DLMT_DQ
 # batch_size=64
@@ -213,21 +206,22 @@ print(Hyperparameter_essai1)
 #                         plot_preparation=False, plot=True, save=True) 
 
 # list_simulation, best_hyperparameters_loss \
-# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_datas_with_tau", 
+# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_all", 
 #                             "PECM2", with_noise)
 
 # plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c_all",
 #                                  "execution_time_train", "val_loss")
 
-plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.xlsx", 
-                                          "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.xlsx"], 
-                                         "execution_time_use_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "criterion_name")
+# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.xlsx", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.xlsx", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.xlsx"], 
+#                                          "execution_time_load_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
 #                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 
 #                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
-# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.xlsx") 
+# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.xlsx") 
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 

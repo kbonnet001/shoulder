@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from neural_networks.ExcelBatchWriter import ExcelBatchWriter
+from neural_networks.CSVBatchWriter import CSVBatchWriter
 from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 from neural_networks.file_directory_operations import create_directory, create_and_save_plot
@@ -57,7 +57,7 @@ def get_lines_to_remove(qs, segment_lengths, datas_ignored, f_sup_limits, num_po
 
 def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
    
-   """Create a directory with an excel file for one q and png of mvt
+   """Create a directory with an csv file for one q and png of mvt
    
    Args
    - muscle_selected : string, name of the muscle selected. 
@@ -81,7 +81,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    
    directory = "plot_one_q_variation_" + filename
    create_directory(directory)
-   writer = ExcelBatchWriter(f"{directory}/"+filename+".xlsx", q_ranges_names_with_dofs, batch_size=100)
+   writer = CSVBatchWriter(f"{directory}/"+filename+".csv", q_ranges_names_with_dofs, batch_size=100)
 
    q = q_fixed
    segment_lengths = []
@@ -133,7 +133,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
 
 def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False, file_path="") :
    
-   """Create a directory with all excel files for all q (with a q_fixed)
+   """Create a directory with all csv files for all q (with a q_fixed)
    
    Args
    - muscle_selected : string, name of the muscle selected. 
@@ -152,7 +152,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
    - file_path : path for the directory
    """
    
-   # Create a folder for save excel files and plots
+   # Create a folder for save csv files and plots
    directory = file_path+"/plot_all_q_variation_" + filename
    create_directory(directory)
    
@@ -162,9 +162,9 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
    q = copy.deepcopy(q_fixed)
 
    for q_index in range (model.nbQ()) : 
-      if os.path.exists(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx") == False :
+      if os.path.exists(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".csv") == False :
 
-         writer = ExcelBatchWriter(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx", 
+         writer = CSVBatchWriter(f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".csv", 
                                  q_ranges_names_with_dofs, batch_size=100)
          segment_lengths = []
          qs = []
@@ -212,11 +212,11 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path="") :
    - q_fixed : array 4*1, q fixed, reference
    - y : string : colomn selected for the plot (y axis)
    - filename : string, name of the file to create
-   - file_path : path for the directory with all file excel q
+   - file_path : path for the directory with all file csv q
    """
    print(f"plot_all_q_variation : {y_label}")
    
-   # Create a folder for save excel files and plots
+   # Create a folder for save csv files and plots
    directory = file_path+"/plot_all_q_variation_" + filename
    create_directory(directory)
    
@@ -228,11 +228,11 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path="") :
       fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
 
       for q_index in range (model.nbQ()) : 
-         file_q_index = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".xlsx"
+         file_q_index = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_" + filename+".csv"
          
          y = []
          qs = []
-         df = pd.read_excel(file_q_index)
+         df = pd.read_csv(file_q_index)
 
          # selected_columns = [f'q_{q_ranges_names_with_dofs[q_index]}']
          # y = df.loc[:, selected_columns].values
@@ -291,8 +291,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    
    # Create to writer to save datas, one with "purs datas" (no errors, discontinuties, etc) and an other with errors
    # To see distribution of datas (please, choose plot_discontinuities = True)
-   writer = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}.xlsx", q_ranges_names_with_dofs, batch_size=100)
-   writer_datas_ignored = ExcelBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.xlsx", q_ranges_names_with_dofs, batch_size=100)
+   writer = CSVBatchWriter(filename+f"/{cylinders[0].muscle}.csv", q_ranges_names_with_dofs, batch_size=100)
+   writer_datas_ignored = CSVBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.csv", q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
    min_vals_q = [row[0] for row in q_ranges]
@@ -351,7 +351,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          # To check points removed (in red)
          plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove)
       
-      # add lines in excel file
+      # add lines in csv file
       for l_idx in range (len(lines)) :
          if l_idx in to_remove : 
             writer_datas_ignored.add_line(*lines[l_idx])
@@ -388,7 +388,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping
    
    """
-   # Create a folder for save excel files and plots
+   # Create a folder for save csv files and plots
    directory = "data_generation_" + filename
    create_directory(directory)
    
@@ -401,7 +401,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
                                                    plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
       
       if dataset_size_noise != 0 :
-         data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.xlsx", dataset_size_noise)
+         data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.csv", dataset_size_noise)
       
       # Plot visualization
       q_fixed = np.array([0.0 for _ in range (model.nbQ())])
@@ -415,24 +415,24 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
       plot_length_jacobian(model, q_fixed, cylinders[k], muscles_selected[k], f"{directory}/{cylinders[k][0].muscle}/plot_all_q_variation_", 100)
       print("stop")
 
-def data_for_learning_with_noise(model, excel_file_path, dataset_size_noise, batch_size = 1000, noise_std_dev = 0.01) :
+def data_for_learning_with_noise(model, csv_file_path, dataset_size_noise, batch_size = 1000, noise_std_dev = 0.01) :
    """
-   Create datas with noise un add on file _with_noise.xlsx
+   Create datas with noise un add on file _with_noise.csv
    
    Args : 
    - model : biorbd model
-   - excel_file_path : string, path of the original file with all pure datas (= without noise and not ignored)
+   - csv_file_path : string, path of the original file with all pure datas (= without noise and not ignored)
    - dataset_size_noise : int, num of lines to have in the file
    - batch_size : (default = 1000) int, size of batch
       PLEASE, choose an appropriate value, len(df) must be a multiple of batch_size to add the correct num of row 
    - noise_std-dev : (default = 0.01) float, standard deviation of added noise 
    
    Returns : 
-   None, create or complete a file [...]_with_noise.xlsx
+   None, create or complete a file [...]_with_noise.csv
    """
    _, q_ranges_names_with_dofs = compute_q_ranges(model)
    
-   writer = ExcelBatchWriterWithNoise(f"{excel_file_path.replace(".xlsx", "")}_with_noise.xlsx", q_ranges_names_with_dofs,
+   writer = ExcelBatchWriterWithNoise(f"{csv_file_path.replace(".csv", "")}_with_noise.csv", q_ranges_names_with_dofs,
                                       batch_size, noise_std_dev)
    writer.augment_data_with_noise_batch(dataset_size_noise)
 

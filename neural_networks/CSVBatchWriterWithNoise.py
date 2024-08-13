@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 
-class ExcelBatchWriterWithNoise:
+class CSVBatchWriterWithNoise:
     def __init__(self, filename, q_ranges_names_with_dofs, batch_size=1000, noise_std_dev=0.01):
         self.filename = filename
         self.q_ranges_names_with_dofs = q_ranges_names_with_dofs
@@ -28,7 +28,7 @@ class ExcelBatchWriterWithNoise:
                 "muscle_force": [],
                 "torque": []
                  }
-            pd.DataFrame(data).to_excel(filename, index=False)
+            pd.DataFrame(data).to_csv(filename, index=False)
         
     
     def add_line(self, new_line):
@@ -43,31 +43,29 @@ class ExcelBatchWriterWithNoise:
     def _flush(self):
         if not self.buffer:
             return
-        
-        # Lire les données existantes du fichier Excel
-        try:
-            df_existing = pd.read_excel(self.filename)
-        except FileNotFoundError:
-            df_existing = pd.DataFrame()  # Crée un DataFrame vide si le fichier n'existe pas
-        
-        # Convertir le buffer en DataFrame
-        buffer_df = pd.DataFrame(self.buffer, columns=df_existing.columns)
-        
-        # Vérifier si le DataFrame n'est pas vide ou entièrement NaN
-        if not buffer_df.empty and not buffer_df.isna().all().all():
-            # Concaténer le DataFrame existant avec le buffer
-            df_updated = pd.concat([df_existing, buffer_df], ignore_index=True)
-            
-            # Écrire le DataFrame mis à jour dans le fichier Excel
-            with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
-                df_updated.to_excel(writer, index=False)
-        
-        # Vider le buffer
+
+        # Convert the buffer into a DataFrame
+        buffer_df = pd.DataFrame(self.buffer)
+
+        # Check if the CSV file already exists
+        if os.path.exists(self.filename):
+            # Read existing data
+            df = pd.read_csv(self.filename)
+            # Concatenate existing data with buffer
+            df = pd.concat([df, buffer_df], ignore_index=True)
+        else:
+            # If file doesn't exist, use the buffer data
+            df = buffer_df
+
+        # Write the updated DataFrame to the CSV file
+        df.to_csv(self.filename, index=False)
+
+        # Clear the buffer
         self.buffer = []
     
     def augment_data_with_noise_batch(self, dataset_size_noise):
         # Warning, len(df) must be a multiple of self.batch_size to add the correct num of row
-        df = pd.read_excel(f"{self.filename.replace("_with_noise", "")}")
+        df = pd.read_csv(f"{self.filename.replace("_with_noise", "")}")
 
         num_rows_to_add = dataset_size_noise - len(df) 
         

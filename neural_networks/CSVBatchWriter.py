@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-class ExcelBatchWriter:
+class CSVBatchWriter:
     def __init__(self, filename, q_ranges_names_with_dofs, batch_size=100):
         self.filename = filename
         self.q_ranges_names_with_dofs = q_ranges_names_with_dofs
@@ -26,7 +26,7 @@ class ExcelBatchWriter:
                 "muscle_force": [],
                 "torque": []
                  }
-            pd.DataFrame(data).to_excel(filename, index=False)
+            pd.DataFrame(data).to_csv(filename, index=False)
 
     def add_line(self, muscle_selected_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, dlmt_dq, muscle_force, torque):
         # Create a new line with the provided data
@@ -57,41 +57,41 @@ class ExcelBatchWriter:
     def _flush(self):
         if not self.buffer:
             return
-        
-        # Lire les données existantes du fichier Excel
-        df = pd.read_excel(self.filename)
-        
-        # Convertir le buffer en DataFrame
+
+        # Convert the buffer into a DataFrame
         buffer_df = pd.DataFrame(self.buffer)
-        
-        # Vérifier si le DataFrame n'est pas vide ou entièrement NaN
-        if not buffer_df.empty and not buffer_df.isna().all().all():
-            # Concaténer le DataFrame existant avec le buffer
+
+        # Check if the CSV file already exists
+        if os.path.exists(self.filename):
+            # Read existing data
+            df = pd.read_csv(self.filename)
+            # Concatenate existing data with buffer
             df = pd.concat([df, buffer_df], ignore_index=True)
-        
-            # Écrire le DataFrame mis à jour dans le fichier Excel
-            with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
-                df.to_excel(writer, index=False)
-        
-        # Vider le buffer
+        else:
+            # If file doesn't exist, use the buffer data
+            df = buffer_df
+
+        # Write the updated DataFrame to the CSV file
+        df.to_csv(self.filename, index=False)
+
+        # Clear the buffer
         self.buffer = []
 
     def del_lines(self, n):
-        # Check current number of lines in the Excel file
-        df = pd.read_excel(self.filename)
+        # Lire le fichier CSV
+        df = pd.read_csv(self.filename)
         current_lines = df.shape[0]
-        
-        # If there are more than n lines, delete the surplus
-        if current_lines > n:
-            df.drop(df.tail(current_lines - n).index, inplace=True)
-            
-            # Write the updated DataFrame back to the Excel file
-            with pd.ExcelWriter(self.filename, engine='openpyxl', mode='w') as writer:
-                df.to_excel(writer, index=False)
 
+        # Si le nombre de lignes actuel est supérieur à n, supprimer l'excédent
+        if current_lines > n:
+            df = df.head(n)  # Conserver seulement les n premières lignes
+
+            # Écrire le DataFrame mis à jour dans le fichier CSV
+            df.to_csv(self.filename, index=False)
+                
     def get_num_line(self) : 
         if os.path.exists(self.filename):
-            df = pd.read_excel(self.filename)
+            df = pd.read_csv(self.filename)
             return len(df)
         else:
             return 0

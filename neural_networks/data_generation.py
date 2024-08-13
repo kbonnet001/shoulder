@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from neural_networks.ExcelBatchWriter import ExcelBatchWriter
+from neural_networks.CSVBatchWriter import CSVBatchWriter
 from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 import copy
@@ -26,7 +26,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = CSVBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
  
@@ -124,7 +124,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
                                                                                           (first, middle and last one)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = CSVBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
 
@@ -198,7 +198,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
    - plot_discontinuities : bool (default = False), true to show mvt with discontinuity
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = CSVBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
  
