@@ -7,10 +7,10 @@ from neural_networks.file_directory_operations import create_directory, create_a
 import copy
 import random
 from wrapping.muscles_length_jacobian import compute_dlmt_dq, plot_length_jacobian
-from wrapping.muscle_forces_and_torque import compute_fm, compute_torque
+from wrapping.muscle_forces_and_torque import compute_fm, compute_torque, compute_fm_and_torque
 import os
 from neural_networks.other import compute_row_col, plot_mvt_discontinuities_in_red
-from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
+from neural_networks.CSVBatchWriterWithNoise import CSVBatchWriterWithNoise
 import pandas as pd
 
 def get_lines_to_remove(qs, segment_lengths, datas_ignored, f_sup_limits, num_points, plot_discontinuities):
@@ -329,15 +329,18 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          
          segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, 
                                                                plot_cylinder_3D, plot_cadran)  
-         dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-         muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
-         torque, f_sup_limit = compute_torque(dlmt_dq, muscle_force)
+         
+         dlmt_dq = model.musclesLengthJacobian(q).to_array()[muscle_index] # biorbd
+         # dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8) # calcul avec wrapping
+         muscle_force, torque = compute_fm_and_torque(model, muscle_index, q, qdot, alpha) # calculs biorbd
+         # muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
+         # torque, f_sup_limit = compute_torque(dlmt_dq, muscle_force)
          
          # keep informations to verify after if datas are correct
          qs.append(qi)
          segment_lengths.append(segment_length)
          datas_ignored.append(data_ignored)
-         f_sup_limits.append(f_sup_limit)
+         # f_sup_limits.append(f_sup_limit)
          
          # add the new line
          lines.append([muscle_index, copy.deepcopy(q), copy.deepcopy(qdot), alpha, origin_muscle, insertion_muscle, segment_length, 
@@ -432,7 +435,7 @@ def data_for_learning_with_noise(model, csv_file_path, dataset_size_noise, batch
    """
    _, q_ranges_names_with_dofs = compute_q_ranges(model)
    
-   writer = ExcelBatchWriterWithNoise(f"{csv_file_path.replace(".csv", "")}_with_noise.csv", q_ranges_names_with_dofs,
+   writer = CSVBatchWriterWithNoise(f"{csv_file_path.replace(".csv", "")}_with_noise.csv", q_ranges_names_with_dofs,
                                       batch_size, noise_std_dev)
    writer.augment_data_with_noise_batch(dataset_size_noise)
 

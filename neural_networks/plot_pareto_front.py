@@ -5,7 +5,7 @@ import os
 from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 import copy
 import pandas as pd
-from neural_networks.ExcelBatchWriterTestHyperparams import ExcelBatchWriterTestHyperparams
+from neural_networks.CSVBatchWriterTestHyperparams import CSVBatchWriterTestHyperparams
 
 def find_points_front_pareto(num_points, x_axis, y_axis) :
     pareto_indices = []
@@ -20,11 +20,11 @@ def find_points_front_pareto(num_points, x_axis, y_axis) :
     return pareto_indices
 
 
-def plot_results_try_hyperparams(excel_file, x_info, y_info, id = "num_try"):
+def plot_results_try_hyperparams(csv_file, x_info, y_info, id = "num_try"):
     
     # Get informations for plot
-    if os.path.exists(excel_file) : 
-        df_datas = pd.read_excel(excel_file)
+    if os.path.exists(csv_file) : 
+        df_datas = pd.read_csv(csv_file)
         x_axis = df_datas.loc[:, x_info].values
         y_axis = df_datas.loc[:, y_info].values
         model_id = df_datas.loc[:, id].values
@@ -61,7 +61,7 @@ def plot_results_try_hyperparams(excel_file, x_info, y_info, id = "num_try"):
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
     plt.legend()
-    create_and_save_plot(f"{os.path.dirname(excel_file)}", f"{x_info} vs {y_info}.png")
+    create_and_save_plot(f"{os.path.dirname(csv_file)}", f"{x_info} vs {y_info}.png")
     plt.show()
 
 def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_path, id = "num_try"):
@@ -73,9 +73,9 @@ def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_pat
     
     # Get informations for plot
     for full_directory_path in dir_paths:
-        # full_directory_path = os.path.join(dir_paths, excel_file)
+        # full_directory_path = os.path.join(dir_paths, csv_file)
         if os.path.exists(f"{full_directory_path}") :
-            df_datas = pd.read_excel(full_directory_path)
+            df_datas = pd.read_csv(full_directory_path)
             x_axis.append(df_datas.loc[:, y_info].values) 
             y_axis.append(df_datas.loc[:, x_info].values)
             model_id.append(df_datas.loc[:, id].values)
@@ -135,11 +135,11 @@ def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_pat
     create_and_save_plot(f"{save_path}", f"{text_file_names}.png")
     plt.show()
 
-def create_df_from_txt_saved_informations(directory_excel) : 
-    writer = ExcelBatchWriterTestHyperparams(f"{directory_excel}", batch_size=100)
+def create_df_from_txt_saved_informations(directory_csv) : 
+    writer = CSVBatchWriterTestHyperparams(f"{directory_csv}", batch_size=100)
     
-    for directory in os.listdir(f"{os.path.dirname(directory_excel)}"):
-        full_directory_path = os.path.join(f"{os.path.dirname(directory_excel)}", directory)
+    for directory in os.listdir(f"{os.path.dirname(directory_csv)}"):
+        full_directory_path = os.path.join(f"{os.path.dirname(directory_csv)}", directory)
         if os.path.isdir(full_directory_path) and os.path.exists(f"{full_directory_path}/model_informations.txt") :
             # x_axis_value, y_axis_value = read_info_model(f"{full_directory_path}/model_informations.txt", [x_info, y_info])
             num_try, val_loss, val_acc, train_timer, mean_model_load_timer, \

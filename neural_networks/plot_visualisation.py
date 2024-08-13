@@ -211,11 +211,11 @@ def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
     - mode : Mode, mode of model
     - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
         Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
-    - folder_name : string, path to folder with all excel files q variation
+    - folder_name : string, path to folder with all csv files q variation
     - nbQ : int, number of q in biorbd model
 
     Returns :
-    - filenames : [string], name of each excel file q all variation
+    - filenames : [string], name of each csv file q all variation
     - loaders : DataLoader containing the dataset to evaluate
     - row_fixed : int, number of row for subplot
     - col_fixed : int, number of col for subplot
@@ -223,7 +223,7 @@ def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
     - y_selected: [string], all y (outputs of model) names columns selected 
     """
     
-    # Get all filename, name off excel files
+    # Get all filename, name off csv files
     all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
     filenames = sorted([filename for filename in os.listdir(folder_name)])
     
@@ -237,7 +237,7 @@ def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
     row_fixed, col_fixed = compute_row_col(nbQ, 3)
     
     # Get y_selected from mode_selected
-    df_datas = pd.read_excel(f"{folder_name}/{filenames[0]}", nrows=0)
+    df_datas = pd.read_csv(f"{folder_name}/{filenames[0]}", nrows=0)
     _, y_selected = get_y_and_labels(mode_selected, df_datas, False)
     
     return filenames, loaders, row_fixed, col_fixed, y_labels, y_selected
@@ -252,7 +252,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ,
     - model, pytorch model
     - nbQ : number of q in biorbd model
     - file_path : string, path to save the plot
-    - folder_name : folder where excel files q all variaton are saved
+    - folder_name : folder where csv files q all variaton are saved
     - num : int, number of points for the plot
 
     """
@@ -272,7 +272,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ,
 
         axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-        axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
+        axs[row, col].set_title(f"File: {filenames[q_index].replace(".csv", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
         axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
         axs[row, col].set_ylabel(f'{y_selected[0]}',fontsize='smaller')
         axs[row, col].legend()
@@ -292,7 +292,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
     - model, pytorch model
     - nbQ : number of q in biorbd model
     - file_path : string, path to save the plot
-    - folder_name : folder where excel files q all variaton are saved
+    - folder_name : folder where csv files q all variaton are saved
     - num : int, number of points for the plot
 
     """
@@ -303,7 +303,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
     for q_index in range(nbQ) : 
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         
-        # Get selected predictions and targets from y_selected, one excel file
+        # Get selected predictions and targets from y_selected, one csv file
         predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels, y_selected)
         
         # Special case if nbQ == 1
@@ -330,7 +330,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
             
                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
                 axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace(".xlsx", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
+                axs[row, col].set_title(f"File: {filenames[q_index].replace(".csv", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
                 axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
                 axs[row, col].set_ylabel(f'dlmt_dq{i}',fontsize='smaller')
                 axs[row, col].legend()
