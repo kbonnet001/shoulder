@@ -97,7 +97,10 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
   
   y = None
 
-  if mode == Mode.DLMT_DQ :
+  if mode == Mode.MUSCLE:
+    selected_columns = ['segment_length']
+    
+  elif mode == Mode.DLMT_DQ :
     selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
   
   elif mode == Mode.MUSCLE_DLMT_DQ : 
@@ -113,8 +116,8 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
     selected_columns.insert(0, 'segment_length')
     selected_columns.insert(len(selected_columns), 'torque')
     
-  else : # defaut mode = MUSCLE
-    selected_columns = ['segment_length']
+  else : # mode doesn't exist
+    raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
   
   y_labels = selected_columns
   if get_y : 
@@ -122,6 +125,27 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
     
   return y, y_labels
   
+def get_x(mode, df_datas, get_origin_and_insertion = False) : 
+
+    if mode == Mode.DLMT_DQ or mode == Mode.MUSCLE_DLMT_DQ  or mode == Mode.MUSCLE :
+      selected_columns = [col for col in df_datas.columns if col.startswith('q_')]
+      
+    elif mode == Mode.TORQUE or mode == Mode.TORQUE_MUS_DLMT_DQ : 
+      selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
+      selected_columns_qdot = [col for col in df_datas.columns if col.startswith('qdot_')]
+      selected_columns = selected_columns_q + selected_columns_qdot + ['alpha']
+      
+    else : # mode doesn't exist
+       raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
+    
+    if get_origin_and_insertion : 
+      selected_columns += ['origin_muscle_y', 'origin_muscle_z', 'origin_muscle_x', 'insertion_x', 'insertion_y', 
+                           'insertion_z']
+    
+    x = df_datas.loc[:, selected_columns].values 
+      
+    return x
+      
 
 def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     """
@@ -134,15 +158,14 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     - all_possible_categories: List of all possible categories for the 'index_muscle' column
     
     Returns:
-    - X_tensor: X tensor with all features (columns except the last one)
+    - x_tensor: x tensor with all features (columns except the last one)
     - y_tensor: y tensor with the target values (last column)
     """
     # Load and standardize df
     # df_datas = data_standardization(df_data, limit)
     df_datas = pd.read_excel(file_path_df)
     
-    selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
-    X = df_datas.loc[:, selected_columns_q].values # q only
+    x = get_x(mode, df_datas, get_origin_and_insertion = False)
 
     y, y_labels = get_y_and_labels(mode, df_datas, get_y = True)
     
@@ -154,10 +177,10 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     # X = np.hstack((index_muscle_encoded, X[:, 1:]))
 
     # Convert to PyTorch tensors
-    X_tensor = torch.tensor(X, dtype=torch.float32)
+    x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.float32)
 
-    return X_tensor, y_tensor, y_labels
+    return x_tensor, y_tensor, y_labels
 
 def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, folder_name, muscle_name, with_noise = True, plot=False):
   """Create loaders : 
