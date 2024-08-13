@@ -40,7 +40,8 @@ def compute_pourcentage_error(predictions, targets) :
     error_pourcentage = torch.mean((torch.abs(predictions - targets)) / targets) * 100
     return error_pourcentage.item(), torch.abs(error_pourcentage).item()
 
-def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_path, show_plot = False):
+def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, train_errors, val_errors, train_abs_errors, 
+                               val_abs_errors, file_path, show_plot = False):
     """Plot loss and accuracy (train and validation)
 
     Args :
@@ -51,7 +52,7 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_
     """
     
     # Create subplots
-    _, axs = plt.subplots(1, 2, figsize=(15, 5))
+    _, axs = plt.subplots(1, 3, figsize=(15, 5))
 
     # Plot loss graph
     axs[0].plot(train_losses, label='Train Loss')
@@ -68,6 +69,16 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, file_
     axs[1].set_ylabel('Accuracy')
     axs[1].set_title('Train and Validation Accuracy over Epochs')
     axs[1].legend()
+    
+    # Plot error pourcentage graph
+    axs[2].plot(train_errors, label='Train Pourcentage Error')
+    axs[2].plot(val_errors, label='Validation Pourcentage Error')
+    axs[2].plot(train_abs_errors, label='Train Abs Pourcentage Error')
+    axs[2].plot(val_abs_errors, label='Validation Abs Pourcentage Error')
+    axs[2].set_xlabel('Epoch')
+    axs[2].set_ylabel('Pourcentage error')
+    axs[2].set_title('Train and Validation Pourcentage Error over Epochs')
+    axs[2].legend()
 
     plt.tight_layout()
     

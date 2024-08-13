@@ -94,7 +94,7 @@ def main_superised_learning(Hyperparams, mode, nbQ, num_datas_for_dataset, folde
          = create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, f"{folder_name}/{muscle_name}", 
                                  muscle_name, with_noise, plot_preparation)
         # Trainning
-        model, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
+        model, _, _, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
                                                   Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
                                                   plot, save, show_plot=True)
         # Visualize tranning : predictions/targets for loaders train, val and test
@@ -204,7 +204,7 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
                 
                 with measure_time() as train_timer: # timer --> trainning time
                     # Please, consider this mesure time as an estimation !
-                    model, val_loss, val_acc, epoch = train_model_supervised_learning(train_loader, val_loader, test_loader, 
+                    model, val_loss, val_acc, val_error, val_abs_error, epoch = train_model_supervised_learning(train_loader, val_loader, test_loader, 
                                                                             input_size, output_size, try_hyperparams, 
                                                                             file_path=f"{directory}/{num_try}", 
                                                                             plot = True, save = True, show_plot=False) # save temporaly
@@ -248,7 +248,7 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
                                         mean_model_load_timer, mean_model_timer,
                                         try_hyperparams, mode, epoch+1, criterion_class.__name__, criterion_params)
                 
-                writer.add_line(num_try, val_loss, val_acc, train_timer.execution_time, 
+                writer.add_line(num_try, val_loss, val_acc, val_error, val_abs_error, train_timer.execution_time, 
                                 mean_model_load_timer, mean_model_timer, try_hyperparams, mode, epoch+1, 
                                 criterion_class.__name__, criterion_params)
                 

@@ -14,6 +14,8 @@ class ExcelBatchWriterTestHyperparams:
                 "mode": [], 
                 "val_loss": [], 
                 "val_acc": [], 
+                "val_error": [],
+                "val_abs_error": [],
                 "execution_time_train": [], 
                 "execution_time_load_saved_model": [], 
                 "execution_time_use_saved_model": [], 
@@ -31,7 +33,7 @@ class ExcelBatchWriterTestHyperparams:
                  }
             pd.DataFrame(data).to_excel(filename, index=False)
 
-    def add_line(self, num_try, val_loss, val_acc, train_timer, mean_model_load_timer, 
+    def add_line(self, num_try, val_loss, val_acc, val_error, val_abs_error, train_timer, mean_model_load_timer, 
                  mean_model_timer, try_hyperparams, mode, epoch, criterion_name, criterion_params):
         # Create a new line with the provided data
         new_line = {
@@ -39,6 +41,8 @@ class ExcelBatchWriterTestHyperparams:
             "mode": mode, 
             "val_loss": val_loss, 
             "val_acc": val_acc, 
+            "val_error": val_error,
+            "val_abs_error": val_abs_error,
             "execution_time_train": train_timer, 
             "execution_time_load_saved_model": mean_model_load_timer, 
             "execution_time_use_saved_model": mean_model_timer, 
@@ -62,7 +66,7 @@ class ExcelBatchWriterTestHyperparams:
         if len(self.buffer) >= self.batch_size:
             self._flush()
     
-    def add_line_full(self, num_try, val_loss, val_acc, train_timer, mean_model_load_timer, 
+    def add_line_full(self, num_try, val_loss, val_acc, val_error, val_abs_error, train_timer, mean_model_load_timer, 
                  mean_model_timer, batch_size, n_nodes, activations, L1_penalty, L2_penalty, learning_rate, 
                  dropout_prob, use_batch_norm, mode, epoch, criterion_name, criterion_params):
         # Create a new line with the provided data
@@ -71,6 +75,8 @@ class ExcelBatchWriterTestHyperparams:
             "mode": mode, 
             "val_loss": val_loss, 
             "val_acc": val_acc, 
+            "val_error": val_error,
+            "val_abs_error": val_abs_error,
             "execution_time_train": train_timer, 
             "execution_time_load_saved_model": mean_model_load_timer, 
             "execution_time_use_saved_model": mean_model_timer, 

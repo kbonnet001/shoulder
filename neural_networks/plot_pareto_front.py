@@ -131,7 +131,7 @@ def plot_results_try_hyperparams_comparaison(dir_paths, y_info, x_info, save_pat
     plt.title(f"{x_info} vs {y_info}", fontweight='bold')
     plt.grid(True)
     plt.legend()
-    create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]}.png")
+    create_and_save_plot(f"{save_path}", f"{file_names[0]} vs {file_names[1]} vs {file_names[2]}.png")
     plt.show()
 
 def create_df_from_txt_saved_informations(directory_excel) : 
