@@ -1,6 +1,36 @@
 import numpy as np
 from neural_networks.file_directory_operations import *
 
+def compute_fm_and_torque(model_biorbd, muscle_index, q, qdot, alpha) : 
+    """
+    Compute muscle forces for a given model, joint positions, velocities, and activations.
+    
+    Warning:
+        This function does not consider muscle wrapping, so the calculation of lmt is done 
+        using the via point method (biorbd). Updates are needed to incorporate wrapping 
+        effects in biorbd.
+
+    Args:
+        model_biorbd (biorbd.Model): The biorbd model.
+        q (np.ndarray): Joint positions (angles) for the model.
+        qdot (np.ndarray): Joint velocities for the model.
+        alpha (np.ndarray): Muscle activations for the muscles in the model [0,1]
+
+    Returns:
+        np.ndarray: The computed muscle forces.
+    """
+    
+    # Get the list of muscle states from the model
+    states = model_biorbd.stateSet()
+    for state in states:
+        state.setActivation(alpha)  
+    
+    # Compute the muscle forces based on the given states, joint positions, and velocities
+    fm = model_biorbd.muscleForces(states, q, qdot).to_array()
+    tau = model_biorbd.muscularJointTorque(states, q, qdot).to_array()
+    
+    return fm[muscle_index], tau[muscle_index]
+
 def compute_fm(model_biorbd, q, qdot, alpha):
     """
     Compute muscle forces for a given model, joint positions, velocities, and activations.

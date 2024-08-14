@@ -16,7 +16,7 @@ from neural_networks.functions_data_generation import compute_q_ranges
 from wrapping.muscles_length_jacobian import plot_length_jacobian
 from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters, plot_results_try_hyperparams
-from neural_networks.ExcelBatchWriterWithNoise import ExcelBatchWriterWithNoise
+from neural_networks.CSVBatchWriterWithNoise import CSVBatchWriterWithNoise
 from neural_networks.Timer import measure_time
 from neural_networks.save_model import load_saved_model
 from neural_networks.plot_pareto_front import plot_results_try_hyperparams, plot_results_try_hyperparams_comparaison, create_df_from_txt_saved_informations
@@ -75,9 +75,9 @@ muscles_selected = ["PECM2", "PECM3"]
 
 # test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, True, True) 
 
-# data_for_learning (muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.xlsx", False, False) 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.csv", False, False) 
 
-# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model_biorbd, 10, "rgtrsfdd.xlsx", data_without_error = True, plot=False, plot_cadran = False)
+# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model_biorbd, 10, "rgtrsfdd.csv", data_without_error = True, plot=False, plot_cadran = False)
 
 # -----------------------------------------------------------------
 
@@ -95,8 +95,8 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-data_generation_muscles(muscles_selected, cylinders, model_biorbd, 40, 0, "dDSA", num_points = 20, 
-                        plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=True)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10000, 0, "datas_all", num_points = 20, 
+                        plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
    
 # -----------------------------------------------------------------
@@ -212,16 +212,16 @@ print(Hyperparameter_essai1)
 # plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c_all",
 #                                  "execution_time_train", "val_loss")
 
-# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.xlsx", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.xlsx", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.xlsx"], 
+# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.csv", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.csv", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv"], 
 #                                          "execution_time_load_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
 #                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 
 #                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
-# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.xlsx") 
+# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv") 
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 

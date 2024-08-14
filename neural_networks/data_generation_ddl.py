@@ -35,19 +35,19 @@ def get_lines_to_remove(qs, segment_lengths, datas_ignored, f_sup_limits, num_po
     # Verify if data is correct and find discontinuities
     discontinuities = find_discontinuity(qs, segment_lengths, plot_discontinuities=plot_discontinuities)
     for discontinuity in discontinuities:
-        min_idx, max_idx = data_to_remove_part(discontinuity, qs, num_points, range_size=3)
+        min_idx, max_idx = data_to_remove_part(discontinuity, qs, num_points, range=3)
         to_remove.extend(range(min_idx, max_idx + 1))
     
     # Find indices with errors in ignored data
     positions = [n for n, ignored in enumerate(datas_ignored) if ignored]
     if positions:
-        min_idx, max_idx = find_discontinuities_from_error_wrapping_range(positions, num_points, range_size=3)
+        min_idx, max_idx = find_discontinuities_from_error_wrapping_range(positions, num_points, range=3)
         to_remove.extend(range(min_idx, max_idx + 1))
     
     # Find indices with errors in f_sup_limits
     positions_f_sup_limit = [n for n, ignored in enumerate(f_sup_limits) if ignored]
     if positions_f_sup_limit:
-        min_idx, max_idx = find_discontinuities_from_error_wrapping_range(positions_f_sup_limit, num_points, range_size=0)
+        min_idx, max_idx = find_discontinuities_from_error_wrapping_range(positions_f_sup_limit, num_points, range=0)
         to_remove.extend(range(min_idx, max_idx + 1))
     
     # Remove duplicate indices and sort in descending order
@@ -192,9 +192,11 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
             # compute others y
             qs.append(qi)
             segment_lengths.append(segment_length)
-            dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8)
-            muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
-            torque, _ = compute_torque(dlmt_dq, muscle_force)
+            dlmt_dq = model.musclesLengthJacobian(q).to_array()[muscle_index] # biorbd
+            # dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8) # calcul avec wrapping
+            muscle_force, torque = compute_fm_and_torque(model, muscle_index, q, qdot, alpha) # calculs biorbd
+            # muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
+            # torque, f_sup_limit = compute_torque(dlmt_dq, muscle_force)
             
             # add line
             writer.add_line(muscle_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
@@ -407,7 +409,8 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
          data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.csv", dataset_size_noise)
       
       # Plot visualization
-      q_fixed = np.array([0.0 for _ in range (model.nbQ())])
+      # q_fixed = np.array([0.0 for _ in range (model.nbQ())])
+      q_fixed  = np.array([0.0,0.0,0.0,0.0,0.0,0.0,-1.4311,0.0]) # T pose
       
       create_all_q_variation_files(muscles_selected[k], cylinders[k], model, q_fixed, "", num_points = 100, 
                      plot_all = False, plot_limit = False, plot_cadran=False, file_path=f"{directory}/{cylinders[k][0].muscle}")
