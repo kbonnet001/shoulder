@@ -10,12 +10,13 @@ from pyorerun import LiveModelAnimation
 
 from neural_networks.data_generation import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
+from neural_networks.ModelTryHyperparameters import ModelTryHyperparameters
 from neural_networks.data_generation_ddl import plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
 from wrapping.muscles_length_jacobian import plot_length_jacobian
 from neural_networks.Mode import Mode
-from neural_networks.main_trainning import main_superised_learning, find_best_hyperparameters, plot_results_try_hyperparams
+from neural_networks.main_trainning import main_supervised_learning, find_best_hyperparameters, plot_results_try_hyperparams
 from neural_networks.CSVBatchWriterWithNoise import CSVBatchWriterWithNoise
 from neural_networks.Timer import measure_time
 from neural_networks.save_model import load_saved_model
@@ -193,20 +194,23 @@ num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 with_noise = False
 
-Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
+# Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
+#                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
+#                                              use_batch_norm)
+Hyperparameter_essai1 = ModelTryHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
                                              use_batch_norm)
 print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-# main_superised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_all", 
+# main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, folder_name="data_generation_all", 
 #                         muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
 #                         plot_preparation=False, plot=True, save=True) 
 
-list_simulation, best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_via_point", 
-                            "PECM2", with_noise)
+# list_simulation, best_hyperparameters_loss \
+# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_via_point", 
+#                             "PECM2", with_noise)
 
 # plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv",
 #                                  "execution_time_train", "val_loss")

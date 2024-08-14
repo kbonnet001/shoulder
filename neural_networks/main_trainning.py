@@ -51,7 +51,7 @@ def compute_mean_model_timers(file_path, all_data_tensor) :
     
     return mean_model_load_timer, mean_model_timer
 
-def main_superised_learning(Hyperparams, mode, nbQ, num_datas_for_dataset, folder_name, muscle_name, retrain, file_path, with_noise, plot_preparation, plot, save) : 
+def main_supervised_learning(Hyperparams, mode, nbQ, num_datas_for_dataset, folder_name, muscle_name, retrain, file_path, with_noise, plot_preparation, plot, save) : 
     
     """Main fonction for prepare, train-val-test and save a model 
     
@@ -125,7 +125,7 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
     - list_simulation : list of all hyperparameters try and results of train-eval (loss and acc)
     - best_hyperparameters : ModelHyperparameters, best hyperparameters (regarding of min val_loss)
     NOTE : best_hyperparameters is in the "single syntaxe", in that case, it is possible to use it with 
-    "main_superised_learning" to save the model :)
+    "main_supervised_learning" to save the model :)
     
     ---------
     Examples :
@@ -272,7 +272,7 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
                                  "val_loss")
     
     # Finally, plot figure predictions targets with the best model saved
-    main_superised_learning(best_hyperparameters_loss, mode, nbQ, num_datas_for_dataset, folder, muscle_name, False,
+    main_supervised_learning(best_hyperparameters_loss, mode, nbQ, num_datas_for_dataset, folder, muscle_name, False,
                             f"{Hyperparams.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
                             save=True)
     
