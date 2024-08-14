@@ -24,7 +24,7 @@ from neural_networks.plot_pareto_front import plot_results_try_hyperparams, plot
 #################### 
 # Code des tests
 import biorbd
-# import bioviz
+import bioviz
 
 import unittest
 
@@ -95,8 +95,8 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10000, 0, "datas_all", num_points = 20, 
-                        plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10000, 0, "datas_all", num_points = 20, 
+#                         plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
    
 # -----------------------------------------------------------------
@@ -138,25 +138,24 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "fdsdfsafdas"
-mode = Mode.DLMT_DQ
+model_name = "torque_64_2c"
+mode = Mode.TORQUE
 batch_size = 64
-# n_layers = [2]
-n_nodes = [[32], [64]]
-activations = [[nn.GELU()]]
-activation_names = [["GELU"]]
-L1_penalty = [0.01]
-L2_penalty = [0.01]
+n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512], [1024, 1024]]
+activations = [[nn.GELU(), nn.GELU()]]
+activation_names = [["GELU", "GELU"]]
+L1_penalty = [0.01, 0.001]
+L2_penalty = [0.01, 0.001]
 learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
     # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [1.0]}),
+    (ModifiedHuberLoss, {'delta': [0.2, 0.5, 1.0], 'factor': [0.5, 1.0, 1.5]}),
     # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
     # (nn.MSELoss, {})
 ]
-p_dropout = [0.2]
+p_dropout = [0.0, 0.2]
 use_batch_norm = True
 
 # model_name="essai_muscle_train"
@@ -188,7 +187,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 100
+num_datas_for_dataset = 10000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -205,11 +204,11 @@ print(Hyperparameter_essai1)
 #                         muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
 #                         plot_preparation=False, plot=True, save=True) 
 
-# list_simulation, best_hyperparameters_loss \
-# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_all", 
-#                             "PECM2", with_noise)
+list_simulation, best_hyperparameters_loss \
+= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), num_datas_for_dataset, "data_generation_via_point", 
+                            "PECM2", with_noise)
 
-# plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c_all",
+# plot_results_try_hyperparams("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv",
 #                                  "execution_time_train", "val_loss")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.csv", 
@@ -217,11 +216,11 @@ print(Hyperparameter_essai1)
 #                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv"], 
 #                                          "execution_time_load_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
 
-# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/train_torque_2c_64_2"], 
-#                                          "execution_time", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
+# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv", 
+#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv"], 
+#                                          "execution_time_train", "val_loss", "data_generation_datas_with_tau/PECM2/_Model")
 
-# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv") 
+# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/train_torque_1c_64/train_torque_1c_64.csv") 
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 

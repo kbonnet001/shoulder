@@ -42,19 +42,22 @@ def plot_results_try_hyperparams(csv_file, x_info, y_info, id = "num_try"):
 
     # Tracé des points
     for i in range(num_points):
-        plt.scatter(y_axis[i], x_axis[i], marker='P', color=colors[i])
+        plt.scatter(x_axis[i], y_axis[i], marker='P', color=colors[i])
         if i in pareto_indices: 
-            plt.scatter(y_axis[i], x_axis[i], edgecolor='black', facecolor='none', s=100)
-            plt.text(y_axis[i], x_axis[i], model_id[i], fontsize=9, ha='right', weight='bold')
+            plt.scatter(x_axis[i], y_axis[i], edgecolor='black', facecolor='none', s=100)
+            plt.text(x_axis[i], y_axis[i], model_id[i], fontsize=9, ha='right', weight='bold')
         else : 
-            plt.text(y_axis[i], x_axis[i], model_id[i], fontsize=9, ha='right')
+            plt.text(x_axis[i], y_axis[i], model_id[i], fontsize=9, ha='right')
 
     # Tracer une ligne pour visualiser le front
     pareto_points = sorted([(x_axis[i], y_axis[i]) for i in pareto_indices])
     pareto_x, pareto_y = zip(*pareto_points)
-    plt.plot(pareto_y, pareto_x, linestyle='--', color='black', alpha=0.6, label = "Pareto_front")
-    plt.text(pareto_y[0] + 0.5, pareto_x[0] + 0.5, f"Best solution\n of objectif\n '{y_info}'", fontsize=9, ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
-    plt.text(pareto_y[-1] - 0.5, pareto_x[-1] + 4, f"Best solution\n of objectif\n '{x_info}'", fontsize=9, ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
+    
+    plt.plot(pareto_x, pareto_y, linestyle='--', color='black', alpha=0.6, label = "Pareto_front")
+    plt.text(pareto_x[0] , pareto_y[0] , f"Best solution\n of objectif\n '{x_info}'", fontsize=9, ha='left', 
+             va='top', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
+    plt.text(pareto_x[-1] , pareto_y[-1] , f"Best solution\n of objectif\n '{y_info}'", fontsize=9, ha='right', 
+             va='bottom', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
     
     plt.xlabel(f"{x_info}" + (" (s)" if x_info.startswith("execution_time")else ""))
     plt.ylabel(f"{y_info}" + (" (s)" if y_info.startswith("execution_time") else ""))
