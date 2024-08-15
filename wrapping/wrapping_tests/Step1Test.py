@@ -3,7 +3,7 @@ import numpy as np
 import biorbd
 from wrapping.step_1 import * 
 
-class Step_1_test(unittest.TestCase):
+class Step1Test(unittest.TestCase):
     
     def setUp(self):
         model = biorbd.Model("models/Wu_DeGroote.bioMod")

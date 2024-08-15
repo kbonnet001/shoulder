@@ -30,7 +30,8 @@ import biorbd
 import unittest
 
 # Importer les tests
-from wrapping.wrapping_tests.step_1_test import Step_1_test
+# from wrapping.wrapping_tests.Step1Test import Step1Test
+from neural_networks.neural_networks_tests import TestPlotVisualisation
 # from wrapping.wrapping_tests.step_2_test import Step_2_test
 
 # unittest.main()
@@ -139,10 +140,10 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "awfdfas"
+model_name = "dlmt_dq_fm_64_2c"
 mode = Mode.DLMT_DQ_FM
 batch_size = 64
-n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512], [1024, 1024]]
+n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512]]
 activations = [[nn.GELU(), nn.GELU()]]
 activation_names = [["GELU", "GELU"]]
 L1_penalty = [0.01, 0.001]
@@ -152,7 +153,7 @@ num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
     # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [0.5]}),
+    (ModifiedHuberLoss,  {'delta': [0.2, 0.5], 'factor': [0.5, 1.0]}),
     # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
     # (nn.MSELoss, {})
 ]
@@ -188,7 +189,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 10
+num_datas_for_dataset = 10000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10

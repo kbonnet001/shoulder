@@ -42,13 +42,24 @@ def compute_pourcentage_error(predictions, targets) :
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, train_errors, val_errors, train_abs_errors, 
                                val_abs_errors, file_path, show_plot = False):
-    """Plot loss and accuracy (train and validation)
+    """Plot loss, accuracy (train and validation), error percentage, and absolute error percentage (train and validation)
 
-    Args :
-    - train_losses : [float], all values of train loss, variation during trainning
-    - val_losses : [float], all values of validation loss, variation during trainning
-    - train_accs : [float], all values of train accuracy (mean distance), variation during trainning
-    - val_accs : [float], all values of validation accuracy (mean distance), variation during trainning
+    This function visualizes the performance metrics of a model over epochs, including training and validation loss, 
+    accuracy, percentage error, and absolute percentage error. It creates three subplots to present these metrics 
+    separately and saves the plot to a specified file path.
+
+    Args:
+    - train_losses (list of float): All values of training loss recorded during training.
+    - val_losses (list of float): All values of validation loss recorded during training.
+    - train_accs (list of float): All values of training accuracy (mean distance) recorded during training.
+    - val_accs (list of float): All values of validation accuracy (mean distance) recorded during training.
+    - train_errors (list of float): All values of training percentage error recorded during training.
+    - val_errors (list of float): All values of validation percentage error recorded during training.
+    - train_abs_errors (list of float): All values of training absolute percentage error recorded during training.
+    - val_abs_errors (list of float): All values of validation absolute percentage error recorded during training.
+    - file_path (str): The file path where the plot will be saved.
+    - show_plot (bool, optional): Whether to display the plot. Default is False.
+
     """
     
     # Create subplots
@@ -155,11 +166,15 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
             col = k % num_cols
             index = k if num_rows == 1 or num_cols == 1 else (row, col)
             
-            acc = mean_distance(np.array([prediction[k] for prediction in predictions]), np.array([target[k] for target in targets]))
-            error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[k] for prediction in predictions]), np.array([target[k] for target in targets]))
+            acc = mean_distance(np.array([prediction[k] for prediction in predictions]), 
+                                np.array([target[k] for target in targets]))
+            error_pourcen, error_pourcen_abs \
+            = compute_pourcentage_error(np.array([prediction[k] for prediction in predictions]), 
+                                        np.array([target[k] for target in targets]))
         
             axs[index].plot([target[k] for target in targets][:num], label='True values', marker='^', markersize=2)
-            axs[index].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--', markersize=2)
+            axs[index].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',
+                            linestyle='--', markersize=2)
             axs[index].set_xlabel("Sample")
             axs[index].set_ylabel("Value")
             axs[index].set_title(f"{y_labels[k]}, acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
@@ -173,222 +188,306 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
 
 # ------------------------------------------
 def get_predictions_and_targets_from_selected_y_labels(model, loader, y_labels, y_selected) :
-    """Plot the true values and predicted values for a given model and data loader
-    return only specifics columms of y_selected
-    
+    """Get predictions and targets for selected output columns from a model.
+
+    This function evaluates a trained PyTorch model on a given dataset and extracts predictions and targets
+    for specific output columns based on the provided y_labels and y_selected. It ensures that only the
+    specified columns are returned, allowing for focused evaluation of particular model outputs.
+
     Args:
-    - model: The trained PyTorch model to be evaluated.
-    - loader: DataLoader containing the dataset to evaluate.
-    - y_labels : [string], all y (outputs of model) names columns 
-    - y_selected: [string], all y (outputs of model) names columns selected 
+    - model (torch.nn.Module): The trained PyTorch model to be evaluated.
+    - loader (DataLoader): DataLoader containing the dataset to evaluate.
+    - y_labels (list of str): List of all possible output column names.
+    - y_selected (list of str): List of selected output column names for evaluation.
 
     Returns:
-    - selected_predictions : only predictions from columns y selected
-    - selected_targets : only targets from columns y selected
+    - selected_predictions (list of list): Predictions corresponding to the selected output columns.
+    - selected_targets (list of list): Targets corresponding to the selected output columns.
+
+    Raises:
+    - ValueError: If any of the selected y_labels are not in the provided y_labels.
     """
     
+    # Obtain predictions and targets using a helper function
     predictions, targets = get_predictions_and_targets(model, loader)
-
+    
+    # Check if all selected labels are valid
     for y in y_selected : 
         if y not in y_labels : 
             TypeError("error : y isn't in y_labels") 
-    
+            
+    # If all labels are selected, return full predictions and targets
     if y_labels == y_selected : 
         return predictions, targets
             
     else : 
-        # Keep only indices of y selected
+        # Find indices of the selected labels in y_labels
         selected_indices = [y_labels.index(label) for label in y_selected]
         
-        # selected only columns of y selected
+        # Select only the columns corresponding to the selected indices for both predictions and targets
         selected_predictions = [[row[i] for i in selected_indices] for row in predictions]
         selected_targets = [[row[i] for i in selected_indices] for row in targets]
         
         return selected_predictions, selected_targets
 
-def general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q) :
-    """Before all 'plot predictions', some preparations are necessary
+def general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q, nb_segment) :
+    """Prepare data for plotting predictions by creating data loaders and determining subplot configuration.
 
-    Args : 
-    - mode : Mode, mode of model
-    - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
-        Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
-    - folder_name : string, path to folder with all csv files q variation
-    - nb_q : int, number of q in biorbd model
+    This function sets up data loaders for evaluating a model's predictions across multiple datasets stored in CSV files.
+    It also computes the layout for subplots based on the number of datasets and returns labels for the outputs to
+    be plotted.
 
-    Returns :
-    - filenames : [string], name of each csv file q all variation
-    - loaders : DataLoader containing the dataset to evaluate
-    - row_fixed : int, number of row for subplot
-    - col_fixed : int, number of col for subplot
-    - y_labels : [string], all y (outputs of model) names columns 
-    - y_selected: [string], all y (outputs of model) names columns selected 
+    Args:
+    - mode (Mode): The mode of the model, indicating the type of data being processed.
+    - batch_size (int): The batch size for data loading.
+    - mode_selected (Mode): The selected mode for plotting, which must be equal to or less comprehensive than `mode`.
+        Examples: mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
+    - folder_name (str): Path to the folder containing CSV files with q variation data.
+    - nb_q (int): Number of q in the biorbd model, indicating how many datasets to process.
+    - nb_segment (int): Number of segments in the model.
+
+    Returns:
+    - filenames (list of str): Names of each CSV file for q variations.
+    - loaders (list of DataLoader): Data loaders for each dataset to be evaluated.
+    - row_fixed (int): Number of rows for subplot layout.
+    - col_fixed (int): Number of columns for subplot layout.
+    - y_labels (list of str): Names of all output columns (y) from the model.
+    - y_selected (list of str): Names of the selected output columns (y) to be plotted.
     """
     
-    # Get all filename, name off csv files
-    all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11]
+    # Define all possible categories for one-hot encoding or label usage
+    all_possible_categories = list(range(nb_segment))
+    
+    # Get all CSV filenames sorted from the specified folder
     filenames = sorted([filename for filename in os.listdir(folder_name)])
     
-    # Create loader and y_label
+    # Create data loaders and retrieve output labels for each file up to nb_q
     loaders = []
     for filename in filenames[:nb_q]:
         loader, y_labels = create_data_loader(mode, batch_size, f"{folder_name}/{filename}", all_possible_categories)
         loaders.append(loader)
         
-    # Compute number of rows and cols for subplot    
+    # Compute the number of rows and columns needed for subplots
     row_fixed, col_fixed = compute_row_col(nb_q, 3)
     
-    # Get y_selected from mode_selected
+    # Load the first CSV to get the selected output labels for the mode_selected
     df_datas = pd.read_csv(f"{folder_name}/{filenames[0]}", nrows=0)
     _, y_selected = get_y_and_labels(mode_selected, df_datas, False)
     
     return filenames, loaders, row_fixed, col_fixed, y_labels, y_selected
 
-def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batch_size, nb_q, file_path, folder_name, num):
-    """ Create plot to compare predictions and targets for ONE specific columns y (example : lmt, torque, ...)
+def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, 
+                                                folder_name, num):
+    """Create plots to compare predictions and targets for a specific column of y (e.g., lmt, torque).
 
-    Args : 
-    - mode : Mode, mode of model
-    - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
-        Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
-    - model, pytorch model
-    - nb_q : number of q in biorbd model
-    - file_path : string, path to save the plot
-    - folder_name : folder where csv files q all variaton are saved
-    - num : int, number of points for the plot
+    This function generates plots to visually compare the model's predictions with the true target values for each 
+    dataset variation of q. The plots include accuracy and error metrics.
 
+    Args:
+    - mode (Mode): The mode of the model, indicating the type of data being processed.
+    - mode_selected (Mode): The selected mode for plotting, which must be equal to or less comprehensive than `mode`.
+        Examples: mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
+    - model (torch.nn.Module): The PyTorch model used for making predictions.
+    - batch_size (int): The batch size for data loading.
+    - nb_q (int): Number of q variations in the biorbd model, indicating how many datasets to process.
+    - nb_segment (int): Number of segments in the model.
+    - file_path (str): Path to save the generated plot.
+    - folder_name (str): Path to the folder containing CSV files with q variation data.
+    - num (int): Number of data points to plot for each dataset.
     """
-    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q)
-    fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
+    # Prepare data and configurations for plotting using helper function
+    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(
+        mode, batch_size, mode_selected, folder_name, nb_q, nb_segment
+    )
     
-    for q_index in range(nb_q) : 
-        
+    # Set up the figure and subplots for visualization
+    fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+    
+    # Iterate over each dataset to plot predictions and targets
+    for q_index in range(nb_q):
         row = q_index // 3
         col = q_index % 3
         
-        # Get selected predictions and targets from y_selected
-        predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels, y_selected)
-        # Compute accuracy
+        # Get selected predictions and targets from the data loader
+        predictions, targets = get_predictions_and_targets_from_selected_y_labels(
+            model, loaders[q_index], y_labels, y_selected
+        )
+        
+        # Compute accuracy and error metrics
         acc = mean_distance(np.array(predictions), np.array(targets))
         error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array(predictions), np.array(targets))
 
+        # Plot the true values and predictions with annotations
         axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-        axs[row, col].set_title(f"File: {filenames[q_index].replace(".csv", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
-        axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-        axs[row, col].set_ylabel(f'{y_selected[0]}',fontsize='smaller')
+        axs[row, col].set_title(
+            f"File: {filenames[q_index].replace('.csv', '')},\n"
+            f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
+            fontsize='smaller'
+        )
+        axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
+        axs[row, col].set_ylabel(f'{y_selected[0]}', fontsize='smaller')
         axs[row, col].legend()
     
+    # Add a title to the entire figure and adjust the layout
     fig.suptitle(f'Predictions and targets of {y_selected[0]}', fontweight='bold')
     plt.tight_layout()  
-    create_and_save_plot(f"{file_path}", f"plot_{y_selected[0]}_predictions_and_targets.png")
+    
+    # Save the plot to the specified file path
+    create_and_save_plot(file_path, f"plot_{y_selected[0]}_predictions_and_targets.png")
     plt.show()
-        
-def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, file_path, folder_name, num):
-    """ Create plot to compare predictions and targets for DLMT_DQ
 
-    Args : 
-    - mode : Mode, mode of model
-    - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
-        Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
-    - model, pytorch model
-    - nb_q : number of q in biorbd model
-    - file_path : string, path to save the plot
-    - folder_name : folder where csv files q all variaton are saved
-    - num : int, number of points for the plot
+def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, folder_name, num):
+    """Create plots to compare predictions and targets for DLMT_DQ.
 
+    This function generates plots for each dataset variation of q, comparing the model's predictions with the true target values.
+    Special handling is applied if there's only one dataset.
+
+    Args:
+    - mode (Mode): Mode of the model, indicating the type of data.
+    - mode_selected (Mode): Selected mode for plotting, which must be equal to or less comprehensive than `mode`.
+        Examples: mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
+    - model (torch.nn.Module): PyTorch model used for predictions.
+    - batch_size (int): Batch size for data loading.
+    - nb_q (int): Number of q variations in the biorbd model.
+    - nb_segment (int): Number of segments in the model.
+    - file_path (str): Path to save the plots.
+    - folder_name (str): Path to the folder containing CSV files with q variation data.
+    - num (int): Number of data points to plot.
     """
     
-    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q)
+    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(
+        mode, batch_size, mode_selected, folder_name, nb_q, nb_segment
+    )
     
-    # For each q index, create a figure
-    for q_index in range(nb_q) : 
-        fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
-        
-        # Get selected predictions and targets from y_selected, one csv file
-        predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels, y_selected)
-        
-        # Special case if nb_q == 1
-        if row_fixed == 1 and col_fixed == 1 : 
+    # Generate plots for each q variation
+    for q_index in range(nb_q):
+        if row_fixed == 1 and col_fixed == 1:
+            # Special case for a single dataset
+            predictions, targets = get_predictions_and_targets_from_selected_y_labels(
+                model, loaders[q_index], y_labels, y_selected
+            )
+            
+            # Compute accuracy and error metrics
             acc = mean_distance(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
             error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
             
             plt.figure(figsize=(10, 5))
             plt.plot(targets[:num], label='True values', marker='o')
-            plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
+            plt.plot(predictions[:num], label='Predictions', marker='o', linestyle='--')
             plt.xlabel('q variation')
             plt.ylabel(f"{y_selected[0]}")
-            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation, acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%", fontweight='bold')
+            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation\n"
+                      f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%", 
+                      fontweight='bold')
             plt.legend()
+            create_and_save_plot(file_path, f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
+            plt.show()
         
-        else : 
-            # else, subplot of each q
-            for i in range (len(y_selected)) : 
+        else:
+            # For multiple datasets, create a subplot for each y_selected
+            fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+            
+            predictions, targets = get_predictions_and_targets_from_selected_y_labels(
+                model, loaders[q_index], y_labels, y_selected
+            )
+            
+            for i in range(len(y_selected)):
                 acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
                 error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
                 
-                row = i // 3
-                col = i % 3
-            
+                row = i // col_fixed
+                col = i % col_fixed
+                
                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
                 axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace(".csv", "")},\n acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",fontsize='smaller')
-                axs[row, col].set_xlabel(f'q{q_index} Variation',fontsize='smaller')
-                axs[row, col].set_ylabel(f'dlmt_dq{i}',fontsize='smaller')
+                axs[row, col].set_title(f"File: {filenames[q_index].replace('.csv', '')}\n"
+                                        f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
+                                        fontsize='smaller')
+                axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
+                axs[row, col].set_ylabel(f'dlmt_dq{i}', fontsize='smaller')
                 axs[row, col].legend()
-        
+            
             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
-            plt.tight_layout()  
-            create_and_save_plot(f"{file_path}", f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
+            plt.tight_layout()
+            create_and_save_plot(file_path, f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
             plt.show()
-    
-    return None
-# -------------------------------------
-def visualize_prediction_trainning(model, file_path, y_labels, train_loader, val_loader, test_loader) : 
-    """Create plots 'predictions and targets' for train, validation and test loader
 
-    Args :
-    - model : pytorch model
-    - file_path : string, path to save plot
-    - y_labels : [string] all name of columns y (output of model)
-    - train_loader : DataLoader, data trainning (80% of 80%)
-    - val_loader : DataLoader, data validation (20% of 80%)
-    - test_loader : DataLoader, data testing (20%)
+# -------------------------------------
+def visualize_prediction_training(model, file_path, y_labels, train_loader, val_loader, test_loader):
+    """Create plots of predictions and targets for training, validation, and test datasets.
+
+    This function generates and saves plots comparing model predictions to true target values for training,
+    validation, and test datasets.
+
+    Args:
+    - model (torch.nn.Module): The PyTorch model to evaluate.
+    - file_path (str): Path to save the plots.
+    - y_labels (list of str): Names of the columns (outputs of the model) to visualize.
+    - train_loader (DataLoader): DataLoader for the training data.
+    - val_loader (DataLoader): DataLoader for the validation data.
+    - test_loader (DataLoader): DataLoader for the test data.
     """
     
+    # Generate and save plots for each dataset type
     plot_predictions_and_targets(model, y_labels, train_loader, "Train loader", 100, file_path)
     plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path)
-    plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path)
+    plot_predictions_and_targets(model, y_labels, test_loader, "Test loader", 100, file_path)
 
-def visualize_prediction(mode, batch_size, nb_q, file_path, folder_name_for_prediction) : 
-    
+def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction):
     """
-    Load saved model and plot-save visualisations 
-    
-    Args 
-    - mode : Mode
-    - nb_q : int, number of q in biorbd model
-    - file_path : string, path where the file 'model_config.json' of the model could be find
-    - folder_name_for_prediction : string, path where files of folder 'plot_all_q_variation_' could be find
-    """
+    Load a saved model and generate visualizations for predictions and targets based on the mode.
 
+    Args:
+    - mode (Mode): The mode indicating which type of predictions and plots to generate.
+    - batch_size (int): The batch size used for predictions.
+    - nb_q (int): Number of q in the biorbd model.
+    - nb_segment (int): Number of segments in the model.
+    - file_path (str): Path to the directory containing the 'model_config.json' file.
+    - folder_name_for_prediction (str): Path to the folder containing files for plotting all q variations.
+    """
+    
+    # Load the saved model
     model = load_saved_model(file_path)
     
-    if mode == Mode.DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-    elif mode == Mode.MUSCLE_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-    elif mode == Mode.TORQUE_MUS_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-        plot_predictions_and_targets_from_filenames(mode, Mode.TORQUE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-    elif mode == Mode.DLMT_DQ_FM : 
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-        plot_predictions_and_targets_from_filenames(mode, Mode.FORCE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-    elif mode==Mode.MUSCLE or mode==Mode.TORQUE : 
-        plot_predictions_and_targets_from_filenames(mode, mode, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-    else : # mode doesn't exist
-        raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
-
+    # Generate plots based on the mode
+    if mode == Mode.DLMT_DQ:
+        plot_predictions_and_targets_from_filenames_dlmt_dq(
+            mode, mode, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
     
+    elif mode == Mode.MUSCLE_DLMT_DQ:
+        plot_predictions_and_targets_from_filenames(
+            mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+        plot_predictions_and_targets_from_filenames_dlmt_dq(
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+    
+    elif mode == Mode.TORQUE_MUS_DLMT_DQ:
+        plot_predictions_and_targets_from_filenames(
+            mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+        plot_predictions_and_targets_from_filenames_dlmt_dq(
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+        plot_predictions_and_targets_from_filenames(
+            mode, Mode.TORQUE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+    
+    elif mode == Mode.DLMT_DQ_FM:
+        plot_predictions_and_targets_from_filenames_dlmt_dq(
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+        plot_predictions_and_targets_from_filenames(
+            mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+    
+    elif mode in [Mode.MUSCLE, Mode.TORQUE]:
+        plot_predictions_and_targets_from_filenames(
+            mode, mode, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+    
+    else:
+        # Raise an error if the mode is not valid
+        raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")

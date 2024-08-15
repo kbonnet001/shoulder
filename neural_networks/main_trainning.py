@@ -3,7 +3,7 @@ from neural_networks.data_tranning import train_model_supervised_learning
 from neural_networks.activation_functions import *
 import os
 from neural_networks.save_model import measure_time, save_model, main_function_model, del_saved_model
-from neural_networks.plot_visualisation import visualize_prediction_trainning, visualize_prediction
+from neural_networks.plot_visualisation import visualize_prediction_training, visualize_prediction
 from itertools import product
 from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
@@ -143,10 +143,10 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
                                                                f"{folder_name_muscle}/_Model/{file_path}", plot, save, 
                                                                show_plot=True)
         # Visualize tranning : predictions/targets for loaders train, val and test
-        visualize_prediction_trainning(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
+        visualize_prediction_training(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
                                        val_loader, test_loader) 
     # Visualize : predictions/targets for all q variation
-    visualize_prediction(mode, Hyperparams.batch_size, nb_q, f"{folder_name_muscle}/_Model/{file_path}", 
+    visualize_prediction(mode, Hyperparams.batch_size, nb_q, nb_segment, f"{folder_name_muscle}/_Model/{file_path}", 
                          f"{folder_name_muscle}/plot_all_q_variation_")
     
 def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, 
