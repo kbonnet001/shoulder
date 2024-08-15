@@ -54,9 +54,9 @@ def plot_results_try_hyperparams(csv_file, x_info, y_info, id = "num_try"):
     pareto_x, pareto_y = zip(*pareto_points)
     
     plt.plot(pareto_x, pareto_y, linestyle='--', color='black', alpha=0.6, label = "Pareto_front")
-    plt.text(pareto_x[0] , pareto_y[0] , f"Best solution\n of objectif\n '{x_info}'", fontsize=9, ha='left', 
+    plt.text(pareto_x[0] , pareto_y[0] *1.05, f"Best solution\n of objectif\n '{x_info}'", fontsize=9, ha='left', 
              va='top', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
-    plt.text(pareto_x[-1] , pareto_y[-1] , f"Best solution\n of objectif\n '{y_info}'", fontsize=9, ha='right', 
+    plt.text(pareto_x[-1] *1.05, pareto_y[-1] , f"Best solution\n of objectif\n '{y_info}'", fontsize=9, ha='right', 
              va='bottom', bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
     
     plt.xlabel(f"{x_info}" + (" (s)" if x_info.startswith("execution_time")else ""))

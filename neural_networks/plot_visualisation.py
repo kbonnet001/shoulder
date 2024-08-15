@@ -22,7 +22,7 @@ def mean_distance(predictions, targets):
     Returns : 
         float: mean distance
     """
-    distance = torch.mean(torch.abs(predictions - targets))
+    distance = np.mean(np.abs(predictions - targets))
     return distance.item()
 
 def compute_pourcentage_error(predictions, targets) : 
@@ -37,8 +37,8 @@ def compute_pourcentage_error(predictions, targets) :
         error_pourcentage : float, relative error
         error_pourcentage_abs : float, relative error in abs
     """
-    error_pourcentage = torch.mean((torch.abs(predictions - targets)) / targets) * 100
-    return error_pourcentage.item(), torch.abs(error_pourcentage).item()
+    error_pourcentage = np.mean((np.abs(predictions - targets)) / targets) * 100
+    return error_pourcentage.item(), np.abs(error_pourcentage).item()
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accs, val_accs, train_errors, val_errors, train_abs_errors, 
                                val_abs_errors, file_path, show_plot = False):
@@ -108,7 +108,9 @@ def get_predictions_and_targets(model, data_loader, device=torch.device('cuda' i
         for inputs, labels in data_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
-            outputs = outputs.squeeze()  # Remove dimensions of size 1
+            outputs = outputs.squeeze(1) # Remove dimensions of size 1
+            labels = labels.squeeze(1) # Remove dimensions of size 1
+            # Convert tensors to numpy arrays and extend the lists
             predictions.extend(outputs.cpu().numpy())
             targets.extend(labels.cpu().numpy())
     return predictions, targets
@@ -133,8 +135,8 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     
     # special case if nbQ == 1
     if num_cols == 1 and num_rows == 1 : 
-        acc = mean_distance(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
-        error_pourcen, error_pourcen_abs = compute_pourcentage_error(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
+        acc = mean_distance(np.array([predictions]), np.array([targets]))
+        error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([predictions]), np.array([targets]))
         
         plt.figure(figsize=(10, 5))
         plt.plot(targets[:num], label='True values', marker='o')
@@ -267,8 +269,8 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ,
         # Get selected predictions and targets from y_selected
         predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels, y_selected)
         # Compute accuracy
-        acc = mean_distance(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
-        error_pourcen, error_pourcen_abs = compute_pourcentage_error(torch.tensor(np.array(predictions)), torch.tensor(np.array(targets)))
+        acc = mean_distance(np.array(predictions), np.array(targets))
+        error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array(predictions), np.array(targets))
 
         axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)

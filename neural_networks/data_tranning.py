@@ -47,11 +47,26 @@ def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' 
     epoch_loss = running_loss / len(train_loader.dataset)
 
     # Calculation of mean distance
+    
+    # outputs = outputs.squeeze(1) # Remove dimensions of size 1
+    # labels = labels.squeeze(1) # Remove dimensions of size 1
+    # # Convert tensors to numpy arrays and extend the lists
+    # predictions.extend(outputs.cpu().numpy())
+    
+    # Concatenate predictions and targets
     all_predictions = torch.cat(all_predictions)
     all_targets = torch.cat(all_targets)
-    # epoch_acc = accuracy(all_predictions, all_targets)
-    epoch_acc = mean_distance(all_predictions, all_targets)
-    epoch_pourcentage_error, abs_epoch_pourcentage_error = compute_pourcentage_error(all_predictions, all_targets)
+
+    # Squeeze the dimensions of size 1
+    all_predictions = all_predictions.squeeze(1)  # Remove dimensions of size 1
+    all_targets = all_targets.squeeze(1)          # Remove dimensions of size 1
+
+    # Convert to 1D NumPy arrays
+    all_predictions_np = all_predictions.detach().cpu().numpy()
+    all_targets_np = all_targets.detach().cpu().numpy()
+    
+    epoch_acc = mean_distance(all_predictions_np, all_targets_np)
+    epoch_pourcentage_error, abs_epoch_pourcentage_error = compute_pourcentage_error(all_predictions_np, all_targets_np)
 
     return epoch_loss, epoch_acc, epoch_pourcentage_error, abs_epoch_pourcentage_error
 
@@ -92,12 +107,20 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
     # Calculation of average loss
     epoch_loss = running_loss / len(data_loader.dataset)
 
-    # Calculation of mean distance
+    # Concatenate predictions and targets
     all_predictions = torch.cat(all_predictions)
     all_targets = torch.cat(all_targets)
-    # epoch_acc = accuracy(all_predictions, all_targets)
-    epoch_acc = mean_distance(all_predictions, all_targets)
-    epoch_pourcentage_error, abs_epoch_pourcentage_error = compute_pourcentage_error(all_predictions, all_targets)
+
+    # Squeeze the dimensions of size 1
+    all_predictions = all_predictions.squeeze(1)  # Remove dimensions of size 1
+    all_targets = all_targets.squeeze(1)          # Remove dimensions of size 1
+
+    # Convert to 1D NumPy arrays
+    all_predictions_np = all_predictions.detach().cpu().numpy()
+    all_targets_np = all_targets.detach().cpu().numpy()
+    
+    epoch_acc = mean_distance(all_predictions_np, all_targets_np)
+    epoch_pourcentage_error, abs_epoch_pourcentage_error = compute_pourcentage_error(all_predictions_np, all_targets_np)
 
     return epoch_loss, epoch_acc, epoch_pourcentage_error, abs_epoch_pourcentage_error
 
@@ -143,7 +166,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     # choose a early-stopping patience = 2 * scheduler patience
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=patience_scheduler, min_lr=min_lr)
     # Initialization of EarlyStopping
-    early_stopping = EarlyStopping(monitor='val_mae', patience=50, min_delta=1e-9, verbose=True)
+    early_stopping = EarlyStopping(monitor='val_mae', patience=40, min_delta=1e-9, verbose=True)
 
     for epoch in range(Hyperparams.num_epochs):
         train_loss, train_acc, train_error, train_abs_error = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
