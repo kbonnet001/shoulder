@@ -104,9 +104,9 @@ def compute_mean_model_timers(file_path, all_data_tensor) :
     
     return mean_model_load_timer, mean_model_timer
 
-def main_superised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_dataset, folder_name, muscle_name, retrain, 
+def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_dataset, folder_name, muscle_name, retrain, 
                             file_path, with_noise, plot_preparation, plot, save) : 
-    
+
     """ Main function to prepare, train, validate, test, and save a model.
     
     Args:
@@ -165,14 +165,14 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     - save_all: bool, (default = False) True to save all tested models. 
       Be cautious as saving all models can be heavy, especially if n_nodes are large. 
       The best model (in terms of validation loss) will always be saved.
-    
+
     Returns:
     - list_simulation: list of all hyperparameters tried and results of training-evaluation (loss and accuracy).
     - best_hyperparameters: ModelHyperparameters, best hyperparameters (in terms of minimum validation loss).
       NOTE: best_hyperparameters is in the "single syntax". In this case, it is possible to use it with 
       "main_supervised_learning" with retrain = False for example.
     """
-    
+
     # Before beggining, compute an estimation of execution time
     # The user can choose to stop if the execution is to long according to him 
     # For example, if estimed execution time if around 100 hours... maybe you have to many hyperparameters to try ...
@@ -292,7 +292,8 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
                                  "val_loss")
     
     # Finally, plot figure predictions targets with the best model saved
-    main_superised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, False,
+
+    main_supervised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, False,
                             f"{try_hyperparams_ref.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
                             save=True)
     
