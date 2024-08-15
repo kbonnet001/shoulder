@@ -155,8 +155,8 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
             col = k % num_cols
             index = k if num_rows == 1 or num_cols == 1 else (row, col)
             
-            acc = mean_distance(torch.tensor([prediction[k] for prediction in predictions]), torch.tensor([target[k] for target in targets]))
-            error_pourcen, error_pourcen_abs = compute_pourcentage_error(torch.tensor([prediction[k] for prediction in predictions]), torch.tensor([target[k] for target in targets]))
+            acc = mean_distance(np.array([prediction[k] for prediction in predictions]), np.array([target[k] for target in targets]))
+            error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[k] for prediction in predictions]), np.array([target[k] for target in targets]))
         
             axs[index].plot([target[k] for target in targets][:num], label='True values', marker='^', markersize=2)
             axs[index].plot([prediction[k] for prediction in predictions][:num], label='Predictions', marker='o',linestyle='--', markersize=2)
@@ -310,8 +310,8 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
         
         # Special case if nb_q == 1
         if row_fixed == 1 and col_fixed == 1 : 
-            acc = mean_distance(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
-            error_pourcen, error_pourcen_abs = compute_pourcentage_error(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
+            acc = mean_distance(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
+            error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
             
             plt.figure(figsize=(10, 5))
             plt.plot(targets[:num], label='True values', marker='o')
@@ -324,8 +324,8 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
         else : 
             # else, subplot of each q
             for i in range (len(y_selected)) : 
-                acc = mean_distance(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
-                error_pourcen, error_pourcen_abs = compute_pourcentage_error(torch.tensor([prediction[i] for prediction in predictions]), torch.tensor([target[i] for target in targets]))
+                acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
+                error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
                 
                 row = i // 3
                 col = i % 3
@@ -383,8 +383,12 @@ def visualize_prediction(mode, batch_size, nb_q, file_path, folder_name_for_pred
         plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
         plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
         plot_predictions_and_targets_from_filenames(mode, Mode.TORQUE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-    else : # MUSCLE or TORQUE
+    elif mode == Mode.DLMT_DQ_FM : 
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, Mode.FORCE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
+    elif mode==Mode.MUSCLE or mode==Mode.TORQUE : 
         plot_predictions_and_targets_from_filenames(mode, mode, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
-
+    else : # mode doesn't exist
+        raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
 
     

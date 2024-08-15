@@ -149,7 +149,8 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
     visualize_prediction(mode, Hyperparams.batch_size, nb_q, f"{folder_name_muscle}/_Model/{file_path}", 
                          f"{folder_name_muscle}/plot_all_q_variation_")
     
-def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = False) : 
+def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, 
+                              with_noise, save_all = False) : 
     
     """Try hyperparameters, keep all train-evaluated models in a list, and return the best hyperparameters.
     
@@ -195,7 +196,7 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     # Create loaders for trainning
     folder_name = f"{folder}/{muscle_name}"
     train_loader, val_loader, test_loader, input_size, output_size, _ \
-    = create_loaders_from_folder(try_hyperparams_ref, mode, nb_q, num_datas_for_dataset, folder_name, muscle_name, 
+    = create_loaders_from_folder(try_hyperparams_ref, mode, nb_q, nb_segment, num_datas_for_dataset, folder_name, muscle_name, 
                                  with_noise, plot = False)
     
     all_data_test_tensor, _ = dataloader_to_tensor(test_loader)

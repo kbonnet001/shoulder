@@ -161,7 +161,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     Hyperparams.compute_optimiser(model) # compute the optimiser
     min_lr = 1e-8 # min lr could be attend with scheduler
     patience_scheduler = 20 
-    patience_early_stopping = 40 # Choose a early-stopping patience = 2 * scheduler patience
+    patience_early_stopping = 50 # Choose a early-stopping patience = 2 * scheduler patience
         
     # More details about scheduler in documentation
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, 

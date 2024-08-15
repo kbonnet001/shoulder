@@ -139,25 +139,25 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-# model_name = "torque_64_2c"
-# mode = Mode.TORQUE
-# batch_size = 64
-# n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512], [1024, 1024]]
-# activations = [[nn.GELU(), nn.GELU()]]
-# activation_names = [["GELU", "GELU"]]
-# L1_penalty = [0.01, 0.001]
-# L2_penalty = [0.01, 0.001]
-# learning_rate = [1e-2]
-# num_epochs = 1000
-# # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-# criterion = [
-#     # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-#     (ModifiedHuberLoss, {'delta': [0.2], 'factor': [0.5]}),
-#     # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
-#     # (nn.MSELoss, {})
-# ]
-# p_dropout = [0.0, 0.2, 0.5]
-# use_batch_norm = True
+model_name = "awfdfas"
+mode = Mode.DLMT_DQ_FM
+batch_size = 64
+n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512], [1024, 1024]]
+activations = [[nn.GELU(), nn.GELU()]]
+activation_names = [["GELU", "GELU"]]
+L1_penalty = [0.01, 0.001]
+L2_penalty = [0.01, 0.001]
+learning_rate = [1e-2]
+num_epochs = 1000
+# criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
+criterion = [
+    # (LogCoshLoss, {'factor': [1.0, 1.8]}),
+    (ModifiedHuberLoss, {'delta': [0.2], 'factor': [0.5]}),
+    # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
+    # (nn.MSELoss, {})
+]
+p_dropout = [0.0, 0.2, 0.5]
+use_batch_norm = True
 
 # model_name="essai_muscle_train"
 # mode = Mode.MUSCLE
@@ -167,28 +167,28 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-model_name="torque_264" 
-mode = Mode.TORQUE
-batch_size=64
-# n_layers=1
-n_nodes=[256, 256]
-activations=[nn.GELU(), nn.GELU()]
-# activations = [nn.Sigmoid()]
+# model_name="hfhjsdf" 
+# mode = Mode.TORQUE
+# batch_size=64
+# # n_layers=1
+# n_nodes=[256, 256]
+# activations=[nn.GELU(), nn.GELU()]
+# # activations = [nn.Sigmoid()]
 
-activation_names = ["GELU", "GELU"]
+# activation_names = ["GELU", "GELU"]
 
-L1_penalty=0.001
-L2_penalty=0.01
-learning_rate=0.01
-num_epochs=1000 
-optimizer=0.0
-# criterion = LogCoshLoss(factor=1.8)
-criterion = ModifiedHuberLoss(delta=0.1, factor=0.2)
-# criterion = nn.MSELoss()
-p_dropout=0.2
-use_batch_norm=True
+# L1_penalty=0.001
+# L2_penalty=0.01
+# learning_rate=0.01
+# num_epochs=1000 
+# optimizer=0.0
+# # criterion = LogCoshLoss(factor=1.8)
+# criterion = ModifiedHuberLoss(delta=0.1, factor=0.2)
+# # criterion = nn.MSELoss()
+# p_dropout=0.2
+# use_batch_norm=True
 
-num_datas_for_dataset = 10000
+num_datas_for_dataset = 10
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -204,14 +204,15 @@ print(Hyperparameter_essai1)
 
 # one model per muscle !
 
-main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), num_datas_for_dataset, folder_name="data_generation_via_point", 
-                        muscle_name = "PECM2", retrain=True, file_path=Hyperparameter_essai1.model_name, with_noise = False, 
-                        plot_preparation=False, plot=True, save=True) 
+# main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), num_datas_for_dataset, 
+#                          folder_name="data_generation_via_point", muscle_name = "PECM2", retrain=True, 
+#                          file_path=Hyperparameter_essai1.model_name, with_noise = False, plot_preparation=False, 
+#                          plot=True, save=True) 
 
 
-# list_simulation, best_hyperparameters_loss \
-# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), num_datas_for_dataset, "data_generation_via_point", 
-#                             "PECM2", with_noise)
+list_simulation, best_hyperparameters_loss \
+= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
+                            num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
 
 # plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV",
 #                                  "execution_time_use_saved_model", "val_error", 'num_try')

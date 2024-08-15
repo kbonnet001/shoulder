@@ -81,7 +81,7 @@ def get_x(mode, df_datas, get_origin_and_insertion = False) :
         # For these modes, select columns starting with 'q_'
         selected_columns = [col for col in df_datas.columns if col.startswith('q_')]
     
-    elif mode in [Mode.TORQUE, Mode.TORQUE_MUS_DLMT_DQ]:
+    elif mode in [Mode.TORQUE, Mode.TORQUE_MUS_DLMT_DQ, Mode.DLMT_DQ_FM, Mode.FORCE]:
         # For these modes, select columns starting with 'q_', 'qdot_', and 'alpha'
         selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
         selected_columns_qdot = [col for col in df_datas.columns if col.startswith('qdot_')]
@@ -134,6 +134,13 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
     selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
     selected_columns.insert(0, 'segment_length')
     selected_columns.insert(len(selected_columns), 'torque')
+    
+  elif mode == Mode.DLMT_DQ_FM : 
+    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns.insert(0, 'muscle_force')
+  
+  elif mode == Mode.FORCE: 
+    selected_columns = ['muscle_force']
     
   else : # mode doesn't exist
     raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
@@ -334,15 +341,19 @@ def dataloader_to_tensor(loader):
     return all_data_tensor, all_labels_tensor
 
 def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_tensors, y_labels, graph_labels):
-    """To visualise tensors distribution
-    Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
+    """
+    Visualize tensors distribution.
 
-    Args : 
-    - muscle_name : name of the csv file with datas of the muscle (good datas) 
-    - files_path : file_path to save the plot
-    - nb_q : number of q in model file biorbd
-    - X_tensors : [X tensor], X tensor with all features (columns except the last one)
-    - y_tensors : [y tensor], y tensor with the target values (last column) """
+    Args:
+    - mode: Mode, The mode of operation, indicating the type of data being processed.
+    - muscle_name: string, The name of the muscle for which data is being plotted.
+    - files_path: string, Path to save the plots.
+    - nb_q: int, Number of 'q' variables in the model.
+    - X_tensors: List of X tensors with features.
+    - y_tensors: List of y tensors with target values.
+    - y_labels: list of string, Labels for the y variables.
+    - graph_labels: Labels for different datasets in the plot.
+    """
     
     row_fixed, col_fixed = compute_row_col(nb_q + len(y_labels), 4)
     
