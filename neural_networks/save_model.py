@@ -6,7 +6,11 @@ from neural_networks.Timer import measure_time
 import os
 
 def del_saved_model(file_path) : 
-    
+    """ Deletes the saved model and its configuration file from the specified directory.
+
+    Args:
+    - file_path (str): The directory path where the model and configuration files are stored.
+    """
     # Paths for model and config files
     model_path = os.path.join(file_path, "model")
     config_path = os.path.join(file_path, "model_config.json")
@@ -19,20 +23,21 @@ def del_saved_model(file_path) :
 
 def save_model(model, input_size, output_size, Hyperparams, file_path): 
     """
-    Save a model with its parameters and hyperparameters
-    
-    Args: 
-    - model: model to save
-    - input_size: int, size of input X
-    - output_size: int, size of output y
-    - Hyperparams: ModelHyperparameters, all hyperparameter 
-    - file_path: string, path 
+    Saves a model along with its configuration and hyperparameters to the specified directory.
+
+    Args:
+    - model: The PyTorch model to save.
+    - input_size (int): The size of the input layer.
+    - output_size (int): The size of the output layer.
+    - Hyperparams (ModelHyperparameters): An obj containing the model's hyperparameters.
+    - file_path (str): The directory path where the model and configuration will be saved.
     """
     
     # Paths for model and config files
     model_path = os.path.join(file_path, "model")
     config_path = os.path.join(file_path, "model_config.json")
     
+    # Delete any existing saved model and configuration to avoid conflicts
     del_saved_model(file_path)
 
     # Save model configuration
@@ -46,32 +51,33 @@ def save_model(model, input_size, output_size, Hyperparams, file_path):
         'use_batch_norm': Hyperparams.use_batch_norm,
         'dropout_prob': Hyperparams.dropout_prob
     }
-
+    
+    # Save the configuration as a JSON file
     with open(config_path, 'w') as f:
         json.dump(config, f)
+    # Save the model's state dictionary
     torch.save(model.state_dict(), model_path)
-
 
 def load_saved_model(file_path) : 
     
     """
-    Load a saved model from file_path
-    
-    Args : 
-    - file_path : string, path where the file 'model_config.json' of the model could be find
-    
-    Returns : 
-    - model : model loaded in eval mode
+    Loads a saved model from the specified file path.
+
+    Args:
+    - file_path (str): Path to the directory containing 'model_config.json'.
+
+    Returns:
+    - model: The loaded model in evaluation mode.
     """
     
-    # Charger la configuration du modèle
+    # Load the model configuration from the JSON file
     with open(f'{file_path.replace("/model", "")}/model_config.json', 'r') as f:
         config = json.load(f)
 
-    # Recréer l'activation
+    # Recreate the activation functions based on the loaded configuration
     activations = [getattr(nn, activation)() for activation in config['activation']]
 
-    # Recréer le modèle avec la configuration chargée
+    # Recreate the model using the loaded configuration
     model = Model(
         input_size=config['input_size'],
         output_size=config['output_size'],
@@ -83,25 +89,31 @@ def load_saved_model(file_path) :
         dropout_prob=config['dropout_prob']
     )
 
+    # Load the saved model state dictionary
     model.load_state_dict(torch.load(f"{file_path}/model"))
+
+    # Set the model to evaluation mode
     model.eval()
 
     return model
 
 def main_function_model(file_path, inputs) : 
     """
-    Model prediction with a saved model
-    Please, look at this function as an example 
-    One load before all is beter than one load for each time you use the model prediction ... 
+    Perform model prediction using a saved model.
 
-    Args : 
-    - file_path : string, path where the file 'model_config.json' of the model could be find
-    - inputs : [], inputs, check is the dimention is correct before
-    
-    Returns :
-    - output : pytorch tensor, model's prediction(s) 
+    This function demonstrates loading a model once and using it multiple times for predictions,
+    which is more efficient than loading the model each time a prediction is needed.
+
+    Args:
+    - file_path (str): Path to the directory containing 'model_config.json'.
+    - inputs (list or torch.Tensor): The inputs for the model. Ensure the dimensions are correct.
+
+    Returns:
+    - outputs (torch.Tensor): The model's prediction(s).
+    - model_load_timer: The time taken to load the model.
+    - model_timer: The time taken to make predictions.
     """
-    # You must have a torch tensor !
+    # Ensure the inputs are a PyTorch tensor
     if not isinstance(inputs, torch.Tensor):
         inputs = torch.tensor([inputs])
     
@@ -111,9 +123,13 @@ def main_function_model(file_path, inputs) :
     # Load model from file_path, model eval    
     with measure_time() as model_load_timer:
       model = load_saved_model(file_path)
-    
+      
+    # Perform model prediction and measure execution time
     with measure_time() as model_timer:
         outputs = model(inputs).squeeze()
     
+    # Uncomment the line below to print the outputs and execution time
     # print(f"output(s) = {outputs}, time execution (without loading model time) = {model_timer.execution_time}")
+    
     return outputs, model_load_timer, model_timer
+

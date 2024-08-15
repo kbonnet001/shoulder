@@ -11,12 +11,14 @@ from torch.utils.data import DataLoader, random_split
 import sklearn
 from neural_networks.MuscleDataset import MuscleDataset
 from neural_networks.file_directory_operations import create_and_save_plot
-from neural_networks.other import *
+from neural_networks.muscle_plotting_utils import *
 from neural_networks.Mode import Mode
 import torch.nn.functional as F
 import time
 
 def print_informations_environment() : 
+  """ Print information about the current Python environment and hardware setup. """
+  
   # Print environment info
   print(f"Python version: {platform.python_version()}")
   print(f"NumPy version: {np.__version__}")
@@ -34,18 +36,23 @@ def print_informations_environment() :
   else:
       device = torch.device("cpu")
       print("No GPU found, using CPU instead")
+      
+  # Return the device for potential further use
+  return device
 # ---------------------------------------------------------------------------------------------
 
 def compute_samples(dataset, train_ratio) :
-  """Compute samples with a train_ratio to separate tensor
+  """
+  Compute the number of samples for training and testing based on the given ratio.
 
-  Args
-  - dataset : MuscleDataset
-  - train_ratio : float (0 to 1)
+  Args:
+  - dataset (Dataset): The dataset from which to compute the sample sizes.
+  - train_ratio (float): The ratio of the dataset to use for training (between 0 and 1).
 
-  Returns
-  - n_train_samples : int, number of sample for tranning
-  - n_test_samples : int, number of sample for testing """
+  Returns:
+  - n_train_samples (int): Number of samples allocated for training.
+  - n_test_samples (int): Number of samples allocated for testing.
+  """
 
   n_samples = len(dataset)
   n_train_samples = int(n_samples * train_ratio)
@@ -53,50 +60,63 @@ def compute_samples(dataset, train_ratio) :
 
   return n_train_samples, n_test_samples
 
-def data_standardization(filename, limit = 0):
-  """Delete useless lines of datafame (pov y). 
-  The output filename have a "limit" of datas beetween 0.xx and 0.xx
-  Simply, try to avoid normal distribution of y 
-  
-  Args : 
-  - filename : name path of the dataframe
-  - limit : (defaul = 0) int, limit off data by steps
-  
-  OUPUT : 
-  - dataframe : copy of input dataframe with some deleted lines"""
-  
-  df2 = pd.read_csv(filename)
-  if limit != 0 :
-    df = pd.read_csv(filename)
-
-    distribution = np.zeros(30)
-    k=0
-    while k <(df2.shape[0]):
-      value = df.iloc[k, -1] 
-      print("k = ", k)
-      
-      for i in range(30):
-          lower_bound = 0.10 + i * 0.01
-          upper_bound = 0.11 + i * 0.01
-          if lower_bound <= value < upper_bound:
-              if distribution[i] < limit :
-                distribution[i] += 1
-              else :
-                df2 = df2.drop(k)
-                df2 = df2.reset_index(drop=True)
-              break
-      k+=1
-
-    print("Distribution:", distribution)
-
-  return df2
-
 # -------------------------------------------------------------------------
 
+def get_x(mode, df_datas, get_origin_and_insertion = False) : 
+    """
+    Extract feature columns from a DataFrame based on the given mode.
+
+    Args:
+    - mode (Mode): The mode specifying which columns to select from the DataFrame.
+    - df_datas (pd.DataFrame): The DataFrame containing the data.
+    - get_origin_and_insertion (bool, optional): Whether to include columns related to muscle origin and insertion. 
+      Defaults to False.
+
+    Returns:
+    - numpy.ndarray: Array of selected features from the DataFrame.
+    """
+
+    # Select columns based on the mode
+    if mode in [Mode.DLMT_DQ, Mode.MUSCLE_DLMT_DQ, Mode.MUSCLE]:
+        # For these modes, select columns starting with 'q_'
+        selected_columns = [col for col in df_datas.columns if col.startswith('q_')]
+    
+    elif mode in [Mode.TORQUE, Mode.TORQUE_MUS_DLMT_DQ]:
+        # For these modes, select columns starting with 'q_', 'qdot_', and 'alpha'
+        selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
+        selected_columns_qdot = [col for col in df_datas.columns if col.startswith('qdot_')]
+        selected_columns = selected_columns_q + selected_columns_qdot + ['alpha']
+    
+    else:
+        # Raise an error if the mode is not recognized
+        raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
+    
+    # Add origin and insertion columns if requested
+    if get_origin_and_insertion:
+        selected_columns += ['origin_muscle_y', 'origin_muscle_z', 'origin_muscle_x', 'insertion_x', 'insertion_y', 'insertion_z']
+    
+    # Extract the selected columns from the DataFrame
+    x = df_datas.loc[:, selected_columns].values
+    
+    return x
+
 def get_y_and_labels(mode, df_datas, get_y = True) : 
+  """
+  Extract target columns and their labels from a DataFrame based on the given mode.
+
+  Args:
+  - mode (Mode): The mode specifying which target columns to select from the DataFrame.
+  - df_datas (pd.DataFrame): The DataFrame containing the data.
+  - get_y (bool, optional): Whether to extract the target values. Defaults to True.
+
+  Returns:
+  - y (numpy.ndarray or None): Array of target values from the DataFrame, or None if get_y is False.
+  - y_labels (list of str): List of selected column names for the target.
+  """
   
   y = None
-
+  
+  # Determine which columns to select based on the mode
   if mode == Mode.MUSCLE:
     selected_columns = ['segment_length']
     
@@ -104,7 +124,6 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
     selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
   
   elif mode == Mode.MUSCLE_DLMT_DQ : 
-    # Filtrer les colonnes dont les noms commencent par 'dlmt_dq_'
     selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
     selected_columns.insert(0, 'segment_length')
     
@@ -125,55 +144,32 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
     
   return y, y_labels
   
-def get_x(mode, df_datas, get_origin_and_insertion = False) : 
-
-    if mode == Mode.DLMT_DQ or mode == Mode.MUSCLE_DLMT_DQ  or mode == Mode.MUSCLE :
-      selected_columns = [col for col in df_datas.columns if col.startswith('q_')]
-      
-    elif mode == Mode.TORQUE or mode == Mode.TORQUE_MUS_DLMT_DQ : 
-      selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
-      selected_columns_qdot = [col for col in df_datas.columns if col.startswith('qdot_')]
-      selected_columns = selected_columns_q + selected_columns_qdot + ['alpha']
-      
-    else : # mode doesn't exist
-       raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
-    
-    if get_origin_and_insertion : 
-      selected_columns += ['origin_muscle_y', 'origin_muscle_z', 'origin_muscle_x', 'insertion_x', 'insertion_y', 
-                           'insertion_z']
-    
-    x = df_datas.loc[:, selected_columns].values 
-      
-    return x
-      
-
 def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
     """
-    Load data from df and create X and y tensors for PyTorch
-    NOTE : normalization was deleted because x tensor are physical values (except for "muscle selected")
-    
+    Load data from a CSV file and create X and y tensors for PyTorch.
+    Note: Normalization was removed because x tensor contains physical values (except for "muscle selected").
+
     Args:
-    - file_path_df : path for csv file with datas
-    - limit: Placeholder parameter for standardization
-    - all_possible_categories: List of all possible categories for the 'index_muscle' column
-    
+    - mode (Mode): The mode specifying how to extract features and targets.
+    - file_path_df (str): Path to the CSV file containing the data.
+    - all_possible_categories (list of str): List of all possible categories for the 'index_muscle' column.
+
     Returns:
-    - x_tensor: x tensor with all features (columns except the last one)
-    - y_tensor: y tensor with the target values (last column)
+    - x_tensor (torch.Tensor): Tensor containing all features (columns except the last one).
+    - y_tensor (torch.Tensor): Tensor containing the target values (last column).
+    - y_labels (list of str): List of column names used for the target values.
     """
-    # Load and standardize df
-    # df_datas = data_standardization(df_data, limit)
+    # Load data from CSV file
     df_datas = pd.read_csv(file_path_df)
     
+    # Extract features (X) and targets (y)
     x = get_x(mode, df_datas, get_origin_and_insertion = False)
-
     y, y_labels = get_y_and_labels(mode, df_datas, get_y = True)
     
-    # # One-hot encoding for the 'index_muscle' column
+    # Optional: One-hot encoding for the 'index_muscle' column
+    # Uncomment if needed for specific modes
     # encoder = OneHotEncoder(sparse_output=False, categories=[all_possible_categories])
     # index_muscle_encoded = encoder.fit_transform(X[:, 0].reshape(-1, 1))
-
-    # # Concatenate the encoded index_muscle with the rest of the features
     # X = np.hstack((index_muscle_encoded, X[:, 1:]))
 
     # Convert to PyTorch tensors
@@ -182,23 +178,32 @@ def data_preparation_create_tensor(mode, file_path_df, all_possible_categories):
 
     return x_tensor, y_tensor, y_labels
 
-def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, folder_name, muscle_name, with_noise = True, plot=False):
-  """Create loaders : 
-    80 % : train (80%) + validation (20%)
-    20% : test
-    Args : 
-    - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user
-    - q_ranges : [q] q ranges of all q selected
-    - folder_name : string, name of the folder containing dataframe of muscles (.csv)
-    - with_noise : (default = True), bool, true to put datas with noise in dataset for learning
-    - plot : (default = False) bool, True to show datas distribution
-    
-    Returns : 
-    - train_loader : DataLoader, data trainning (80% of 80%)
-    - val_loader : DataLoader, data validation (20% of 80%)
-    - test_loader : DataLoader, data testing (20%)
-    - input_size : int, size of input X
-    - output_size : int, size of output y (WARNING, always 1)"""
+def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_for_dataset, folder_name, muscle_name, 
+                               with_noise = True, plot=False):
+  """
+  Create data loaders: 
+  80%: train (80%) + validation (20%)
+  20%: test
+  
+  Args: 
+  - Hyperparams (ModelHyperparameters): All hyperparameters selected by the user.
+  - mode (Mode): Mode specifying the type of data extraction and processing.
+  - nb_q (int): Number of degrees of freedom.
+  - nb_segment: int, number of segment in the biorbd model.
+  - num_datas_for_dataset (int): Number of data samples to include in the dataset.
+  - folder_name (str): Name of the folder containing the muscle dataframes (.csv).
+  - muscle_name (str): Name of the muscle for which to load data.
+  - with_noise (bool): Whether to include data with noise in the dataset. Default is True.
+  - plot (bool): Whether to show data distribution plots. Default is False.
+  
+  Returns: 
+  - train_loader (DataLoader): DataLoader for training data (80% of 80%).
+  - val_loader (DataLoader): DataLoader for validation data (20% of 80%).
+  - test_loader (DataLoader): DataLoader for testing data (20%).
+  - input_size (int): Size of input X.
+  - output_size (int): Size of output y (always 1).
+  - y_labels (list): Labels for the output tensor.
+  """
     
   file_path_df = os.path.join(folder_name, f"{muscle_name}.csv")
     
@@ -209,7 +214,7 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
   else : 
       print(f"Processing file: {file_path_df}")
 
-      all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
+      all_possible_categories = list(range(nb_segment)) # number of segment in the model, look at "segment_names"
       X_tensor, y_tensor, y_labels = data_preparation_create_tensor(mode, file_path_df, 
                                                                     all_possible_categories)
       X_tensors=[X_tensor]
@@ -221,13 +226,13 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
       else : 
         output_size = 1
 
-      # datas with noise   
+      # Load data with noise if available
       if with_noise :
         if os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"):
           X_tensor_with_noise, y_tensor_with_noise, _ = \
             data_preparation_create_tensor(mode, f"{file_path_df.replace(".csv", "_with_noise.csv")}", 
                                            all_possible_categories)
-      # if plot
+      # Plot data distribution if requested
       if plot : 
         graph_labels = ["datas for learning"]
         
@@ -244,14 +249,15 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
           y_tensors.append(y_tensor_ignored)
           graph_labels.append("datas ignored")
  
-        plot_datas_distribution(mode, muscle_name,folder_name, nbQ, X_tensors, y_tensors, y_labels, graph_labels)
+        plot_datas_distribution(mode, muscle_name,folder_name, nb_q, X_tensors, y_tensors, y_labels, graph_labels)
       
-      # Normalize each row (sample) to have unit norm, avoid it if datas have physical unit
-      # X_tensor = F.normalize(X_tensor)  
+        # Normalize each row (sample) to have unit norm; avoid if data have physical units
+        # X_tensor = F.normalize(X_tensor)
       
       # Selecte datas to put in the dataset
       if with_noise and os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"): 
-        dataset = MuscleDataset(torch.cat((X_tensor, X_tensor_with_noise), dim=0), torch.cat((y_tensor, y_tensor_with_noise), dim=0))
+        dataset = MuscleDataset(torch.cat((X_tensor, X_tensor_with_noise), dim=0), 
+                                torch.cat((y_tensor, y_tensor_with_noise), dim=0))
       else : 
         dataset = MuscleDataset(X_tensor, y_tensor)
 
@@ -260,117 +266,89 @@ def create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, fo
         dataset.remove_random_items(len(dataset) - num_datas_for_dataset)
       else : 
         print("\nAll dataset will be use, len(dataset) = ", len(dataset))
-        time.sleep(10)
+        time.sleep(5)
       
+      # Split dataset into train+val and test
       train_val_size, test_size = compute_samples(dataset, 0.80)
-      train_val_dataset, test_dataset = random_split(dataset, [train_val_size, test_size]) 
+      train_val_dataset, test_dataset = random_split(dataset, [train_val_size, test_size])
 
+      # Split train+val into train and val
       train_size, val_size = compute_samples(train_val_dataset, 0.80)
       train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size])
       
+      # Create data loaders
       train_loader = DataLoader(train_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
       val_loader = DataLoader(val_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
       test_loader = DataLoader(test_dataset, batch_size=Hyperparams.batch_size, shuffle=False)
       
       return train_loader, val_loader, test_loader, input_size, output_size, y_labels
 
-
-# def create_loaders_from_folder_group_muscle(Hyperparams, nbQ, folder_name, plot=False):
-#   """
-#   NOT USED 
-  
-#   Create loaders : 
-#     80 % : train (80%) + validation (20%)
-#     20% : test
-#     Args : 
-#     - batch_size : int, 16, 32, 64, 128 ...
-#     - folder_name : string, name of the folder containing dataframe of muscles (.csv)
-#     - plot : (default = False) bool, True to show datas distribution
-    
-#     Returns : 
-#     - train_loader : DataLoader, data trainning (80% of 80%)
-#     - val_loader : DataLoader, data validation (20% of 80%)
-#     - test_loader : DataLoader, data testing (20%)
-#     - input_size : int, size of input X
-#     - output_size : int, size of output y (WARNING, always 1)"""
-
-#   datasets = []
-    
-#   for filename in os.listdir(folder_name):
-#     if filename.endswith(".csv") :
-#         file_path = os.path.join(folder_name, filename)
-#         print(f"Processing file: {file_path}")
-
-#         all_possible_categories = [0,1,2,3,4,5,6,7,8,9,10,11] # number of segment in the model, look at "segment_names"
-#         X_tensor, y_tensor = data_preparation_create_tensor(file_path, all_possible_categories)
-#         dataset = MuscleDataset(X_tensor, y_tensor)
-
-#         train_val_size, test_size = compute_samples(dataset, 0.80)
-#         train_val_dataset, test_dataset = random_split(dataset, [train_val_size, test_size]) 
-
-#         train_size, val_size = compute_samples(train_val_dataset, 0.80)
-#         train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size])
-
-#         datasets.append((train_dataset, val_dataset, test_dataset))
-
-#         if plot : 
-#           plot_datas_distribution(Hyperparams, filename, file_path, nbQ, X_tensor, y_tensor)
-          
-
-#   # Merge dataset
-#   train_dataset = torch.utils.data.ConcatDataset([datasets[k][0] for k in range (len(datasets))])
-#   val_dataset = torch.utils.data.ConcatDataset([datasets[k][1] for k in range (len(datasets))])
-#   test_dataset = torch.utils.data.ConcatDataset([datasets[k][2] for k in range (len(datasets))])
-
-#   train_loader = DataLoader(train_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
-#   val_loader = DataLoader(val_dataset, batch_size=Hyperparams.batch_size, shuffle=True)
-#   test_loader = DataLoader(test_dataset, batch_size=Hyperparams.batch_size, shuffle=False)
-
-#   input_size = len(X_tensor[0])
-#   output_size = 1 # warning if y tensor change
-
-#   return train_loader, val_loader, test_loader, input_size, output_size
-
 # ----------------------------------------------------------------------------------------------
 
-def create_data_loader(mode, filename, all_possible_categories) : 
-  X_tensor, y_tensor, y_labels = data_preparation_create_tensor(mode, filename, all_possible_categories)
-  dataset = MuscleDataset(X_tensor, y_tensor)
-  loader = DataLoader(dataset, 32, shuffle = False)
-  return loader, y_labels
+def create_data_loader(mode, batch_size, filename, all_possible_categories):
+    """
+    Create a data loader from a CSV file.
+
+    Args:
+    - mode (Mode): Mode specifying the type of data extraction and processing.
+    - filename (str): Path to the CSV file containing the data.
+    - all_possible_categories (list): List of all possible categories for the 'index_muscle' column.
+
+    Returns:
+    - loader (DataLoader): PyTorch DataLoader for the dataset.
+    - y_labels (list): Labels for the output tensor.
+    """
+    # Prepare tensors from the data file
+    X_tensor, y_tensor, y_labels = data_preparation_create_tensor(mode, filename, all_possible_categories)
+    
+    # Create dataset and data loader
+    dataset = MuscleDataset(X_tensor, y_tensor)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    
+    return loader, y_labels
 
 def dataloader_to_tensor(loader):
-    # Listes pour stocker les données et les labels
+    """
+    Convert all batches in a DataLoader to a single tensor for data and labels.
+
+    Args:
+    - loader (DataLoader): PyTorch DataLoader containing the data and labels.
+
+    Returns:
+    - all_data_tensor (Tensor): Concatenated tensor of all data samples.
+    - all_labels_tensor (Tensor): Concatenated tensor of all labels.
+    """
+    # Lists to store data and labels from all batches
     all_data = []
     all_labels = []
     
+    # Iterate through the DataLoader and collect data and labels
     for data, labels in loader:
         all_data.append(data)
         all_labels.append(labels)
     
-    # Concaténer toutes les batchs en un seul tensor
+    # Concatenate all batches into a single tensor
     all_data_tensor = torch.cat(all_data)
     all_labels_tensor = torch.cat(all_labels)
     
     return all_data_tensor, all_labels_tensor
 
-
-def plot_datas_distribution(mode, muscle_name, files_path, nbQ, X_tensors, y_tensors, y_labels, graph_labels):
+def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_tensors, y_labels, graph_labels):
     """To visualise tensors distribution
     Note : This function was written in this file and not in "plot_visualisation" to avoid a circular import
 
     Args : 
     - muscle_name : name of the csv file with datas of the muscle (good datas) 
     - files_path : file_path to save the plot
-    - nbQ : number of q in model file biorbd
+    - nb_q : number of q in model file biorbd
     - X_tensors : [X tensor], X tensor with all features (columns except the last one)
     - y_tensors : [y tensor], y tensor with the target values (last column) """
     
-    row_fixed, col_fixed = compute_row_col(nbQ + len(y_labels), 4)
+    row_fixed, col_fixed = compute_row_col(nb_q + len(y_labels), 4)
     
     fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
     
-    for i in range(nbQ):
+    for i in range(nb_q):
         row = i // 4  
         col = i % 4   
         axs[row, col].hist([X_tensors[k][:, i] for k in range (len(X_tensors))], bins=20, alpha=0.5, stacked=True, 
@@ -382,7 +360,8 @@ def plot_datas_distribution(mode, muscle_name, files_path, nbQ, X_tensors, y_ten
     
     if len(y_labels) == 1 : 
       # y_tensors = y_tensors.squeeze(1)
-      axs[row_fixed-1, col_fixed-1].hist([y_tensors[k].squeeze(1) for k in range (len(y_tensors))], bins=20, alpha=0.5, stacked=True,
+      axs[row_fixed-1, col_fixed-1].hist([y_tensors[k].squeeze(1) for k in range (len(y_tensors))], bins=20, alpha=0.5, 
+                                         stacked=True,
                                       label=graph_labels)
       axs[row_fixed-1, col_fixed-1].set_xlabel('Value')
       axs[row_fixed-1, col_fixed-1].set_ylabel('Frequency')
@@ -398,15 +377,6 @@ def plot_datas_distribution(mode, muscle_name, files_path, nbQ, X_tensors, y_ten
         x_min = min(y_plot[0])
         x_max = max(y_plot[0])
         num_bins = compute_num_bins(y_plot[0], x_max, x_min)
-        # num_bins = sturges_rule(y_plot[0])
-        # num_bins = rice_rule(y_plot[0])
-        # num_bins = scott_rule(y_plot[0].numpy())
-        
-        # if num_bins < 100 : 
-        #   num_bins = num_bins // 2
-        # if num_bins > 100 : 
-        #   num_bins = num_bins * 2
-        # num_bins = int((abs(x_max) + abs(x_min)) * 1000)
     
         axs[row_j, col_j].hist(y_plot, bins=num_bins, alpha=0.5, stacked=True, 
                             label=graph_labels)

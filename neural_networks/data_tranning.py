@@ -6,20 +6,44 @@ from neural_networks.save_model import *
 from neural_networks.plot_visualisation import *
 import math
 
+def convert_tensor_to_numpy(tensor) : 
+    """
+    Convert a PyTorch tensor of predictions to a 1D NumPy array.
+
+    Args:
+    - predictions_tensor: A PyTorch tensor containing predictions.
+
+    Returns:
+    - A 1D NumPy array of predictions.
+    """
+    # Concatenate predictions and targets
+    tensor = torch.cat(tensor)
+
+    # Squeeze the dimensions of size 1
+    tensor = tensor.squeeze(1)  # Remove dimensions of size 1
+
+    # Convert to 1D NumPy arrays
+    numpy_array = tensor.detach().cpu().numpy()
+    
+    return numpy_array
+
 def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
     """
     Train the model on the training dataset.
 
-    Args :
+    Args:
     - model (nn.Module): The neural network model to be trained.
     - train_loader (DataLoader): DataLoader for the training dataset, which provides batches of data.
     - optimizer (torch.optim.Optimizer): The optimization algorithm to update the model's weights.
     - criterion (torch.nn.Module): The loss function to minimize during training.
-    - device (torch.device, optional): The device on which to perform computations (CPU or CUDA). Default is CUDA if available.
+    - device (torch.device, optional): The device on which to perform computations (CPU or CUDA). 
+        Default is CUDA if available.
 
-    Returns :
+    Returns:
     - epoch_loss (float): The average loss over the training dataset for the current epoch.
     - epoch_acc (float): The accuracy of the model on the training dataset for the current epoch.
+    - epoch_pourcentage_error (float): The percentage error of predictions compared to targets.
+    - abs_epoch_pourcentage_error (float): The absolute percentage error of predictions compared to targets.
     """
 
     model.train()  # Train mode
@@ -32,6 +56,7 @@ def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' 
         optimizer.zero_grad() # Gradients initialization
         outputs = model(inputs) # Model prediction
 
+        # Ensure targets have the same dimensions as outputs
         if len(targets.size()) == 1 : # security when y is 1
             targets = targets.unsqueeze(1)
         loss = criterion(outputs, targets) # Compute loss
@@ -45,26 +70,12 @@ def train(model, train_loader, optimizer, criterion, device=torch.device('cuda' 
 
     # Calculation of average loss
     epoch_loss = running_loss / len(train_loader.dataset)
-
-    # Calculation of mean distance
     
-    # outputs = outputs.squeeze(1) # Remove dimensions of size 1
-    # labels = labels.squeeze(1) # Remove dimensions of size 1
-    # # Convert tensors to numpy arrays and extend the lists
-    # predictions.extend(outputs.cpu().numpy())
-    
-    # Concatenate predictions and targets
-    all_predictions = torch.cat(all_predictions)
-    all_targets = torch.cat(all_targets)
+    # Convert lists of tensors to NumPy arrays for further analysis
+    all_predictions_np = convert_tensor_to_numpy(all_predictions)
+    all_targets_np = convert_tensor_to_numpy(all_targets)
 
-    # Squeeze the dimensions of size 1
-    all_predictions = all_predictions.squeeze(1)  # Remove dimensions of size 1
-    all_targets = all_targets.squeeze(1)          # Remove dimensions of size 1
-
-    # Convert to 1D NumPy arrays
-    all_predictions_np = all_predictions.detach().cpu().numpy()
-    all_targets_np = all_targets.detach().cpu().numpy()
-    
+    # Calculation of mean distance and error %
     epoch_acc = mean_distance(all_predictions_np, all_targets_np)
     epoch_pourcentage_error, abs_epoch_pourcentage_error = compute_pourcentage_error(all_predictions_np, all_targets_np)
 
@@ -74,15 +85,17 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
     """
     Evaluate the model on the validation or test dataset.
 
-    Args :
+    Args:
     - model (nn.Module): The neural network model to be evaluated.
-    - data_loader (DataLoader): DataLoader for the validation or test dataset, which provides batches of data.
-    - criterion (torch.nn.Module): The loss function to calculate the error between the model predictions and true values.
+    - data_loader (DataLoader): DataLoader for the validation or test dataset.
+    - criterion (torch.nn.Module): The loss function to calculate the error between predictions and true values.
     - device (torch.device, optional): The device on which to perform computations (CPU or CUDA). Default is CUDA if available.
 
-    Returns :
-    - epoch_loss (float): The average loss over the validation or test dataset.
-    - epoch_acc (float): The accuracy of the model on the validation or test dataset.
+    Returns:
+    - epoch_loss (float): The average loss over the training dataset for the current epoch.
+    - epoch_acc (float): The accuracy of the model on the training dataset for the current epoch.
+    - epoch_pourcentage_error (float): The percentage error of predictions compared to targets.
+    - abs_epoch_pourcentage_error (float): The absolute percentage error of predictions compared to targets.
     """
 
     model.eval()  # Eval mode
@@ -107,18 +120,11 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
     # Calculation of average loss
     epoch_loss = running_loss / len(data_loader.dataset)
 
-    # Concatenate predictions and targets
-    all_predictions = torch.cat(all_predictions)
-    all_targets = torch.cat(all_targets)
+    # Convert lists of tensors to NumPy arrays for further analysis
+    all_predictions_np = convert_tensor_to_numpy(all_predictions)
+    all_targets_np = convert_tensor_to_numpy(all_targets)
 
-    # Squeeze the dimensions of size 1
-    all_predictions = all_predictions.squeeze(1)  # Remove dimensions of size 1
-    all_targets = all_targets.squeeze(1)          # Remove dimensions of size 1
-
-    # Convert to 1D NumPy arrays
-    all_predictions_np = all_predictions.detach().cpu().numpy()
-    all_targets_np = all_targets.detach().cpu().numpy()
-    
+    # Calculation of mean distance and error %
     epoch_acc = mean_distance(all_predictions_np, all_targets_np)
     epoch_pourcentage_error, abs_epoch_pourcentage_error = compute_pourcentage_error(all_predictions_np, all_targets_np)
 
@@ -126,28 +132,45 @@ def evaluate(model, data_loader, criterion, device=torch.device('cuda' if torch.
 
 def train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
                                     file_path, plot = False, save = False, show_plot = False) : 
-    """Train and evaluate a model
+    """Train and evaluate a model.
     
-    Args : 
-    - train_loader : DataLoader, data trainning (80% of 80%)
-    - val_loader : DataLoader, data validation (20% of 80%)
-    - test_loader : DataLoader, data testing (20%)
-    - input_size : int, size of input X
-    - output_size : int, size of output y (WARNING, always 1)
-    - Hyperparams : (ModelHyperparameters) all hyperparameters choosen by user
-    - file_path : string, path for saving model
-    - plot : (default False) bool, True to show and save plots
-    - save : (default False) bool, True to save the model
+    Args:
+    - train_loader (DataLoader): DataLoader for the training dataset (80% of 80%).
+    - val_loader (DataLoader): DataLoader for the validation dataset (20% of 80%).
+    - test_loader (DataLoader): DataLoader for the test dataset (20%).
+    - input_size (int): Size of input features X.
+    - output_size (int): Size of output y 
+    - Hyperparams (ModelHyperparameters): Hyperparameters for the model.
+    - file_path (string): Path for saving the model.
+    - plot (bool, default=False): Whether to show and save plots.
+    - save (bool, default=False): Whether to save the model.
     
-    Returns : 
-    - val_loss : float, loss validation
-    - val_acc : float, accuracy (mean distance) validation"""
-    
+    Returns:
+    - model (nn.Module): Trained model.
+    - val_loss (float): Validation loss.
+    - val_acc (float): Validation accuracy (mean distance).
+    - val_error (float): Validation error.
+    - val_abs_error (float): Validation absolute error.
+    - epoch (int): Number of epochs completed.
+    """
+    # Initialize the model with given hyperparameters
     model = Model(input_size, output_size, Hyperparams.n_nodes, Hyperparams.activations, 
                   Hyperparams.L1_penalty, Hyperparams.L2_penalty, Hyperparams.use_batch_norm, Hyperparams.dropout_prob)
     
-    Hyperparams.compute_optimiser(model)
+    # Set up optimizer and learning rate scheduler
+    Hyperparams.compute_optimiser(model) # compute the optimiser
+    min_lr = 1e-8 # min lr could be attend with scheduler
+    patience_scheduler = 20 
+    patience_early_stopping = 40 # Choose a early-stopping patience = 2 * scheduler patience
+        
+    # More details about scheduler in documentation
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, 
+                                                     patience=patience_scheduler, min_lr=min_lr)
+    # Initialization of EarlyStopping
+    # More informations about Early stopping in doccumentation
+    early_stopping = EarlyStopping(monitor='val_mae', patience=patience_early_stopping, min_delta=1e-9, verbose=True)
     
+    # Prepare for plot
     if plot : 
         train_losses = []
         val_losses = []
@@ -157,23 +180,14 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
         val_errors = []
         train_abs_errors = []
         val_abs_errors = []
-        
-    # Initialization of ReduceLROnPlateau
-    min_lr=1e-8
-    patience_scheduler=20
-    early_stop_scheduler = 0
-    
-    # choose a early-stopping patience = 2 * scheduler patience
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(Hyperparams.optimizer, mode='min', factor=0.1, patience=patience_scheduler, min_lr=min_lr)
-    # Initialization of EarlyStopping
-    early_stopping = EarlyStopping(monitor='val_mae', patience=40, min_delta=1e-9, verbose=True)
 
     for epoch in range(Hyperparams.num_epochs):
-        train_loss, train_acc, train_error, train_abs_error = train(model, train_loader, Hyperparams.optimizer, Hyperparams.criterion)
+        train_loss, train_acc, train_error, train_abs_error = train(model, train_loader, Hyperparams.optimizer, 
+                                                                    Hyperparams.criterion)
         val_loss, val_acc, val_error, val_abs_error = evaluate(model, val_loader, Hyperparams.criterion)
         
-        # Security
-        # Sometime, acc(s) could be Nan :(
+        # Check for NaN values in accuracy
+        # Sometimes, acc(s) could be Nan :(
         # Check your activation function and try an other !
         if math.isnan(train_acc) or math.isnan(val_acc):
             return model, float('inf'), float('inf')
@@ -190,16 +204,12 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
 
         print(f'Epoch [{epoch+1}/{Hyperparams.num_epochs}], Train Loss: {train_loss:.8f}, Val Loss: {val_loss:.8f},',\
               f"Train Acc: {train_acc:.6f}, Val Acc: {val_acc:.6f}, lr = {scheduler.get_last_lr()}")
-        print("early_stop_scheduler = ", early_stop_scheduler)
         
-        # Réduire le taux d'apprentissage si nécessaire
+        #  if patience_scheduler, adjust/reduce learning rate 
         scheduler.step(val_loss)
 
-        # Vérifier l'arrêt précoce
+        # if patience_early_stopping, stop trainning to avoid overfitting
         early_stopping(val_loss)
-        # if early_stopping.early_stop : 
-            # early_stop_scheduler += 1
-            
         if early_stopping.early_stop :
             print("Early stopping at epoch:", epoch+1)
             break
@@ -218,7 +228,6 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
         save_model(model, input_size, output_size, Hyperparams, f"{file_path}")
     
     return model, val_loss, val_acc, val_error, val_abs_error, epoch
-
 
 
 

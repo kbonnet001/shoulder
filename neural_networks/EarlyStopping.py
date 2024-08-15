@@ -1,5 +1,8 @@
 class EarlyStopping:
     """ Early stopping mechanism to halt training when a monitored metric stops improving.
+    This helps prevent overfitting by stopping training early if the model's performance on 
+    a validation set does not improve. 
+    For more information, refer to the documentation.
 
     Args:
         monitor (str): Metric to monitor for early stopping (e.g., 'val_mae'). Default is 'val_mae'.

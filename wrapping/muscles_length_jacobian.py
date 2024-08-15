@@ -4,7 +4,7 @@ import copy
 import matplotlib.pyplot as plt
 from neural_networks.functions_data_generation import *
 import numpy as np
-from neural_networks.other import compute_row_col
+from neural_networks.muscle_plotting_utils import compute_row_col
 import os
 from neural_networks.file_directory_operations import create_directory, create_and_save_plot
 

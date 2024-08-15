@@ -5,8 +5,8 @@ from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 import copy
 
-
-def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
+def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, 
+                       data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas
    Datas are generated ponctually, independantly and uniformly
@@ -45,7 +45,8 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
       
       # ------------------------------------------------
 
-      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, 
+                                                            plot_cadran)  
    
       if (data_ignored == False and data_without_error == True) or (data_without_error == False) : 
          # Add line to data frame
@@ -98,12 +99,14 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
             
             # ------------------------------------------------
 
-            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, 
+                                                       plot_cadran)  
             print("segment_length = ", segment_length)
 
    return None
 
-def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
+def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, filename, num_points = 100, 
+                            plot_all = False, plot_limit = False, plot_cadran=False) :
    
    """Create a data frame for prepare datas
    
@@ -153,10 +156,12 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
       # ------------------------------------------------
 
       if k in [0,num_points/2, num_points] and plot_limit :
-         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, 
+                                                    plot_cadran)  
          
       else :  
-         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, 
+                                                    plot_cadran)  
       
       print("segment_length = ", segment_length)
       qs.append(qi)
@@ -178,7 +183,9 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    writer.close()
    return None
 
-def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, num_points = 50, plot=False, plot_discontinuities = False, plot_cadran = False) :
+def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename,
+                                             num_points = 50, plot=False, plot_discontinuities = False, 
+                                             plot_cadran = False) :
    
    """Create a data frame for prepare datas without any discontinuities or error wrapping 
    Generate a mvt and then, remove problematic datas
@@ -235,7 +242,8 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
          
             origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
             
-            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, 
+                                                                  plot, plot_cadran)  
             
             qs.append(qi)
             segment_lengths.append(segment_length)

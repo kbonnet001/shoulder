@@ -6,7 +6,7 @@ import numpy as np
 import os
 from neural_networks.data_preparation import create_data_loader, get_y_and_labels
 from neural_networks.file_directory_operations import create_and_save_plot
-from neural_networks.other import compute_row_col
+from neural_networks.muscle_plotting_utils import compute_row_col
 from neural_networks.Mode import Mode
 from neural_networks.save_model import load_saved_model
 import pandas as pd
@@ -133,7 +133,7 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
     num_rows, num_cols = compute_row_col(len(y_labels), 3)
     predictions, targets = get_predictions_and_targets(model, loader)
     
-    # special case if nbQ == 1
+    # special case if nb_q == 1
     if num_cols == 1 and num_rows == 1 : 
         acc = mean_distance(np.array([predictions]), np.array([targets]))
         error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([predictions]), np.array([targets]))
@@ -206,7 +206,7 @@ def get_predictions_and_targets_from_selected_y_labels(model, loader, y_labels, 
         
         return selected_predictions, selected_targets
 
-def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
+def general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q) :
     """Before all 'plot predictions', some preparations are necessary
 
     Args : 
@@ -214,7 +214,7 @@ def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
     - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
         Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
     - folder_name : string, path to folder with all csv files q variation
-    - nbQ : int, number of q in biorbd model
+    - nb_q : int, number of q in biorbd model
 
     Returns :
     - filenames : [string], name of each csv file q all variation
@@ -231,12 +231,12 @@ def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
     
     # Create loader and y_label
     loaders = []
-    for filename in filenames[:nbQ]:
-        loader, y_labels = create_data_loader(mode, f"{folder_name}/{filename}", all_possible_categories)
+    for filename in filenames[:nb_q]:
+        loader, y_labels = create_data_loader(mode, batch_size, f"{folder_name}/{filename}", all_possible_categories)
         loaders.append(loader)
         
     # Compute number of rows and cols for subplot    
-    row_fixed, col_fixed = compute_row_col(nbQ, 3)
+    row_fixed, col_fixed = compute_row_col(nb_q, 3)
     
     # Get y_selected from mode_selected
     df_datas = pd.read_csv(f"{folder_name}/{filenames[0]}", nrows=0)
@@ -244,7 +244,7 @@ def general_plot_predictions(mode, mode_selected, folder_name, nbQ) :
     
     return filenames, loaders, row_fixed, col_fixed, y_labels, y_selected
 
-def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batch_size, nb_q, file_path, folder_name, num):
     """ Create plot to compare predictions and targets for ONE specific columns y (example : lmt, torque, ...)
 
     Args : 
@@ -252,16 +252,16 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ,
     - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
         Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
     - model, pytorch model
-    - nbQ : number of q in biorbd model
+    - nb_q : number of q in biorbd model
     - file_path : string, path to save the plot
     - folder_name : folder where csv files q all variaton are saved
     - num : int, number of points for the plot
 
     """
-    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, mode_selected, folder_name, nbQ)
+    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q)
     fig, axs = plt.subplots(row_fixed,col_fixed, figsize=(15, 10))
     
-    for q_index in range(nbQ) : 
+    for q_index in range(nb_q) : 
         
         row = q_index // 3
         col = q_index % 3
@@ -284,7 +284,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, nbQ,
     create_and_save_plot(f"{file_path}", f"plot_{y_selected[0]}_predictions_and_targets.png")
     plt.show()
         
-def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, nbQ, file_path, folder_name, num):
+def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, file_path, folder_name, num):
     """ Create plot to compare predictions and targets for DLMT_DQ
 
     Args : 
@@ -292,23 +292,23 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
     - mode_selected : Mode, mode selected. It is always a mode equal are inferior to 'mode'
         Examples : mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
     - model, pytorch model
-    - nbQ : number of q in biorbd model
+    - nb_q : number of q in biorbd model
     - file_path : string, path to save the plot
     - folder_name : folder where csv files q all variaton are saved
     - num : int, number of points for the plot
 
     """
     
-    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, mode_selected, folder_name, nbQ)
+    filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q)
     
     # For each q index, create a figure
-    for q_index in range(nbQ) : 
+    for q_index in range(nb_q) : 
         fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         
         # Get selected predictions and targets from y_selected, one csv file
         predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels, y_selected)
         
-        # Special case if nbQ == 1
+        # Special case if nb_q == 1
         if row_fixed == 1 and col_fixed == 1 : 
             acc = mean_distance(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
             error_pourcen, error_pourcen_abs = compute_pourcentage_error(torch.tensor([prediction[0] for prediction in predictions]), torch.tensor([target[0] for target in targets]))
@@ -360,14 +360,14 @@ def visualize_prediction_trainning(model, file_path, y_labels, train_loader, val
     plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path)
     plot_predictions_and_targets(model, y_labels , test_loader, "Test loader", 100, file_path)
 
-def visualize_prediction(mode, nbQ, file_path, folder_name_for_prediction) : 
+def visualize_prediction(mode, batch_size, nb_q, file_path, folder_name_for_prediction) : 
     
     """
     Load saved model and plot-save visualisations 
     
     Args 
     - mode : Mode
-    - nbQ : int, number of q in biorbd model
+    - nb_q : int, number of q in biorbd model
     - file_path : string, path where the file 'model_config.json' of the model could be find
     - folder_name_for_prediction : string, path where files of folder 'plot_all_q_variation_' could be find
     """
@@ -375,16 +375,16 @@ def visualize_prediction(mode, nbQ, file_path, folder_name_for_prediction) :
     model = load_saved_model(file_path)
     
     if mode == Mode.DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode, model, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
     elif mode == Mode.MUSCLE_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, nbQ, file_path, folder_name_for_prediction, 100)
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
     elif mode == Mode.TORQUE_MUS_DLMT_DQ : 
-        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, nbQ, file_path, folder_name_for_prediction, 100)
-        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, nbQ, file_path, folder_name_for_prediction, 100)
-        plot_predictions_and_targets_from_filenames(mode, Mode.TORQUE, model, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, Mode.MUSCLE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames_dlmt_dq(mode, Mode.DLMT_DQ, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, Mode.TORQUE, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
     else : # MUSCLE or TORQUE
-        plot_predictions_and_targets_from_filenames(mode, mode, model, nbQ, file_path, folder_name_for_prediction, 100)
+        plot_predictions_and_targets_from_filenames(mode, mode, model, batch_size, nb_q, file_path, folder_name_for_prediction, 100)
 
 
     

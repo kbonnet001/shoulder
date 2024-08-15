@@ -13,170 +13,194 @@ from neural_networks.plot_pareto_front import plot_results_try_hyperparams
 import numpy as np
 from neural_networks.CSVBatchWriterTestHyperparams import CSVBatchWriterTestHyperparams
 
-
-def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes = 60) : 
-    """Compute an estimation of execution code. 
-    This is a linear estimation, it's not very accurate :/
+def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_secondes=60):
+    """Compute an estimation of execution time for testing hyperparameter configurations.
+    This estimation is linear and not very accurate, serving as a rough guideline.
     
-    Args : 
-    - Hyperparams : ModelHyperparameters, all hyperparameters to try, choosen by user 
-    - time_per_configuration_secondes : (default 60), positive float in second for train-eval one model
+    Args:
+    - Hyperparams: ModelHyperparameters, containing all hyperparameters to try as specified by the user.
+    - time_per_configuration_secondes: float, (default 60), estimated time in seconds to train and evaluate one model configuration.
     
-    Returns : 
-    - total_time_estimated_secondes : time estimation in secondes
-    - total_time_estimated_minutes : time estimation in minutes
-    - total_time_estimated_hours : time estimation in hours
+    Returns:
+    - total_time_estimated_secondes: float, total estimated execution time in seconds.
+    - total_time_estimated_minutes: float, total estimated execution time in minutes.
+    - total_time_estimated_hours: float, total estimated execution time in hours.
     """
-    
-    n_combinations = (len(Hyperparams.n_nodes) * len(Hyperparams.activations) *
-                      len(Hyperparams.L1_penalty) * len(Hyperparams.L2_penalty) * len(Hyperparams.learning_rate) * 
-                      len(Hyperparams.dropout_prob) * sum(len(list(product(*params.values()))) for name, params in Hyperparams.criterion))
 
+    # Calculate the number of hyperparameter combinations to test.
+    n_combinations = (
+        len(Hyperparams.n_nodes) *
+        len(Hyperparams.activations) *
+        len(Hyperparams.L1_penalty) *
+        len(Hyperparams.L2_penalty) *
+        len(Hyperparams.learning_rate) *
+        len(Hyperparams.dropout_prob) *
+        sum(len(list(product(*params.values()))) for _, params in Hyperparams.criterion)
+    )
 
+    # Estimate the total time for all combinations in seconds
     total_time_estimated_secondes = n_combinations * time_per_configuration_secondes
-    total_time_estimated_minutes = n_combinations * time_per_configuration_secondes / 60
-    total_time_estimated_hours = n_combinations * time_per_configuration_secondes / 3600
+    
+    # Convert the total time from seconds to minutes and hours
+    total_time_estimated_minutes = total_time_estimated_secondes / 60
+    total_time_estimated_hours = total_time_estimated_secondes / 3600
     
     return total_time_estimated_secondes, total_time_estimated_minutes, total_time_estimated_hours
 
+def update_best_hyperparams(model, hyperparams_i, try_hyperparams_ref, input_size, output_size, directory) : 
+    """
+    Update the best hyperparameters and save the corresponding model.
+
+    Args:
+    - model: The trained model that performed best with the current hyperparameters.
+    - hyperparams_i: The current instance of ModelHyperparameters that yielded the best performance.
+    - try_hyperparams_ref: Reference instance of ModelTryHyperparameters containing common settings.
+    - input_size: The size of the input layer of the model.
+    - output_size: The size of the output layer of the model.
+    - directory: Directory path where the best model will be saved.
+
+    Returns:
+    - best_hyperparameters_loss: Instance of ModelHyperparameters with the best hyperparameter settings.
+    """
+    # Create a new ModelHyperparameters instance to store the best hyperparameter settings.
+    best_hyperparameters_loss = ModelHyperparameters("Best_hyperparameter", try_hyperparams_ref.batch_size,
+                                                        hyperparams_i.n_nodes, hyperparams_i.activations, 
+                                                        hyperparams_i.activation_names, 
+                                                        hyperparams_i.L1_penalty, 
+                                                        hyperparams_i.L2_penalty, 
+                                                        hyperparams_i.learning_rate, try_hyperparams_ref.num_epochs, 
+                                                        hyperparams_i.criterion, hyperparams_i.dropout_prob, 
+                                                        try_hyperparams_ref.use_batch_norm)
+
+    # Save the best model
+    save_model(model, input_size, output_size, best_hyperparameters_loss, 
+                f"{directory}/Best_hyperparams") 
+    return best_hyperparameters_loss
+
 def compute_mean_model_timers(file_path, all_data_tensor) : 
+    """ Compute the mean execution times for loading and running models.
+    
+    Args:
+    - file_path: str, path to the file containing model data or configuration.
+    - all_data_tensor: list, a collection of data tensors to be processed by the models.
+    
+    Returns:
+    - mean_model_load_timer: float, average time taken to load the model across all data tensors.
+    - mean_model_timer: float, average time taken to execute the model across all data tensors.
+    """
     model_load_timers = []
     model_timers = []
     for n in range(len(all_data_tensor)) : 
+        # Call the main function to process the model with the current data tensor
+        # and retrieve the loading and execution timers
         _, model_load_timer, model_timer = main_function_model(file_path, all_data_tensor[n]) 
+        # Append the execution times to the corresponding lists
         model_load_timers.append(model_load_timer.execution_time)
         model_timers.append(model_timer.execution_time)
+        
+    # Calculate the mean execution time 
     mean_model_load_timer = np.mean(model_load_timers)
     mean_model_timer = np.mean(model_timers)
     
     return mean_model_load_timer, mean_model_timer
 
-def main_superised_learning(Hyperparams, mode, nbQ, num_datas_for_dataset, folder_name, muscle_name, retrain, file_path, with_noise, plot_preparation, plot, save) : 
+def main_superised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_dataset, folder_name, muscle_name, retrain, 
+                            file_path, with_noise, plot_preparation, plot, save) : 
     
-    """Main fonction for prepare, train-val-test and save a model 
+    """ Main function to prepare, train, validate, test, and save a model.
     
-    - Hyperparams : (ModelHyperparameters) all hyperparameters choosen by user
-    PLEASE, look at examples below
-    - nbQ : int, number of q in biorbd model
-    - num_datas_for_dataset : int, number of datas for dataset (for trainning)
-    - folder_name : string, path/name of the folder contained all csv data file of muscles (one for each muscle)
-    - muscle_name : string, name of the muscle
-    - retrain : bool, True to train the model again
-    - file_path : string, name of the model will be save after tranning
-    - with_noise : (default = True), bool, true to put datas with noise in dataset for learning
-    - plot_preparation : bool, True to show distribution of all datas preparation
-    - plot : bool, True to show plot loss, acc, predictions/targets
-    - save : bool, True to save the model in file_path
-    
-    ---------------------------
-    Examples "single syntaxe" :
-    ---------------------------
-    To avoid bug, please pay attention to syntax, there is some differences with "find_best_hyperparameters"
-        
-    n_layers = 1 or n_layers = 2
-    n_nodes = [12] or n_nodes = [12, 10]
-    activations = [nn.GELU()] or activations = [nn.GELU(), nn.GELU()]
-    activation_names = ["GELU"] or activation_names = ["GELU", "GELU"]
-    L_penalty = 0.01 or 0.001
-    learning_rate = 1e-3 or 1e-4
-
-    criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
-    p_dropout = 0.2 or 0.5"""
+    Args:
+    - Hyperparams: ModelHyperparameters, all hyperparameters chosen by the user.
+        To avoid bugs, please pay attention to syntax. More details in ModeHyperparameters.py
+    - mode: Mode for the operation
+    - nb_q: int, number of q (generalized coordinates) in the biorbd model.
+    - nb_segment: int, number of segment in the biorbd model.
+    - num_datas_for_dataset: int, number of data points for the dataset used for training.
+    - folder_name: str, path/name of the folder containing all CSV data files for muscles (one for each muscle).
+    - muscle_name: str, name of the muscle.
+    - retrain: bool, True to train the model again.
+    - file_path: str, the path where the model will be saved after training.
+    - with_noise: bool, (default = True), True to include noisy data in the dataset for learning.
+    - plot_preparation: bool, True to show the distribution of all data preparation.
+    - plot: bool, True to show plot loss, accuracy, predictions/targets.
+    - save: bool, True to save the model to file_path.
+    """
     
     # Create a folder for save plots
-    create_directory(f"{folder_name}/{muscle_name}/_Model") # Muscle/Model
+    folder_name_muscle = f"{folder_name}/{muscle_name}"
+    create_directory(f"{folder_name_muscle}/_Model") # Muscle/Model
     
     # Train_model if retrain == True or if none file_path already exist
-    if retrain or os.path.exists(f"{folder_name}/{muscle_name}/_Model/{file_path}") == False: 
+    if retrain or os.path.exists(f"{folder_name_muscle}/_Model/{file_path}") == False: 
         
         # Prepare datas for trainning
         train_loader, val_loader, test_loader, input_size, output_size, y_labels \
-         = create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, f"{folder_name}/{muscle_name}", 
-                                 muscle_name, with_noise, plot_preparation)
+         = create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_for_dataset, f"{folder_name_muscle}", 
+                                      muscle_name, with_noise, plot_preparation)
         # Trainning
-        model, _, _, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, 
-                                                  Hyperparams, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
-                                                  plot, save, show_plot=True)
+        model, _, _, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, 
+                                                               output_size, Hyperparams, 
+                                                               f"{folder_name_muscle}/_Model/{file_path}", plot, save, 
+                                                               show_plot=True)
         # Visualize tranning : predictions/targets for loaders train, val and test
-        visualize_prediction_trainning(model, f"{folder_name}/{muscle_name}/_Model/{file_path}", y_labels, train_loader,
+        visualize_prediction_trainning(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
                                        val_loader, test_loader) 
     # Visualize : predictions/targets for all q variation
-    visualize_prediction(mode, nbQ, f"{folder_name}/{muscle_name}/_Model/{file_path}", 
-                         f"{folder_name}/{muscle_name}/plot_all_q_variation_")
+    visualize_prediction(mode, Hyperparams.batch_size, nb_q, f"{folder_name_muscle}/_Model/{file_path}", 
+                         f"{folder_name_muscle}/plot_all_q_variation_")
     
-def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = False) : 
+def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, with_noise, save_all = False) : 
     
-    """Try hyperparameters, keep all train-evaluated models in a list and return best hyperparams
+    """Try hyperparameters, keep all train-evaluated models in a list, and return the best hyperparameters.
     
-    Args : 
-    - Hyperparams : (ModelHyperparameters) all hyperparameters to try, choosen by user
-    PLEASE, look at examples below
-    - nbQ : int, number of q in biorbd model
-    - num_datas_for_dataset : int, number of datas for dataset (for trainning)
-    - folder : string, path/name of the folder contained all csv data file of muscles (one for each muscle)
-    - muscle_name : string, name of the muscle
-    - with_noise : bool, True to train also with datas with noise, False to train with only pur datas
-    - save_all : (default = False) bool, True to save ALL model tested. 
-        Please, consider it could be very heavy to save all model, mostly if n_nodes are very big
-        However, the best model (in regard of val loss) will always be save 
-
+    Args:
+    - try_hyperparams_ref: ModelTryHyperparameters, all hyperparameters to try, chosen by the user.
+    - mode: mode for the operation, could be a string or an identifier related to the data processing or model setup.
+    - nb_q: int, number of q (generalized coordinates) in the biorbd model.
+    - nb_segment: int, number of segment in the biorbd model.
+    - num_datas_for_dataset: int, number of data points for the dataset used for training.
+    - folder: str, path/name of the folder containing all CSV data files for muscles (one for each muscle).
+    - muscle_name: str, name of the muscle.
+    - with_noise: bool, True to train with data that includes noise, False to train with only pure data.
+    - save_all: bool, (default = False) True to save all tested models. 
+      Be cautious as saving all models can be heavy, especially if n_nodes are large. 
+      The best model (in terms of validation loss) will always be saved.
     
-    Returns : 
-    - list_simulation : list of all hyperparameters try and results of train-eval (loss and acc)
-    - best_hyperparameters : ModelHyperparameters, best hyperparameters (regarding of min val_loss)
-    NOTE : best_hyperparameters is in the "single syntaxe", in that case, it is possible to use it with 
-    "main_superised_learning" to save the model :)
-    
-    ---------
-    Examples :
-    ---------
-    To avoid bug, please pay attention to syntax
-    ONLY n_layers, n_nodes, activations, activation_names, L1_penalty, L2_penalty, learning_rate, and criterion could
-    have multiple values
-    
-    n_nodes = [[12]] or n_nodes = [[12, 10], [12, 8]]
-    activations = [[nn.GELU()]] or activations = [[nn.GELU(), nn.GELU()]]
-    activation_names = [["GELU"]] or activation_names = [["GELU", "GELU"]]
-    L_penalty = [0.01] or [0.01, 0.001]
-    learning_rate = [1e-3] or [1e-3, 1e-4]
-
-    criterion = [ModifiedHuberLoss(delta=[0.2], factor=[1.0])]
-    or 
-    criterion = [
-        (LogCoshLoss, {'factor': [1.0, 1.5, 1.8]}),
-        (ModifiedHuberLoss, {'delta': [0.2, 0.5, 1.0, 1.5, 2.0], 'factor': [1.0, 1.5, 2, 2.5, 3.0]}),
-        (ExponentialLoss, {'alpha': [0.5, 0.8, 1.0]})
-    ]
-    p_dropout = [0.2] or [0.2, 0.5]   """
+    Returns:
+    - list_simulation: list of all hyperparameters tried and results of training-evaluation (loss and accuracy).
+    - best_hyperparameters: ModelHyperparameters, best hyperparameters (in terms of minimum validation loss).
+      NOTE: best_hyperparameters is in the "single syntax". In this case, it is possible to use it with 
+      "main_supervised_learning" with retrain = False for example.
+    """
     
     # Before beggining, compute an estimation of execution time
     # The user can choose to stop if the execution is to long according to him 
     # For example, if estimed execution time if around 100 hours... maybe you have to many hyperparameters to try ...
     total_time_estimated_s, total_time_estimated_min, total_time_estimated_h = compute_time_testing_hyperparams(
-        Hyperparams, time_per_configuration_secondes = 60)
+        try_hyperparams_ref, time_per_configuration_secondes = 60)
     
     print(f"------------------------\n"
-          f"Time estimated for testing all configurations: \n- {total_time_estimated_s} secondes"
+          f"Time estimated for testing all configurations: \n- {total_time_estimated_s} seconds"
           f"\n- {total_time_estimated_min} minutes\n- {total_time_estimated_h} hours\n\n"
-          f"Research of best hyperparameters will beggining in few secondes ...\n"
+          f"Research of best hyperparameters will begin in 10 seconds...\n"
           f"------------------------")
     time.sleep(0)
     
     print("Let's go !")
     # ------------------
     # Create directory to save all test
-    directory = f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}"
+    directory = f"{folder}/{muscle_name}/_Model/{try_hyperparams_ref.model_name}"
     create_directory(f"{directory}/Best_hyperparams")
 
     # Create loaders for trainning
     folder_name = f"{folder}/{muscle_name}"
     train_loader, val_loader, test_loader, input_size, output_size, _ \
-    = create_loaders_from_folder(Hyperparams, mode, nbQ, num_datas_for_dataset, folder_name, muscle_name, 
+    = create_loaders_from_folder(try_hyperparams_ref, mode, nb_q, num_datas_for_dataset, folder_name, muscle_name, 
                                  with_noise, plot = False)
     
     all_data_test_tensor, _ = dataloader_to_tensor(test_loader)
     
-    writer = CSVBatchWriterTestHyperparams(f"{directory}/{Hyperparams.model_name}.CSV", batch_size=100)
+    writer = CSVBatchWriterTestHyperparams(f"{directory}/{try_hyperparams_ref.model_name}.CSV", batch_size=100)
 
     list_simulation= []
     best_val_loss = float('inf')
@@ -184,32 +208,38 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
     best_criterion_params_loss = None
     num_try = 0
     
-    # Boucle to try all configuration of hyperparameters
-    for params in product(Hyperparams.n_nodes, Hyperparams.activations, Hyperparams.activation_names, 
-                          Hyperparams.L1_penalty, Hyperparams.L2_penalty,Hyperparams.learning_rate, Hyperparams.dropout_prob):
+    # Loop to try all configurations of hyperparameters
+    for params in product(try_hyperparams_ref.n_nodes, try_hyperparams_ref.activations, 
+                          try_hyperparams_ref.activation_names, try_hyperparams_ref.L1_penalty, 
+                          try_hyperparams_ref.L2_penalty,try_hyperparams_ref.learning_rate, 
+                          try_hyperparams_ref.dropout_prob):
         
-        try_hyperparams = ModelHyperparameters("Try Hyperparams", Hyperparams.batch_size, 
+        hyperparams_i = ModelHyperparameters("Try Hyperparams", try_hyperparams_ref.batch_size, 
                                                params[0], params[1], params[2], params[3], params[4], params[5], 
-                                               Hyperparams.num_epochs, None, params[6], Hyperparams.use_batch_norm)
+                                               try_hyperparams_ref.num_epochs, None, params[6], 
+                                               try_hyperparams_ref.use_batch_norm)
         
-        for criterion_class, criterion_param_grid in Hyperparams.criterion:
+        for criterion_class, criterion_param_grid in try_hyperparams_ref.criterion:
             for criterion_params_comb in product(*criterion_param_grid.values()):
                 criterion_params = dict(zip(criterion_param_grid.keys(), criterion_params_comb))
-                try_hyperparams.add_criterion(criterion_class(**criterion_params))
+                hyperparams_i.add_criterion(criterion_class(**criterion_params))
                 
-                print(try_hyperparams)
+                print(hyperparams_i)
                 
                 # Train-Evaluate model
                 create_directory(f"{directory}/{num_try}")
                 
                 with measure_time() as train_timer: # timer --> trainning time
                     # Please, consider this mesure time as an estimation !
-                    model, val_loss, val_acc, val_error, val_abs_error, epoch = train_model_supervised_learning(train_loader, val_loader, test_loader, 
-                                                                            input_size, output_size, try_hyperparams, 
-                                                                            file_path=f"{directory}/{num_try}", 
-                                                                            plot = True, save = True, show_plot=False) # save temporaly
+                    model, val_loss, val_acc, val_error, val_abs_error, epoch \
+                    = train_model_supervised_learning(train_loader, val_loader, test_loader, 
+                                                      input_size, output_size, hyperparams_i, 
+                                                      file_path=f"{directory}/{num_try}", plot = True, save = True, 
+                                                      show_plot=False) # save temporaly 
                 # Timer for load model and model use
-                mean_model_load_timer, mean_model_timer = compute_mean_model_timers(f"{directory}/{num_try}", all_data_test_tensor)
+                # Mean with data_test_tensor (20% of num_datas_for_dataset)
+                mean_model_load_timer, mean_model_timer = compute_mean_model_timers(f"{directory}/{num_try}", 
+                                                                                    all_data_test_tensor)
                 
                 if save_all == False : 
                     # deleted saved model
@@ -217,39 +247,30 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
                 
                 # Check if these hyperparameters are the best
                 if val_loss < best_val_loss:
-                    best_val_loss = val_loss
-                    best_criterion_class_loss = criterion_class
-                    best_criterion_params_loss = criterion_params
-                    
-                    # Best hyperparameters
-                    best_hyperparameters_loss = ModelHyperparameters("Best_hyperparameter", Hyperparams.batch_size,
-                                                                     try_hyperparams.n_nodes, try_hyperparams.activations, 
-                                                                     try_hyperparams.activation_names, 
-                                                                     try_hyperparams.L1_penalty, 
-                                                                     try_hyperparams.L2_penalty, 
-                                                                     try_hyperparams.learning_rate, Hyperparams.num_epochs, 
-                                                                     try_hyperparams.criterion, try_hyperparams.dropout_prob, 
-                                                                     Hyperparams.use_batch_norm)
-
-                    # Save the best model
-                    save_model(model, input_size, output_size, best_hyperparameters_loss, f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}/Best_hyperparams")
+                        best_val_loss = val_loss
+                        best_criterion_class_loss = criterion_class
+                        best_criterion_params_loss = criterion_params
+                        # Update the best hyperparameters
+                        best_hyperparameters_loss = update_best_hyperparams(model, hyperparams_i, try_hyperparams_ref, 
+                                                                            input_size, output_size, directory)
 
                 # Add results of the trainning
                 list_simulation.append([val_loss, f"\nnum_try : {num_try} | val_loss = {val_loss} | val acc = {val_acc}",
+                                        f"val_error = {val_error} | val_abs_error = {val_abs_error}",
                                         f"Time execution (tranning): {train_timer.execution_time:.6f} seconds ",
                                         f"Time execution (load saved model): {mean_model_load_timer:.6f} seconds ",
                                         f"Time execution (use saved model): {mean_model_timer:.6f} seconds ",
-                                        f"Training with hyperparameters : {try_hyperparams} \n",
+                                        f"Training with hyperparameters : {hyperparams_i} \n",
                                         f"Num of epoch used : {epoch + 1}",
                                         f"Criterion: {criterion_class.__name__}",
                                         f"with parameters: {criterion_params}\n----------\n"])
                 
-                save_informations_model(f"{directory}/{num_try}", num_try, val_loss, val_acc, train_timer.execution_time, 
-                                        mean_model_load_timer, mean_model_timer,
-                                        try_hyperparams, mode, epoch+1, criterion_class.__name__, criterion_params)
+                save_informations_model(f"{directory}/{num_try}", num_try, val_loss, val_acc, val_error, val_abs_error,
+                                        train_timer.execution_time, mean_model_load_timer, mean_model_timer,
+                                        hyperparams_i, mode, epoch+1, criterion_class.__name__, criterion_params)
                 
                 writer.add_line(num_try, val_loss, val_acc, val_error, val_abs_error, train_timer.execution_time, 
-                                mean_model_load_timer, mean_model_timer, try_hyperparams, mode, epoch+1, 
+                                mean_model_load_timer, mean_model_timer, hyperparams_i, mode, epoch+1, 
                                 criterion_class.__name__, criterion_params)
                 
                 num_try+=1
@@ -258,22 +279,21 @@ def find_best_hyperparameters(Hyperparams, mode, nbQ, num_datas_for_dataset, fol
     # Sort list to have val_loss in croissant order and save the file
     list_simulation.sort(key=lambda x: x[0]) 
     save_text_to_file('\n'.join([str(line) for sublist in list_simulation for line in sublist]), 
-                      f"{folder}/{muscle_name}/_Model/{Hyperparams.model_name}/list_simulation.txt")
+                      f"{folder}/{muscle_name}/_Model/{try_hyperparams_ref.model_name}/list_simulation.txt")
   
     print(f"Best hyperparameters loss found : {best_hyperparameters_loss}")
     print(f'Best criterion: {best_criterion_class_loss.__name__} with parameters: {best_criterion_params_loss}')
-    # print("list_simulation = ", list_simulation)
     
     # Plot visualisation to compare all model trained (pareto front)
-    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.CSV", "execution_time_train", "val_loss")
-    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.CSV", "execution_time_load_saved_model", 
+    plot_results_try_hyperparams(f"{directory}/{try_hyperparams_ref.model_name}.CSV", "execution_time_train", "val_loss")
+    plot_results_try_hyperparams(f"{directory}/{try_hyperparams_ref.model_name}.CSV", "execution_time_load_saved_model", 
                                  "val_loss")
-    plot_results_try_hyperparams(f"{directory}/{Hyperparams.model_name}.CSV", "execution_time_use_saved_model", 
+    plot_results_try_hyperparams(f"{directory}/{try_hyperparams_ref.model_name}.CSV", "execution_time_use_saved_model", 
                                  "val_loss")
     
     # Finally, plot figure predictions targets with the best model saved
-    main_superised_learning(best_hyperparameters_loss, mode, nbQ, num_datas_for_dataset, folder, muscle_name, False,
-                            f"{Hyperparams.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
+    main_superised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, False,
+                            f"{try_hyperparams_ref.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
                             save=True)
     
     return list_simulation, best_hyperparameters_loss

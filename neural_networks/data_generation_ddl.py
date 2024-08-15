@@ -9,7 +9,7 @@ import random
 from wrapping.muscles_length_jacobian import compute_dlmt_dq, plot_length_jacobian
 from wrapping.muscle_forces_and_torque import compute_fm, compute_torque, compute_fm_and_torque
 import os
-from neural_networks.other import compute_row_col, plot_mvt_discontinuities_in_red
+from neural_networks.muscle_plotting_utils import compute_row_col, plot_mvt_discontinuities_in_red
 from neural_networks.CSVBatchWriterWithNoise import CSVBatchWriterWithNoise
 import pandas as pd
 
