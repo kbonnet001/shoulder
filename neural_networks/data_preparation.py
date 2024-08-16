@@ -81,7 +81,7 @@ def get_x(mode, df_datas, get_origin_and_insertion = False) :
         # For these modes, select columns starting with 'q_'
         selected_columns = [col for col in df_datas.columns if col.startswith('q_')]
     
-    elif mode in [Mode.TORQUE, Mode.TORQUE_MUS_DLMT_DQ, Mode.DLMT_DQ_FM, Mode.FORCE]:
+    elif mode in [Mode.TORQUE, Mode.TORQUE_MUS_DLMT_DQ, Mode.DLMT_DQ_FM, Mode.FORCE, Mode.DLMT_DQ_F_TORQUE]:
         # For these modes, select columns starting with 'q_', 'qdot_', and 'alpha'
         selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
         selected_columns_qdot = [col for col in df_datas.columns if col.startswith('qdot_')]
@@ -141,6 +141,11 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
   
   elif mode == Mode.FORCE: 
     selected_columns = ['muscle_force']
+  
+  elif mode == Mode.DLMT_DQ_F_TORQUE : 
+    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns.append('muscle_force')
+    selected_columns.append('torque')
     
   else : # mode doesn't exist
     raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")

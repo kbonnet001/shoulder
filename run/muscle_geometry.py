@@ -11,10 +11,10 @@ from neural_networks.Loss import *
 from neural_networks.data_generation import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 from neural_networks.ModelTryHyperparameters import ModelTryHyperparameters
-from neural_networks.data_generation_ddl import plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
+from neural_networks.data_generation_ddl import plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise, test_limit_data_for_learning
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
-from wrapping.muscles_length_jacobian import plot_length_jacobian
+from neural_networks.muscles_length_jacobian import plot_length_jacobian
 from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_supervised_learning, find_best_hyperparameters, plot_results_try_hyperparams
 from neural_networks.CSVBatchWriterWithNoise import CSVBatchWriterWithNoise
@@ -97,7 +97,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10000, 0, "datas_all", num_points = 20, 
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10, 0, "dhhfgfhg", num_points = 20, 
 #                         plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
    
@@ -140,25 +140,26 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "dlmt_dq_fm_64_2c"
-mode = Mode.DLMT_DQ_FM
+model_name = "dlmt_dq_f_torque_64_2c"
+mode = Mode.DLMT_DQ_F_TORQUE
 batch_size = 64
-n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512]]
+n_nodes = [[64, 64], [128, 128], [256, 256], [1024, 1024]]
 activations = [[nn.GELU(), nn.GELU()]]
 activation_names = [["GELU", "GELU"]]
-L1_penalty = [0.01, 0.001]
-L2_penalty = [0.01, 0.001]
+L1_penalty = [0.0, 0.01, 0.001]
+L2_penalty = [0.0, 0.01, 0.001]
 learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
-    # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss,  {'delta': [0.2, 0.5], 'factor': [0.5, 1.0]}),
-    # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
+    # (LogCoshLoss, {'factor': [1.0]}),
+    (ModifiedHuberLoss,  {'delta': [0.2], 'factor': [0.5]}),
+    # (ExponentialLoss, {'alpha': [0.5]}),
     # (nn.MSELoss, {})
 ]
 p_dropout = [0.0, 0.2, 0.5]
 use_batch_norm = True
+
 
 # model_name="essai_muscle_train"
 # mode = Mode.MUSCLE
@@ -178,7 +179,7 @@ use_batch_norm = True
 
 # activation_names = ["GELU", "GELU"]
 
-# L1_penalty=0.001
+# L1_penalty=0.01
 # L2_penalty=0.01
 # learning_rate=0.01
 # num_epochs=1000 
@@ -203,6 +204,8 @@ Hyperparameter_essai1 = ModelTryHyperparameters(model_name, batch_size, n_nodes,
                                              use_batch_norm)
 print(Hyperparameter_essai1)
 
+# test_limit_data_for_learning ("PECM2", cylinders_PECM2, model_biorbd, plot=True, plot_cadran=False)
+
 # one model per muscle !
 
 # main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), num_datas_for_dataset, 
@@ -211,20 +214,22 @@ print(Hyperparameter_essai1)
 #                          plot=True, save=True) 
 
 
-list_simulation, best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
-                            num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
+# list_simulation, best_hyperparameters_loss \
+# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
+#                             num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
 
-# plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV",
-#                                  "execution_time_use_saved_model", "val_error", 'num_try')
+# plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV",
+#                                  "execution_time_use_saved_model", "val_loss", 'num_try')
 
 # plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.csv", 
 #                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.csv", 
 #                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv"], 
 #                                          "execution_time_load_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
 
-# plot_results_try_hyperparams_comparaison(["data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV"], 
-#                                          "execution_time_use_saved_model", "val_loss", "data_generation_via_point/PECM2/_Model", 'criterion_params')
+# plot_results_try_hyperparams_comparaison(["data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV", 
+#                                           "data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV"], 
+#                                          "execution_time_use_saved_model", "val_loss", 
+#                                          "data_generation_via_point/PECM2/_Model", 'num_try')
 
 # create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/train_torque_1c_64/train_torque_1c_64.csv") 
 
@@ -232,7 +237,7 @@ list_simulation, best_hyperparameters_loss \
 
 print("")
 
-# cross_validation("data_generation_datas_with_tau/PECM2", Hyperparameter_essai1, num_folds)
+# cross_validation("data_generation_via_point/PECM2", Hyperparameter_essai1, mode, num_folds, model_biorbd.nbSegment())
 
 
 # -----------------------------------------------------------------

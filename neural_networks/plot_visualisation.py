@@ -491,6 +491,16 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
         plot_predictions_and_targets_from_filenames(
             mode, mode, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
         )
+    elif mode == Mode.DLMT_DQ_F_TORQUE : 
+        plot_predictions_and_targets_from_filenames_dlmt_dq(
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+        plot_predictions_and_targets_from_filenames(
+            mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
+        plot_predictions_and_targets_from_filenames(
+            mode, Mode.TORQUE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+        )
     
     else:
         # Raise an error if the mode is not valid
