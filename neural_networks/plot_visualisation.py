@@ -154,7 +154,8 @@ def plot_predictions_and_targets(model, y_labels, loader, string_loader, num, di
         plt.plot(predictions[:num], label='Predictions', marker='o',linestyle='--')
         plt.xlabel('Sample')
         plt.ylabel(f"{y_labels[0]}")
-        plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%", fontweight='bold')
+        plt.title(f"Predictions and targets - {string_loader}, acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%", 
+                  fontweight='bold')
         plt.legend()
     
     else :  
@@ -244,7 +245,7 @@ def general_plot_predictions(mode, batch_size, mode_selected, folder_name, nb_q,
         Examples: mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
     - folder_name (str): Path to the folder containing CSV files with q variation data.
     - nb_q (int): Number of q in the biorbd model, indicating how many datasets to process.
-    - nb_segment (int): Number of segments in the model.
+    - nb_segment (int): Number of segments in the  biorbd model.
 
     Returns:
     - filenames (list of str): Names of each CSV file for q variations.
@@ -290,7 +291,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
     - model (torch.nn.Module): The PyTorch model used for making predictions.
     - batch_size (int): The batch size for data loading.
     - nb_q (int): Number of q variations in the biorbd model, indicating how many datasets to process.
-    - nb_segment (int): Number of segments in the model.
+    - nb_segment (int): Number of segments in the  biorbd model.
     - file_path (str): Path to save the generated plot.
     - folder_name (str): Path to the folder containing CSV files with q variation data.
     - num (int): Number of data points to plot for each dataset.
@@ -350,7 +351,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
     - model (torch.nn.Module): PyTorch model used for predictions.
     - batch_size (int): Batch size for data loading.
     - nb_q (int): Number of q variations in the biorbd model.
-    - nb_segment (int): Number of segments in the model.
+    - nb_segment (int): Number of segments in the  biorbd model.
     - file_path (str): Path to save the plots.
     - folder_name (str): Path to the folder containing CSV files with q variation data.
     - num (int): Number of data points to plot.
@@ -370,7 +371,8 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
             
             # Compute accuracy and error metrics
             acc = mean_distance(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
-            error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
+            error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[0] for prediction in predictions]), 
+                                                                         np.array([target[0] for target in targets]))
             
             plt.figure(figsize=(10, 5))
             plt.plot(targets[:num], label='True values', marker='o')
@@ -394,13 +396,15 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
             
             for i in range(len(y_selected)):
                 acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
-                error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
+                error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), 
+                                                                             np.array([target[i] for target in targets]))
                 
                 row = i // col_fixed
                 col = i % col_fixed
                 
                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
-                axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', linestyle='--', markersize=2)
+                axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', 
+                                   linestyle='--', markersize=2)
                 axs[row, col].set_title(f"File: {filenames[q_index].replace('.csv', '')}\n"
                                         f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
                                         fontsize='smaller')
@@ -442,7 +446,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
     - mode (Mode): The mode indicating which type of predictions and plots to generate.
     - batch_size (int): The batch size used for predictions.
     - nb_q (int): Number of q in the biorbd model.
-    - nb_segment (int): Number of segments in the model.
+    - nb_segment (int): Number of segments in the  biorbd model.
     - file_path (str): Path to the directory containing the 'model_config.json' file.
     - folder_name_for_prediction (str): Path to the folder containing files for plotting all q variations.
     """

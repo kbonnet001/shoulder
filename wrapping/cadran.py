@@ -10,9 +10,9 @@ def angle_between_points(p1, p2):
         p2 (tuple or list): Coordinates of the second point/vector (x2, y2).
     
     Returns:
-        angle_deg : float, The angle between the two points in degrees.
+        angle_deg (float): The angle between the two points in degrees.
     """
-
+    
     # Calculate the dot product of the two vectors
     dot_product = p1[0] * p2[0] + p1[1] * p2[1]
     

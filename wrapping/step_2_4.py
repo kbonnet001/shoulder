@@ -2,7 +2,6 @@ import numpy as np
 from scipy.linalg import norm
 from wrapping.step_1 import *
 from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
-from wrapping.step_4 import *
 
 # Functions for Step 2
 #---------------------
@@ -125,63 +124,69 @@ def point_tangent_on_surface_cylinder(p1, p2, p3, p4, radius_U, radius_V, epsilo
   else:
       return [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]
 
-def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, matrix_U, matrix_V) :
+def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, matrix_U, matrix_V):
+  """
+  Compute the xyz coordinates of tangent points Q, G, H, and T using an iterative method.
 
-  """Compute xyz coordinates of Q, G, H and T using iterative method
+  This method aims to find the tangent points that minimize the distance GH, correcting issues with the original method by Garner (2010). 
+  The iteration continues until either NaN values are detected or the distance starts increasing, indicating a potential issue.
+
+  Args:
+  - P : array of shape (3,), position of the first point in global frame
+  - S : array of shape (3,), position of the second point in global frame
+  - P_U_cylinder_frame : array of shape (3,), position of the first point in U cylinder frame
+  - P_V_cylinder_frame : array of shape (3,), position of the first point in V cylinder frame
+  - S_U_cylinder_frame : array of shape (3,), position of the second point in U cylinder frame
+  - S_V_cylinder_frame : array of shape (3,), position of the second point in V cylinder frame
+  - r_V : float, radius of the cylinder V
+  - r_U : float, radius of the cylinder U
+  - matrix_U : array of shape (4,4), rotation matrix to change frame from U to global frame
+  - matrix_V : array of shape (4,4), rotation matrix to change frame from V to global frame
+
+  Returns:
+  - Q0 : array of shape (3,), position of the first tangent point in V cylinder frame
+  - G0 : array of shape (3,), position of the second tangent point in V cylinder frame
+  - H0 : array of shape (3,), position of the third tangent point in U cylinder frame
+  - T0 : array of shape (3,), position of the fourth tangent point in U cylinder frame
+  """
   
-  This is a correction to the original method by Garner (2010). 
-  The original method aims to find the coordinates of the tangent point to achieve the smallest possible distance GH. 
-  However, in some cases, this approach does not always return the smallest value for lmt.
-  Because "the smallest possible distance GH" ==X==> "the smallest possible distance lmt"
-
-  Now, the iteration stops if NaN values are detected (indicating that no wrapping is needed or possible) 
-  and if lmt starts to increase instead of decreasing.
-
-  Args
-  - P_U_cylinder_frame : array 3*1 position of the first point in U cylinder frame
-  - S_V_cylinder_frame : array 3*1 position of the second point in V cylinder frame
-  - r_V : radius of the cylinder U * side_U
-  - r_U : radius of the cylinder V * side_V
-  - rotation_matrix_UV : array 4*4 rotation matrix and vect to change frame (U --> V)
-
-  Returns
-  - Q0 : array 3*1 position of the first obstacle tangent point (in V cylinder frame)
-  - G0 : array 3*1 position of the second obstacle tangent point (in V cylinder frame)
-  - H0 : array 3*1 position of the third obstacle tangent point (in U cylinder frame)
-  - T0 : array 3*1 position of the fourth obstacle tangent point (in U cylinder frame)"""
-
-  # cylindre U
+  # Initialize tangent points in cylinder U
   Q1, G1 = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
-  H1, T1 = [0,0,0], [0,0,0]
-  Q0, G0 = [0,0,0], [0,0,0]
-  H0, T0 = [0,0,0], [0,0,0]
+  H1, T1 = [0, 0, 0], [0, 0, 0]  # Initialize tangent points in cylinder V
+  Q0, G0 = [0, 0, 0], [0, 0, 0]  # Initialize previous tangent points
+  H0, T0 = [0, 0, 0], [0, 0, 0]  # Initialize previous tangent points
   Q1_G1_inactive = False
   H1_T1_inactive = False
   ecart_length = 1
   segment_length_1 = 1000
 
-  while ecart_length > 0 :
+  while ecart_length > 0:
+      # Update previous tangent points
       Q0, G0 = Q1, G1
       H0, T0 = H1, T1
       segment_length_0 = segment_length_1
 
-      g0 = switch_frame_UV(G0, matrix_U, matrix_V) 
+      # Switch frame from U to V and find new tangent points in cylinder V
+      g0 = switch_frame_UV(G0, matrix_U, matrix_V)
       H1, T1 = find_tangent_points(g0, S_V_cylinder_frame, r_V)
       H1_T1_inactive = determine_if_tangent_points_inactive_single_cylinder(H1, T1, r_V)
       if H1_T1_inactive or np.isnan(np.array(H1)).any() or np.isnan(np.array(T1)).any():
-        break
+          break
 
+      # Switch frame from V to U and find new tangent points in cylinder U
       h0 = switch_frame_UV(H1, matrix_V, matrix_U)
       Q1, G1 = find_tangent_points(P_U_cylinder_frame, h0, r_U)
       Q1_G1_inactive = determine_if_tangent_points_inactive_single_cylinder(Q1, G1, r_U)
       if Q1_G1_inactive or np.isnan(np.array(Q1)).any() or np.isnan(np.array(G1)).any():
-        break 
+          break
 
-      segment_length_1 = segment_length_double_cylinder(False, False, P, S, P_U_cylinder_frame, P_V_cylinder_frame, 
-                                                        S_U_cylinder_frame, S_V_cylinder_frame, Q1, G1, H1, T1, r_U, 
+      # Compute segment length for current tangent points
+      segment_length_1 = segment_length_double_cylinder(False, False, P, S, P_U_cylinder_frame, P_V_cylinder_frame,
+                                                        S_U_cylinder_frame, S_V_cylinder_frame, Q1, G1, H1, T1, r_U,
                                                         r_V, matrix_U, matrix_V)
       ecart_length = segment_length_0 - segment_length_1
-  
+
+  # Adjust tangent points to ensure they lie on the cylinder surface
   Q0, G0, H0, T0 = point_tangent_on_surface_cylinder(Q0, G0, H0, T0, abs(r_U), abs(r_V), epsilon=abs(r_U)/10)
 
   return Q0, G0, H0, T0
