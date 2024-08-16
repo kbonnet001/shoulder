@@ -12,7 +12,7 @@ def create_dataset_from_folder_cross_val(mode, folder_name):
     80 % : train + validation
     20% : test
     Args : 
-    - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
+    - folder_name : string, name of the folder containing dataframe of muscles (.csv)
     
     Returns : 
     - train_val_loader : DataLoader, data train + val(80%)
@@ -23,7 +23,7 @@ def create_dataset_from_folder_cross_val(mode, folder_name):
   datasets = []
     
   for filename in os.listdir(folder_name):
-    if filename.endswith(".xlsx") or filename.endswith(".xls"):
+    if filename.endswith(".csv") :
         file_path = os.path.join(folder_name, filename)
         print(f"Processing file: {file_path}")
 
@@ -73,7 +73,7 @@ def cross_validation(folder_name, Hyperparams, num_folds) :
     Compute performance with less biais
     
     Args : 
-    - folder_name : string, name of the folder containing dataframe of muscles (.xlsx or .xls)
+    - folder_name : string, name of the folder containing dataframe of muscles (.csv)
     - Hyperparams : (ModelHyperparameters) all hyperparameters choosen by user
     - Num_folder : int, number of k folds
     
@@ -95,7 +95,7 @@ def cross_validation(folder_name, Hyperparams, num_folds) :
         # on fait les noueau train et val loader en fonction du k fold où on est
         train_loader, val_loader = new_k_loaders(Hyperparams.batch_size, train_val_dataset, train_idx, val_idx)
 
-        model, _, _, _= train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
+        model, _, _, _, _, _= train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, output_size, Hyperparams, 
                                     "", False, False) 
         
         test_loss, test_acc = evaluate(model, test_loader, Hyperparams.criterion)

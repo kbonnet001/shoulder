@@ -42,7 +42,7 @@ def find_discontinuities_from_error_wrapping_range(positions, size, range = 5) :
     return [min_index, max_index]
 
 
-def find_discontinuty(x, y, epsilon = 0.002, plot_discontinuities = False) : 
+def find_discontinuity(x, y, epsilon = 0.002, plot_discontinuities = False) : 
     """Find all discontinuities of a curve with distance beetween points
     Args : 
     - x : [float], x axis (qi)

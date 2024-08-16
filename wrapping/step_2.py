@@ -128,6 +128,14 @@ def point_tangent_on_surface_cylinder(p1, p2, p3, p4, radius_U, radius_V, epsilo
 def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U, matrix_U, matrix_V) :
 
   """Compute xyz coordinates of Q, G, H and T using iterative method
+  
+  This is a correction to the original method by Garner (2010). 
+  The original method aims to find the coordinates of the tangent point to achieve the smallest possible distance GH. 
+  However, in some cases, this approach does not always return the smallest value for lmt.
+  Because "the smallest possible distance GH" ==X==> "the smallest possible distance lmt"
+
+  Now, the iteration stops if NaN values are detected (indicating that no wrapping is needed or possible) 
+  and if lmt starts to increase instead of decreasing.
 
   Args
   - P_U_cylinder_frame : array 3*1 position of the first point in U cylinder frame
@@ -150,7 +158,7 @@ def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_f
   Q1_G1_inactive = False
   H1_T1_inactive = False
   ecart_length = 1
-  segment_length_1 = 100
+  segment_length_1 = 1000
 
   while ecart_length > 0 :
       Q0, G0 = Q1, G1
@@ -169,7 +177,9 @@ def find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_f
       if Q1_G1_inactive or np.isnan(np.array(Q1)).any() or np.isnan(np.array(G1)).any():
         break 
 
-      segment_length_1 = segment_length_double_cylinder(False, False, P, S, P_U_cylinder_frame, P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, Q1, G1, H1, T1, r_U, r_V, matrix_U, matrix_V)
+      segment_length_1 = segment_length_double_cylinder(False, False, P, S, P_U_cylinder_frame, P_V_cylinder_frame, 
+                                                        S_U_cylinder_frame, S_V_cylinder_frame, Q1, G1, H1, T1, r_U, 
+                                                        r_V, matrix_U, matrix_V)
       ecart_length = segment_length_0 - segment_length_1
   
   Q0, G0, H0, T0 = point_tangent_on_surface_cylinder(Q0, G0, H0, T0, abs(r_U), abs(r_V), epsilon=abs(r_U)/10)
@@ -265,7 +275,8 @@ def segment_length_double_cylinder(Q_G_inactive, H_T_inactive, P, S, P_U_cylinde
   else: # double cylinder
     G_H_length = norm(switch_frame(H, matrix_V) - switch_frame(G, matrix_U))
 
-    segment_length = norm(Q - np.array(P_U_cylinder_frame)) + Q_G_length + G_H_length + H_T_length + norm(np.array(S_V_cylinder_frame) - T)
+    segment_length = norm(Q - np.array(P_U_cylinder_frame)) + Q_G_length + G_H_length + H_T_length \
+    + norm(np.array(S_V_cylinder_frame) - T)
 
   return segment_length
  

@@ -4,7 +4,7 @@ from wrapping.step_3 import determine_if_tangent_points_inactive_single_cylinder
 # from wrapping.step_4 import segment_length_single_cylinder
 from wrapping.plot_cylinder import plot_double_cylinder_obstacle
 import numpy as np
-from wrapping.paspropre import determine_if_needed_change_side
+from wrapping.cadran import determine_if_needed_change_side
 from wrapping.plot_cylinder import plot_cadran_double_cylinder, plot_cadran_single_cylinder
 
 
@@ -113,14 +113,15 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    # ------
    # Step 2
    # ------
-   
    Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
    
    H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
 
    # if H_T_inactive and determine_if_needed_change_side(S_V_cylinder_frame, np.array([0.0246330366, -0.0069265376, -0.0000168612])): 
    if H_T_inactive and determine_if_needed_change_side(S_V_cylinder_frame, np.array([0.0179188682, -0.0181428819, 0.02])) == True: 
-      print("yop")
+      # If there is no wrapping on the second cylinder
+      # but there should be, switch sides and try again.
+      # BIG WARNING: The point selected for the cadran is arbitrary! It cannot be generalized.
       Cylinder_V.change_side()
       r_V = Cylinder_V.radius * Cylinder_V.side
       Q, G, H, T = find_tangent_points_iterative_method(P, S, P_U_cylinder_frame,P_V_cylinder_frame, S_U_cylinder_frame, S_V_cylinder_frame, r_V, r_U,  Cylinder_U.matrix, Cylinder_V.matrix)
@@ -159,7 +160,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    if H_T_inactive==True :
       Q, G = find_tangent_points(P_U_cylinder_frame, S_U_cylinder_frame, r_U)
       Q_G_inactive = determine_if_tangent_points_inactive_single_cylinder(Q, G, r_U)
-      # security to avoid bug in step 4, don't worry, this data will be ignored because of tangent point in the cylinder
+      # security to avoid bug in step 4, don't worry, this data will be ignored because of tangent point inside the cylinder
       if np.isnan(Q[-1]) or np.isnan(G[-1]) : 
          Q[-1] = 0.0
          G[-1] = 0.0
@@ -170,7 +171,7 @@ def double_cylinder_obstacle_set_algorithm(P, S, Cylinder_U, Cylinder_V, plot_ca
    elif Q_G_inactive==True :
       H, T = find_tangent_points(P_V_cylinder_frame, S_V_cylinder_frame, r_V)
       H_T_inactive = determine_if_tangent_points_inactive_single_cylinder(H, T, r_V)
-      # security to avoid bug in step 4, don't worry, this data will be ignored because of tangent point in the cylinder
+      # security to avoid bug in step 4, don't worry, this data will be ignored because of tangent point inside the cylinder
       if np.isnan(Q[-1]) or np.isnan(G[-1]) : 
          Q[-1] = 0.0
          G[-1] = 0.0

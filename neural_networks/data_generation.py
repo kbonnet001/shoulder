@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from neural_networks.ExcelBatchWriter import ExcelBatchWriter
+from neural_networks.CSVBatchWriter import CSVBatchWriter
 from neural_networks.discontinuities import *
 from neural_networks.functions_data_generation import *
 import copy
 
-
-def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, data_without_error = False, plot=False, plot_cadran = False) :
+def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, 
+                       data_without_error = False, plot=False, plot_cadran = False) :
    
    """Create a data frame for prepare datas
    Datas are generated ponctually, independantly and uniformly
@@ -26,7 +26,7 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
    - plot : bool (default false), True if we want a plot of point P, S (and Q, G, H and T) with cylinder(s)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = CSVBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
  
@@ -45,7 +45,8 @@ def data_for_learning (muscle_selected, cylinders, model, q_ranges_muscle, datas
       
       # ------------------------------------------------
 
-      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+      segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, 
+                                                            plot_cadran)  
    
       if (data_ignored == False and data_without_error == True) or (data_without_error == False) : 
          # Add line to data frame
@@ -98,12 +99,14 @@ def test_limit_data_for_learning (muscle_selected, cylinders, model, q_ranges, p
             
             # ------------------------------------------------
 
-            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+            segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, 
+                                                       plot_cadran)  
             print("segment_length = ", segment_length)
 
    return None
 
-def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, filename, num_points = 100, plot_all = False, plot_limit = False, plot_cadran=False) :
+def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, q_fixed, i, filename, num_points = 100, 
+                            plot_all = False, plot_limit = False, plot_cadran=False) :
    
    """Create a data frame for prepare datas
    
@@ -124,7 +127,7 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
                                                                                           (first, middle and last one)
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = CSVBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
 
@@ -153,10 +156,12 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
       # ------------------------------------------------
 
       if k in [0,num_points/2, num_points] and plot_limit :
-         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_limit, 
+                                                    plot_cadran)  
          
       else :  
-         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, plot_cadran)  
+         segment_length, _ = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot_all, 
+                                                    plot_cadran)  
       
       print("segment_length = ", segment_length)
       qs.append(qi)
@@ -173,12 +178,14 @@ def data_for_learning_plot (muscle_selected, cylinders, model, q_ranges_muscle, 
    plt.grid(True)
    plt.show()
    
-   find_discontinuty(qs, segment_lengths, plot_discontinuities=True)
+   find_discontinuity(qs, segment_lengths, plot_discontinuities=True)
    
    writer.close()
    return None
 
-def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename, num_points = 50, plot=False, plot_discontinuities = False, plot_cadran = False) :
+def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, q_ranges_muscle, dataset_size, filename,
+                                             num_points = 50, plot=False, plot_discontinuities = False, 
+                                             plot_cadran = False) :
    
    """Create a data frame for prepare datas without any discontinuities or error wrapping 
    Generate a mvt and then, remove problematic datas
@@ -198,7 +205,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
    - plot_discontinuities : bool (default = False), true to show mvt with discontinuity
    - plot_cradran : bool (default = False), True to show cadran, pov of each cylinder and wrapping"""
    
-   writer = ExcelBatchWriter(filename, batch_size=100)
+   writer = CSVBatchWriter(filename, batch_size=100)
    muscle_index = find_index_muscle(model, muscle_selected)
    initialisation_generation(model, muscle_index, cylinders)
  
@@ -235,7 +242,8 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
          
             origin_muscle, insertion_muscle = update_points_position(model, [0, -1], muscle_index, q)
             
-            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, plot, plot_cadran)  
+            segment_length, data_ignored = compute_segment_length(model, cylinders, q, origin_muscle, insertion_muscle, 
+                                                                  plot, plot_cadran)  
             
             qs.append(qi)
             segment_lengths.append(segment_length)
@@ -244,7 +252,7 @@ def data_for_learning_without_discontinuites(muscle_selected, cylinders, model, 
             lines.append([muscle_index, q, origin_muscle, insertion_muscle, segment_length])
          
          # Find indexes with discontinuties
-         discontinuities = find_discontinuty(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
+         discontinuities = find_discontinuity(qs, segment_lengths, plot_discontinuities = plot_discontinuities)
          for discontinuity in discontinuities : 
             # min, max = data_to_remove_range(discontinuity, num_points, 5)
             min, max = data_to_remove_part(discontinuity, qs, num_points, 5)
