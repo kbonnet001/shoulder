@@ -1,0 +1,20 @@
+num_try = 132
+val_loss = 9.00475856781006
+val_acc = 2.1354496479034424
+val_error = 10.756304115056992
+val_abs_error = 10.756304115056992
+execution_time_train = 91.95988273620605
+execution_time_load_saved_model = 0.0023689789772033693
+execution_time_use_saved_model = 0.0002552423477172852
+mode = Mode.DLMT_DQ_FM
+batch_size = 64
+n_nodes = [128, 128]
+activations = [GELU(approximate='none'), GELU(approximate='none')]
+L1_penalty = 0.001
+L2_penalty = 0.001
+learning_rate = 0.01
+dropout_prob = 0.0
+use_batch_norm = True
+num_epochs_used = 344
+criterion_name = ModifiedHuberLoss
+criterion_params = {'delta': 0.2, 'factor': 0.5}
