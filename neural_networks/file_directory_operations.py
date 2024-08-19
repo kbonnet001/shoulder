@@ -1,5 +1,6 @@
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def create_directory(directory_path):
     """
@@ -128,3 +129,31 @@ def read_info_model(file_path, infos):
                 extracted_values.append(value)
     
     return extracted_values
+
+def get_min_value_from_csv(csv_path, col):
+    """
+    Reads a CSV file, retrieves a specific column, sorts it in ascending order,
+    and returns the smallest value.
+
+    Args:
+        csv_path (str): The path to the CSV file.
+        col (str): The name of the column to retrieve and sort.
+
+    Returns:
+        The smallest value in the specified column.
+    
+    Raises:
+        ValueError: If the specified column does not exist in the CSV.
+    """
+    
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_path)
+    
+    # Check if the specified column exists in the DataFrame
+    if col not in df.columns:
+        raise ValueError(f"The column '{col}' does not exist in the CSV file.")
+    
+    # Sort the column in ascending order and get the smallest value
+    min_value = df[col].min()
+    
+    return min_value

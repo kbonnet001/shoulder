@@ -143,11 +143,11 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 model_name = "dlmt_dq_f_torque_64_2c"
 mode = Mode.DLMT_DQ_F_TORQUE
 batch_size = 64
-n_nodes = [[64, 64], [128, 128], [256, 256], [1024, 1024]]
+n_nodes = [[512, 512]]
 activations = [[nn.GELU(), nn.GELU()]]
 activation_names = [["GELU", "GELU"]]
-L1_penalty = [0.0, 0.01, 0.001]
-L2_penalty = [0.0, 0.01, 0.001]
+L1_penalty = [0.0, 0.1, 0.001]
+L2_penalty = [0.0, 0.1, 0.001]
 learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
@@ -190,7 +190,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 10000
+num_datas_for_dataset = 10
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -214,17 +214,17 @@ print(Hyperparameter_essai1)
 #                          plot=True, save=True) 
 
 
-list_simulation, best_hyperparameters_loss \
+best_hyperparameters_loss \
 = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
                             num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
 
-# plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV",
-#                                  "execution_time_use_saved_model", "val_loss", 'num_try')
+# plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/dlmt_dq_f_torque_64_2c.CSV",
+#                                  "execution_time_use_saved_model", "val_loss", 'L2_penalty')
 
-# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.csv", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.csv", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv"], 
-#                                          "execution_time_load_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
+# plot_results_try_hyperparams_comparaison(["data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV", 
+#                                           "data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV", 
+#                                           "data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/dlmt_dq_f_torque_64_2c.CSV"], 
+#                                          "execution_time_use_saved_model", "val_acc", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
 
 # plot_results_try_hyperparams_comparaison(["data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV", 
 #                                           "data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV"], 
