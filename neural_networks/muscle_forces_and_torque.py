@@ -31,6 +31,32 @@ def compute_fm_and_torque(model_biorbd, muscle_index, q, qdot, alpha) :
     
     return fm[muscle_index], tau[muscle_index]
 
+def compute_torque(dlmt_dq, f):
+    """
+    Compute the torque based on the Jacobian of muscle length changes and muscle forces.
+    
+    Args:
+        dlmt_dq (np.ndarray): The Jacobian matrix of muscle length changes with respect to joint positions.
+        f (np.ndarray): The muscle forces.
+        limit (float, optional): The threshold above which muscle forces are considered excessive. Defaults to 5000.
+    
+    Returns:
+        tuple: A tuple containing:
+            - The computed torque.
+            - A boolean flag indicating if any muscle force exceeds the limit.
+    """
+
+    # Compute the torque using the Jacobian and muscle forces
+    torque = np.dot(np.transpose(dlmt_dq), f)
+    total_torque = np.sum(torque)
+    # model_biorbd.muscularJointTorque(states, q, qdot).to_array()
+    
+    return total_torque
+
+
+
+
+
 # def compute_fm(model_biorbd, q, qdot, alpha):
 #     """
 #     Compute muscle forces for a given model, joint positions, velocities, and activations.
@@ -59,33 +85,6 @@ def compute_fm_and_torque(model_biorbd, muscle_index, q, qdot, alpha) :
 #     f = model_biorbd.muscleForces(states, q, qdot).to_array()
     
 #     return f
-
-# def compute_torque(dlmt_dq, f, limit=5000):
-#     """
-#     Compute the torque based on the Jacobian of muscle length changes and muscle forces.
-    
-#     Args:
-#         dlmt_dq (np.ndarray): The Jacobian matrix of muscle length changes with respect to joint positions.
-#         f (np.ndarray): The muscle forces.
-#         limit (float, optional): The threshold above which muscle forces are considered excessive. Defaults to 5000.
-    
-#     Returns:
-#         tuple: A tuple containing:
-#             - The computed torque.
-#             - A boolean flag indicating if any muscle force exceeds the limit.
-#     """
-    
-#     f_sup_limit = False
-    
-#     if np.any(f >= limit):
-#         f_sup_limit = True
-
-#     # Compute the torque using the Jacobian and muscle forces
-#     torque = np.dot(-np.transpose(dlmt_dq), f)
-#     total_torque = np.sum(torque)
-#     # model_biorbd.muscularJointTorque(states, q, qdot).to_array()
-    
-#     return total_torque, f_sup_limit
 
 # def get_fm_and_torque(model_biorbd, muscle_index, q, qdot, alpha):
 #     """

@@ -27,7 +27,7 @@ def create_dataset_from_folder_cross_val(mode, folder_name, nb_segment):
   
   # Iterate through all CSV files in the specified folder
   for filename in os.listdir(folder_name):
-      if filename.endswith(".csv"):
+      if filename.endswith(".CSV"):
           file_path = os.path.join(folder_name, filename)
           print(f"Processing file: {file_path}")
 

@@ -21,6 +21,7 @@ from neural_networks.CSVBatchWriterWithNoise import CSVBatchWriterWithNoise
 from neural_networks.Timer import measure_time
 from neural_networks.save_model import load_saved_model
 from neural_networks.plot_pareto_front import plot_results_try_hyperparams, plot_results_try_hyperparams_comparaison, create_df_from_txt_saved_informations
+from neural_networks.analysis_torque_models import compare_model_torque_prediction
 
 #################### 
 # Code des tests
@@ -77,9 +78,9 @@ muscles_selected = ["PECM2", "PECM3"]
 
 # test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, True, True) 
 
-# data_for_learning (muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.csv", False, False) 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.CSV", False, False) 
 
-# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model_biorbd, 10, "rgtrsfdd.csv", data_without_error = True, plot=False, plot_cadran = False)
+# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model_biorbd, 10, "rgtrsfdd.CSV", data_without_error = True, plot=False, plot_cadran = False)
 
 # -----------------------------------------------------------------
 
@@ -97,8 +98,8 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10, 0, "dhhfgfhg", num_points = 20, 
-#                         plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10, 0, "dhhfgfhg", num_points = 20, 
+                        plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
    
 # -----------------------------------------------------------------
@@ -140,7 +141,7 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "dlmt_dq_f_torque_64_2c"
+model_name = "exemple"
 mode = Mode.DLMT_DQ_F_TORQUE
 batch_size = 64
 n_nodes = [[512, 512]]
@@ -213,10 +214,15 @@ print(Hyperparameter_essai1)
 #                          file_path=Hyperparameter_essai1.model_name, with_noise = False, plot_preparation=False, 
 #                          plot=True, save=True) 
 
+save_model_paths = ["data_generation_via_point/PECM2/_Model/torque_64_1c/Best_hyperparams",
+                    "data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/Best_hyperparams", 
+                    "data_generation_via_point/PECM2/_Model/dlmt_dq_fm_64_2c/Best_hyperparams"]
+modes = [Mode.TORQUE, Mode.DLMT_DQ_F_TORQUE, Mode.DLMT_DQ_FM]
+compare_model_torque_prediction(save_model_paths, modes, "data_generation_via_point/PECM2/PECM2.CSV")
 
-best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
-                            num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
+# best_hyperparameters_loss \
+# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
+#                             num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
 
 # plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/dlmt_dq_f_torque_64_2c.CSV",
 #                                  "execution_time_use_saved_model", "val_loss", 'L2_penalty')
@@ -231,7 +237,7 @@ best_hyperparameters_loss \
 #                                          "execution_time_use_saved_model", "val_loss", 
 #                                          "data_generation_via_point/PECM2/_Model", 'num_try')
 
-# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/train_torque_1c_64/train_torque_1c_64.csv") 
+# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/train_torque_1c_64/train_torque_1c_64.CSV") 
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 

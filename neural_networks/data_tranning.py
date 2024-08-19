@@ -148,9 +148,9 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     Returns:
     - model (nn.Module): Trained model.
     - val_loss (float): Validation loss.
-    - val_acc (float): Validation accuracy (mean distance).
-    - val_error (float): Validation error.
-    - val_abs_error (float): Validation absolute error.
+    - test_acc (float): Test accuracy (mean distance).
+    - test_error (float): Test error.
+    - test_abs_error (float): Test absolute error.
     - epoch (int): Number of epochs completed.
     """
     # Initialize the model with given hyperparameters
@@ -227,7 +227,7 @@ def train_model_supervised_learning(train_loader, val_loader, test_loader, input
     if save : 
         save_model(model, input_size, output_size, Hyperparams, f"{file_path}")
     
-    return model, val_loss, val_acc, val_error, val_abs_error, epoch
+    return model, val_loss, test_acc, test_error, test_abs_error, epoch
 
 
 

@@ -20,9 +20,9 @@ class CSVBatchWriterTestHyperparams:
                 "num_try": [],
                 "mode": [], 
                 "val_loss": [], 
-                "val_acc": [], 
-                "val_error": [],
-                "val_abs_error": [],
+                "test_acc": [], 
+                "test_error": [],
+                "test_abs_error": [],
                 "execution_time_train": [], 
                 "execution_time_load_saved_model": [], 
                 "execution_time_use_saved_model": [], 
@@ -41,7 +41,7 @@ class CSVBatchWriterTestHyperparams:
             # Create a DataFrame from the dictionary and write it to a CSV file
             pd.DataFrame(data).to_csv(filename, index=False)
 
-    def add_line(self, num_try, val_loss, val_acc, val_error, val_abs_error, train_timer, mean_model_load_timer, 
+    def add_line(self, num_try, val_loss, test_acc, test_error, test_abs_error, train_timer, mean_model_load_timer, 
                  mean_model_timer, try_hyperparams, mode, epoch, criterion_name, criterion_params):
         """ Add a new line of data to the buffer, containing information about a model training attempt. 
         If the buffer reaches the batch size, write it to the CSV file.
@@ -49,9 +49,9 @@ class CSVBatchWriterTestHyperparams:
         Args:
         - num_try (int): The attempt number.
         - val_loss (float): Validation loss value.
-        - val_acc (float): Validation accuracy value.
-        - val_error (float): Validation error value.
-        - val_abs_error (float): Validation absolute error value.
+        - test_acc (float): Validation accuracy value.
+        - test_error (float): Validation error value.
+        - test_abs_error (float): Validation absolute error value.
         - train_timer (float): Time taken for training execution.
         - mean_model_load_timer (float): Average time to load the saved model.
         - mean_model_timer (float): Average time to use the saved model.
@@ -67,9 +67,9 @@ class CSVBatchWriterTestHyperparams:
             "num_try": num_try,
             "mode": mode, 
             "val_loss": val_loss, 
-            "val_acc": val_acc, 
-            "val_error": val_error,
-            "val_abs_error": val_abs_error,
+            "test_acc": test_acc, 
+            "test_error": test_error,
+            "test_abs_error": test_abs_error,
             "execution_time_train": train_timer, 
             "execution_time_load_saved_model": mean_model_load_timer, 
             "execution_time_use_saved_model": mean_model_timer, 
@@ -103,9 +103,9 @@ class CSVBatchWriterTestHyperparams:
         Args:
         - num_try (int): The attempt number.
         - val_loss (float): Validation loss value.
-        - val_acc (float): Validation accuracy value.
-        - val_error (float): Validation error value.
-        - val_abs_error (float): Validation absolute error value.
+        - test_acc (float): Validation accuracy value.
+        - test_error (float): Validation error value.
+        - test_abs_error (float): Validation absolute error value.
         - train_timer (float): Time taken for training execution.
         - mean_model_load_timer (float): Average time to load the saved model.
         - mean_model_timer (float): Average time to use the saved model.
@@ -127,9 +127,9 @@ class CSVBatchWriterTestHyperparams:
             "num_try": num_try,
             "mode": mode, 
             "val_loss": val_loss, 
-            "val_acc": val_acc, 
-            "val_error": val_error,
-            "val_abs_error": val_abs_error,
+            "test_acc": val_acc, 
+            "test_error": val_error,
+            "test_abs_error": val_abs_error,
             "execution_time_train": train_timer, 
             "execution_time_load_saved_model": mean_model_load_timer, 
             "execution_time_use_saved_model": mean_model_timer, 

@@ -3,7 +3,7 @@ from neural_networks.data_tranning import train_model_supervised_learning
 from neural_networks.activation_functions import *
 import os
 from neural_networks.save_model import measure_time, save_model, main_function_model, del_saved_model
-from neural_networks.plot_visualisation import visualize_prediction_training, visualize_prediction
+from neural_networks.plot_visualisation import visualize_prediction_training, visualize_prediction, mean_distance, compute_pourcentage_error
 from itertools import product
 from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
@@ -104,8 +104,6 @@ def compute_mean_model_timers(file_path, all_data_tensor) :
     mean_model_timer = np.mean(model_timers)
     
     return mean_model_load_timer, mean_model_timer
-
-import os
 
 def get_num_try(directory_path):
     """
@@ -275,15 +273,15 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
                 
                 with measure_time() as train_timer: # timer --> trainning time
                     # Please, consider this mesure time as an estimation !
-                    model, val_loss, val_acc, val_error, val_abs_error, epoch \
+                    model, val_loss, test_acc, test_error, test_abs_error, epoch \
                     = train_model_supervised_learning(train_loader, val_loader, test_loader, 
                                                       input_size, output_size, hyperparams_i, 
                                                       file_path=f"{directory}/{num_try}", plot = True, save = True, 
                                                       show_plot=False) # save temporaly 
                 # Timer for load model and model use
                 # Mean with data_test_tensor (20% of num_datas_for_dataset)
-                mean_model_load_timer, mean_model_timer = compute_mean_model_timers(f"{directory}/{num_try}", 
-                                                                                    all_data_test_tensor)
+                mean_model_load_timer, mean_model_timer \
+                    = compute_mean_model_timers(f"{directory}/{num_try}", all_data_test_tensor)
                 
                 if save_all == False : 
                     # deleted saved model
@@ -298,11 +296,11 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
                         best_hyperparameters_loss = update_best_hyperparams(model, num_try, hyperparams_i, try_hyperparams_ref, 
                                                                             input_size, output_size, directory)
                 
-                save_informations_model(f"{directory}/{num_try}", num_try, val_loss, val_acc, val_error, val_abs_error,
+                save_informations_model(f"{directory}/{num_try}", num_try, val_loss, test_acc, test_error, test_abs_error,
                                         train_timer.execution_time, mean_model_load_timer, mean_model_timer,
                                         hyperparams_i, mode, epoch+1, criterion_class.__name__, criterion_params)
                 
-                writer.add_line(num_try, val_loss, val_acc, val_error, val_abs_error, train_timer.execution_time, 
+                writer.add_line(num_try, val_loss, test_acc, test_error, test_abs_error, train_timer.execution_time, 
                                 mean_model_load_timer, mean_model_timer, hyperparams_i, mode, epoch+1, 
                                 criterion_class.__name__, criterion_params)
                 

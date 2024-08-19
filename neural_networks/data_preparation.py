@@ -203,7 +203,7 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
   - nb_q (int): Number of degrees of freedom.
   - nb_segment: int, number of segment in the biorbd model.
   - num_datas_for_dataset (int): Number of data samples to include in the dataset.
-  - folder_name (str): Name of the folder containing the muscle dataframes (.csv).
+  - folder_name (str): Name of the folder containing the muscle dataframes (.CSV).
   - muscle_name (str): Name of the muscle for which to load data.
   - with_noise (bool): Whether to include data with noise in the dataset. Default is True.
   - plot (bool): Whether to show data distribution plots. Default is False.
@@ -217,10 +217,10 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
   - y_labels (list): Labels for the output tensor.
   """
     
-  file_path_df = os.path.join(folder_name, f"{muscle_name}.csv")
+  file_path_df = os.path.join(folder_name, f"{muscle_name}.CSV")
     
   if not os.path.exists(file_path_df):
-      error = "Error : File need extension .csv \n\
+      error = "Error : File need extension .CSV \n\
         If the file exist, maybe it's open in a window. Please close it and try again."
       sys.exit(error)
   else : 
@@ -240,9 +240,9 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
 
       # Load data with noise if available
       if with_noise :
-        if os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"):
+        if os.path.exists(f"{file_path_df.replace(".CSV", "_with_noise.CSV")}"):
           X_tensor_with_noise, y_tensor_with_noise, _ = \
-            data_preparation_create_tensor(mode, f"{file_path_df.replace(".csv", "_with_noise.csv")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".CSV", "_with_noise.CSV")}", 
                                            all_possible_categories)
       # Plot data distribution if requested
       if plot : 
@@ -253,9 +253,9 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
           y_tensors.append(y_tensor_with_noise)
           graph_labels.append("datas with noise")
         
-        if os.path.exists(f"{file_path_df.replace(".csv", "_datas_ignored.csv")}"):
+        if os.path.exists(f"{file_path_df.replace(".CSV", "_datas_ignored.CSV")}"):
           X_tensor_ignored, y_tensor_ignored, _ = \
-            data_preparation_create_tensor(mode, f"{file_path_df.replace(".csv", "_datas_ignored.csv")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".CSV", "_datas_ignored.CSV")}", 
                                            all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
@@ -267,7 +267,7 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
         # X_tensor = F.normalize(X_tensor)
       
       # Selecte datas to put in the dataset
-      if with_noise and os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"): 
+      if with_noise and os.path.exists(f"{file_path_df.replace(".CSV", "_with_noise.CSV")}"): 
         dataset = MuscleDataset(torch.cat((X_tensor, X_tensor_with_noise), dim=0), 
                                 torch.cat((y_tensor, y_tensor_with_noise), dim=0))
       else : 

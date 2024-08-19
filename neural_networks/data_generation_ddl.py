@@ -144,7 +144,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    create_directory(directory)
 
    # Initialize CSV writer for saving data
-   writer = CSVBatchWriter(f"{directory}/{filename}.csv", q_ranges_names_with_dofs, batch_size=100)
+   writer = CSVBatchWriter(f"{directory}/{filename}.CSV", q_ranges_names_with_dofs, batch_size=100)
 
    # Initialize variables for storing results
    q = q_fixed
@@ -243,7 +243,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
    # Iterate over all q parameters
    for q_index in range(model.nbQ()):
       # Define the file path for the current q parameter
-      file_path = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_{filename}.csv"
+      file_path = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_{filename}.CSV"
 
       # Check if the CSV file already exists; if not, create a new writer
       if not os.path.exists(file_path):
@@ -320,7 +320,7 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path=""):
       # Loop through each q parameter
       for q_index in range(model.nbQ()):
          # Define the file path for the current q parameter
-         file_q_index = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_{filename}.csv"
+         file_q_index = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_{filename}.CSV"
          
          # Initialize lists to store y values and q values
          y = []
@@ -389,8 +389,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    
    # Create to writer to save datas, one with "purs datas" (no errors, discontinuties, etc) and an other with errors
    # To see distribution of datas (please, choose plot_discontinuities = True)
-   writer = CSVBatchWriter(filename+f"/{cylinders[0].muscle}.csv", q_ranges_names_with_dofs, batch_size=100)
-   writer_datas_ignored = CSVBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.csv", q_ranges_names_with_dofs, batch_size=100)
+   writer = CSVBatchWriter(filename+f"/{cylinders[0].muscle}.CSV", q_ranges_names_with_dofs, batch_size=100)
+   writer_datas_ignored = CSVBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.CSV", q_ranges_names_with_dofs, batch_size=100)
  
    # Limits of q
    min_vals_q = [row[0] for row in q_ranges]
@@ -503,7 +503,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
                                                    plot_cylinder_3D, plot_discontinuities, plot_cadran, plot_graph)
       
       if dataset_size_noise != 0 :
-         data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.csv", dataset_size_noise)
+         data_for_learning_with_noise(f"{directory}/{cylinders[k][0].muscle}/{cylinders[0].muscle}.CSV", dataset_size_noise)
       
       # Plot visualization
       # q_fixed = np.array([0.0 for _ in range (model.nbQ())])
@@ -520,7 +520,7 @@ def data_generation_muscles(muscles_selected, cylinders, model, dataset_size, da
 
 def data_for_learning_with_noise(model, csv_file_path, dataset_size_noise, batch_size = 1000, noise_std_dev = 0.01) :
    """
-   Create datas with noise un add on file _with_noise.csv
+   Create datas with noise un add on file _with_noise.CSV
    
    Args : 
    - model : biorbd model
@@ -531,11 +531,11 @@ def data_for_learning_with_noise(model, csv_file_path, dataset_size_noise, batch
    - noise_std-dev : (default = 0.01) float, standard deviation of added noise 
    
    Returns : 
-   None, create or complete a file [...]_with_noise.csv
+   None, create or complete a file [...]_with_noise.CSV
    """
    _, q_ranges_names_with_dofs = compute_q_ranges(model)
    
-   writer = CSVBatchWriterWithNoise(f"{csv_file_path.replace(".csv", "")}_with_noise.csv", q_ranges_names_with_dofs,
+   writer = CSVBatchWriterWithNoise(f"{csv_file_path.replace(".CSV", "")}_with_noise.CSV", q_ranges_names_with_dofs,
                                       batch_size, noise_std_dev)
    writer.augment_data_with_noise_batch(dataset_size_noise)
 

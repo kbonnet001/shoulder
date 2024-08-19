@@ -322,7 +322,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
         axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
         axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
         axs[row, col].set_title(
-            f"File: {filenames[q_index].replace('.csv', '')},\n"
+            f"File: {filenames[q_index].replace('.CSV', '')},\n"
             f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
             fontsize='smaller'
         )
@@ -405,7 +405,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
                 axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', 
                                    linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace('.csv', '')}\n"
+                axs[row, col].set_title(f"File: {filenames[q_index].replace('.CSV', '')}\n"
                                         f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
                                         fontsize='smaller')
                 axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
