@@ -1,0 +1,18 @@
+num_try = 861
+val_loss = 35.93671333312988
+val_acc = 4.745659351348877
+execution_time_train = 128.20126104354858
+execution_time_load_saved_model = 0.0021240934133529665
+execution_time_use_saved_model = 0.000233054518699646
+mode = Mode.TORQUE
+batch_size = 64
+n_nodes = [512]
+activations = [GELU(approximate='none')]
+L1_penalty = 0.001
+L2_penalty = 0.001
+learning_rate = 0.001
+dropout_prob = 0.2
+use_batch_norm = True
+num_epochs_used = 392
+criterion_name = ModifiedHuberLoss
+criterion_params = {'delta': 1.0, 'factor': 0.5}
