@@ -214,9 +214,9 @@ print(Hyperparameter_essai1)
 #                          plot=True, save=True) 
 
 
-# list_simulation, best_hyperparameters_loss \
-# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
-#                             num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
+list_simulation, best_hyperparameters_loss \
+= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
+                            num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
 
 # plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV",
 #                                  "execution_time_use_saved_model", "val_loss", 'num_try')
