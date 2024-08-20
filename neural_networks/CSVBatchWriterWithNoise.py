@@ -37,7 +37,7 @@ class CSVBatchWriterWithNoise:
                 "insertion_muscle_z": [],
                 "segment_length": [],
                 **{f"dlmt_dq_{j}_{self.q_ranges_names_with_dofs[k]}": [] for j in range(self.nb_muscles) for k in range(len(self.q_ranges_names_with_dofs)) },
-                **{f"muscle_force_{k}": [] for k in range(self.nb_q)},
+                **{f"muscle_force_{k}": [] for k in range(self.nb_muscles)},
                 **{f"torque_{k}": [] for k in range(self.nb_q)},
                  }
             # Create a DataFrame with the initial structure and write it to the CSV file

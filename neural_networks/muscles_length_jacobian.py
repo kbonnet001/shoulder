@@ -81,8 +81,6 @@ def compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi=1e-8):
         # Append the computed derivative to the results list
         dlmt_dq.append(copy.deepcopy(dlmt_dqi))
 
-    print("dlmt_dq =", dlmt_dq)  # Output the results for verification
-
     return dlmt_dq
  
 def plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, filename, num_points=100):

@@ -25,7 +25,8 @@ def find_tangent_points_xy(p0, p1, r) :
   p1_x2y2 = p1[0] ** 2 + p1[1] ** 2
   
   if p0[0]**2+p0[1]**2-r**2<0 or p1[0]**2+p1[1]**2-r**2<0 : 
-    print("")
+    pass
+    # print("")
 
   v1_x = (p0[0]*r**2 + r*p0[1]*np.sqrt(max(0, p0[0]**2+p0[1]**2-r**2)))/p0_x2y2
   v1_y = (p0[1]*r**2 - r*p0[0]*np.sqrt(max(0, p0[0]**2+p0[1]**2-r**2)))/p0_x2y2

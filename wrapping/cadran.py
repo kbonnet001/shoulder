@@ -101,7 +101,7 @@ def determine_if_needed_change_side(point, point_ref_q_initial):
     point_transformed = apply_transformation(point, R)
     
     # Debug print to check the transformed point
-    print("Transformed point =", point_transformed)
+    # print("Transformed point =", point_transformed)
 
     # Determine if the point is in the first quadrant (both x and y are positive)
     if point_transformed[0] > 0 and point_transformed[1] > 0:

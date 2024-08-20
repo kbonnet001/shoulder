@@ -8,12 +8,16 @@ from neural_networks.muscle_forces_and_torque import compute_torque
 import numpy as np
 import matplotlib.pyplot as plt
 from neural_networks.file_directory_operations import create_and_save_plot
+from neural_networks.plot_visualisation import mean_distance, compute_pourcentage_error
+import os
 
 def compare_model_torque_prediction(save_model_paths, modes, csv_path_datas) : 
     # Load data from CSV file
     df_datas = pd.read_csv(csv_path_datas) #.sort_values(by="torque")
     torque_predictions = []
     labels = []
+    file_name = os.path.basename(csv_path_datas)
+    file_name = os.path.splitext(file_name)[0]
     
     for save_model, mode in zip(save_model_paths, modes) : 
         # on recupere les entrees en se fiant au modele
@@ -30,17 +34,18 @@ def compare_model_torque_prediction(save_model_paths, modes, csv_path_datas) :
             torque_predictions.append(outputs)
         elif mode == Mode.DLMT_DQ_F_TORQUE : 
             # torque quelque par dans les sorties
-            torque_predictions.append(outputs[:, y_labels.index("torque")])
-        elif mode == Mode.DLMT_DQ_FM : 
-            # on a pas le torque, on doit le calculer manuellement
-            # Récupérer les indices des colonnes dont le nom commence par "dlmt_dq_"
-            index = [i for i, label in enumerate(y_labels) if label.startswith("dlmt_dq_")]
+            # torque_predictions.append(outputs[:, y_labels.index("torque")])
+            torque_predictions.append(outputs[:, -1])
+        # elif mode == Mode.DLMT_DQ_FM : 
+        #     # on a pas le torque, on doit le calculer manuellement
+        #     # Récupérer les indices des colonnes dont le nom commence par "dlmt_dq_"
+        #     index = [i for i, label in enumerate(y_labels) if label.startswith("dlmt_dq_")]
 
-            # Extraire les colonnes correspondantes dans outputs
-            dlmt_dq = outputs[:, index]
-            fm = outputs[:, y_labels.index("muscle_force")]
-            torque = [compute_torque(dlmt_dq_i, fm_i) for dlmt_dq_i, fm_i in zip(dlmt_dq, fm)]
-            torque_predictions.append(np.array(torque))
+        #     # Extraire les colonnes correspondantes dans outputs
+        #     dlmt_dq = outputs[:, index]
+        #     fm = outputs[:, y_labels.index("muscle_force")]
+        #     torque = [compute_torque(dlmt_dq_i, fm_i) for dlmt_dq_i, fm_i in zip(dlmt_dq, fm)]
+        #     torque_predictions.append(np.array(torque))
             
         else : # mode doesn't exist
             raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
@@ -48,12 +53,17 @@ def compare_model_torque_prediction(save_model_paths, modes, csv_path_datas) :
     print(torque_predictions)
     
     # Plot the results
+    
     plt.plot(df_datas.loc[:, "torque"].values[:100], marker='o', linestyle='-', label = "torque_target")
     for k in range (len(torque_predictions)) : 
-        plt.plot(torque_predictions[k][:100], marker='o', linestyle='-', label = labels[k])
+        acc = mean_distance(torque_predictions[k], df_datas.loc[:, "torque"].values)
+        error, abs_error = compute_pourcentage_error(torque_predictions[k],df_datas.loc[:, "torque"].values)
+        
+        plt.plot(torque_predictions[k][:100], marker='o', linestyle='-', 
+                 label = f"{labels[k]} acc = {acc}, error% = {error}, abs_error% = {abs_error}")
     plt.xlabel(f'n')
     plt.ylabel('Torque (Nm)')
-    plt.title(f'Torque predictions - model comparaison')
+    plt.title(f'Torque predictions - model comparaison - {file_name}')
     plt.grid(True)
     plt.legend()
     

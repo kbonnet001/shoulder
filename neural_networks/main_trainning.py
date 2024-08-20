@@ -141,7 +141,7 @@ def get_num_try(directory_path):
     # Return the next number in the sequence (max_n + 1)
     return max_n + 1
 
-def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_dataset, folder_name, muscle_name, retrain, 
+def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder_name, muscle_name, retrain, 
                             file_path, with_noise, plot_preparation, plot, save) : 
 
     """ Main function to prepare, train, validate, test, and save a model.
@@ -152,6 +152,7 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
     - mode: Mode for the operation
     - nb_q: int, number of q (generalized coordinates) in the biorbd model.
     - nb_segment: int, number of segment in the biorbd model.
+    - nb_muscle: int, number of muscle in the biorbd model.
     - num_datas_for_dataset: int, number of data points for the dataset used for training.
     - folder_name: str, path/name of the folder containing all CSV data files for muscles (one for each muscle).
     - muscle_name: str, name of the muscle.
@@ -183,10 +184,10 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
         visualize_prediction_training(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
                                        val_loader, test_loader) 
     # Visualize : predictions/targets for all q variation
-    visualize_prediction(mode, Hyperparams.batch_size, nb_q, nb_segment, f"{folder_name_muscle}/_Model/{file_path}", 
+    visualize_prediction(mode, Hyperparams.batch_size, nb_q, nb_segment, nb_muscle, f"{folder_name_muscle}/_Model/{file_path}", 
                          f"{folder_name_muscle}/plot_all_q_variation_")
     
-def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, 
+def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder, muscle_name, 
                               with_noise, save_all = False) : 
     
     """Try hyperparameters, keep all train-evaluated models in a list, and return the best hyperparameters.
@@ -196,6 +197,7 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     - mode: mode for the operation, could be a string or an identifier related to the data processing or model setup.
     - nb_q: int, number of q (generalized coordinates) in the biorbd model.
     - nb_segment: int, number of segment in the biorbd model.
+    - nb_muscle: int, number of muscle in the biorbd model.
     - num_datas_for_dataset: int, number of data points for the dataset used for training.
     - folder: str, path/name of the folder containing all CSV data files for muscles (one for each muscle).
     - muscle_name: str, name of the muscle.
@@ -320,7 +322,7 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     
     # Finally, plot figure predictions targets with the best model saved
 
-    main_supervised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, False,
+    main_supervised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder, muscle_name, False,
                             f"{try_hyperparams_ref.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
                             save=True)
     

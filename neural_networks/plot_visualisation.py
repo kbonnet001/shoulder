@@ -339,7 +339,87 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
         create_and_save_plot(file_path, f"plot_{str(mode).replace("Mode.", "")}_predictions_and_targets.png")
         plt.show()
 
-def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, folder_name, num):
+# def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, folder_name, num):
+#     """Create plots to compare predictions and targets for DLMT_DQ.
+
+#     This function generates plots for each dataset variation of q, comparing the model's predictions with the true target values.
+#     Special handling is applied if there's only one dataset.
+
+#     Args:
+#     - mode (Mode): Mode of the model, indicating the type of data.
+#     - mode_selected (Mode): Selected mode for plotting, which must be equal to or less comprehensive than `mode`.
+#         Examples: mode_selected = mode or mode = Mode.LMT_DLMT_DQ and mode_selected = MUSCLE
+#     - model (torch.nn.Module): PyTorch model used for predictions.
+#     - batch_size (int): Batch size for data loading.
+#     - nb_q (int): Number of q variations in the biorbd model.
+#     - nb_segment (int): Number of segments in the  biorbd model.
+#     - file_path (str): Path to save the plots.
+#     - folder_name (str): Path to the folder containing CSV files with q variation data.
+#     - num (int): Number of data points to plot.
+#     """
+    
+#     filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(
+#         mode, batch_size, mode_selected, folder_name, nb_q, nb_segment
+#     )
+    
+#     # Generate plots for each q variation
+#     for q_index in range(nb_q):
+#         if row_fixed == 1 and col_fixed == 1:
+#             # Special case for a single dataset
+#             predictions, targets = get_predictions_and_targets_from_selected_y_labels(
+#                 model, loaders[q_index], y_labels, y_selected
+#             )
+            
+#             # Compute accuracy and error metrics
+#             acc = mean_distance(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
+#             error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[0] for prediction in predictions]), 
+#                                                                          np.array([target[0] for target in targets]))
+            
+#             plt.figure(figsize=(10, 5))
+#             plt.plot(targets[:num], label='True values', marker='o')
+#             plt.plot(predictions[:num], label='Predictions', marker='o', linestyle='--')
+#             plt.xlabel('q variation')
+#             plt.ylabel(f"{y_selected[0]}")
+#             plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation\n"
+#                       f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%", 
+#                       fontweight='bold')
+#             plt.legend()
+#             create_and_save_plot(file_path, f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
+#             plt.show()
+        
+#         else:
+#             # For multiple datasets, create a subplot for each y_selected
+#             fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+            
+#             predictions, targets = get_predictions_and_targets_from_selected_y_labels(
+#                 model, loaders[q_index], y_labels, y_selected
+#             )
+            
+#             for i in range(len(y_selected)):
+#                 acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
+#                 error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), 
+#                                                                              np.array([target[i] for target in targets]))
+                
+#                 row = i // col_fixed
+#                 col = i % col_fixed
+                
+#                 axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
+#                 axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', 
+#                                    linestyle='--', markersize=2)
+#                 axs[row, col].set_title(f"File: {filenames[q_index].replace('.CSV', '')}\n"
+#                                         f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
+#                                         fontsize='smaller')
+#                 axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
+#                 axs[row, col].set_ylabel(f'dlmt_dq{i}', fontsize='smaller')
+#                 axs[row, col].legend()
+            
+#             fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
+#             plt.tight_layout()
+#             create_and_save_plot(file_path, f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
+#             plt.show()
+            
+
+def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name, num):
     """Create plots to compare predictions and targets for DLMT_DQ.
 
     This function generates plots for each dataset variation of q, comparing the model's predictions with the true target values.
@@ -352,10 +432,13 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
     - model (torch.nn.Module): PyTorch model used for predictions.
     - batch_size (int): Batch size for data loading.
     - nb_q (int): Number of q variations in the biorbd model.
+    - nb_muscle (int): Number of muscles in the biorbd model.
     - nb_segment (int): Number of segments in the  biorbd model.
     - file_path (str): Path to save the plots.
     - folder_name (str): Path to the folder containing CSV files with q variation data.
     - num (int): Number of data points to plot.
+    
+    Warning : nb_q != 1 
     """
     
     filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(
@@ -364,59 +447,41 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
     
     # Generate plots for each q variation
     for q_index in range(nb_q):
-        if row_fixed == 1 and col_fixed == 1:
-            # Special case for a single dataset
-            predictions, targets = get_predictions_and_targets_from_selected_y_labels(
-                model, loaders[q_index], y_labels, y_selected
-            )
-            
-            # Compute accuracy and error metrics
-            acc = mean_distance(np.array([prediction[0] for prediction in predictions]), np.array([target[0] for target in targets]))
-            error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[0] for prediction in predictions]), 
-                                                                         np.array([target[0] for target in targets]))
-            
-            plt.figure(figsize=(10, 5))
-            plt.plot(targets[:num], label='True values', marker='o')
-            plt.plot(predictions[:num], label='Predictions', marker='o', linestyle='--')
-            plt.xlabel('q variation')
-            plt.ylabel(f"{y_selected[0]}")
-            plt.title(f"Predictions and targets of Lever Arm, q{q_index} variation\n"
-                      f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%", 
-                      fontweight='bold')
-            plt.legend()
-            create_and_save_plot(file_path, f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
-            plt.show()
+        # For multiple datasets, create a subplot for each y_selected
+        fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         
-        else:
-            # For multiple datasets, create a subplot for each y_selected
-            fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
+        predictions, targets = get_predictions_and_targets_from_selected_y_labels(model, loaders[q_index], y_labels,
+                                                                                    y_selected)
             
-            predictions, targets = get_predictions_and_targets_from_selected_y_labels(
-                model, loaders[q_index], y_labels, y_selected
-            )
-            
-            for i in range(len(y_selected)):
-                acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
-                error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), 
-                                                                             np.array([target[i] for target in targets]))
+        for muscle_index in range(nb_muscle) : 
+            row = muscle_index // row_fixed
+            col = muscle_index % col_fixed
                 
-                row = i // col_fixed
-                col = i % col_fixed
-                
-                axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
-                axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', 
-                                   linestyle='--', markersize=2)
-                axs[row, col].set_title(f"File: {filenames[q_index].replace('.CSV', '')}\n"
-                                        f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
-                                        fontsize='smaller')
-                axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
-                axs[row, col].set_ylabel(f'dlmt_dq{i}', fontsize='smaller')
-                axs[row, col].legend()
+            # for i in range(len(y_selected)):
+            #     acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
+            #     error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), 
+            #                                                                  np.array([target[i] for target in targets]))
+            for i in range(nb_q) :     
+                acc = mean_distance(np.array([prediction[nb_q*muscle_index+i] for prediction in predictions]), np.array([target[nb_q*muscle_index+i] for target in targets]))
+                error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[nb_q*muscle_index+i] for prediction in predictions]), 
+                                                                            np.array([target[nb_q*muscle_index+i] for target in targets]))
+                    
+                axs[row, col].plot([target[nb_q*muscle_index+i] for target in targets][:num], 
+                                   label=f"True values - acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%", 
+                                   marker='o', markersize=2)
+                axs[row, col].plot([prediction[nb_q*muscle_index+i] for prediction in predictions][:num], label='Predictions', marker='D', 
+                                linestyle='--', markersize=2)
+            axs[row, col].set_title(f"File: {filenames[q_index].replace('.CSV', '')}\n"
+                                    f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
+                                    fontsize='smaller')
+            axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
+            axs[row, col].set_ylabel(f'dlmt_dq{muscle_index}', fontsize='smaller')
+            axs[row, col].legend()
             
-            fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
-            plt.tight_layout()
-            create_and_save_plot(file_path, f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
-            plt.show()
+    fig.suptitle(f'Predictions and targets of Lever Arm, q{q_index} variation', fontweight='bold')
+    plt.tight_layout()
+    create_and_save_plot(file_path, f"q{q_index}_plot_length_jacobian_predictions_and_targets.png")
+    plt.show()
 
 # -------------------------------------
 def visualize_prediction_training(model, file_path, y_labels, train_loader, val_loader, test_loader):
@@ -439,7 +504,7 @@ def visualize_prediction_training(model, file_path, y_labels, train_loader, val_
     plot_predictions_and_targets(model, y_labels, val_loader, "Validation loader", 100, file_path)
     plot_predictions_and_targets(model, y_labels, test_loader, "Test loader", 100, file_path)
 
-def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction):
+def visualize_prediction(mode, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction):
     """
     Load a saved model and generate visualizations for predictions and targets based on the mode.
 
@@ -448,6 +513,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
     - batch_size (int): The batch size used for predictions.
     - nb_q (int): Number of q in the biorbd model.
     - nb_segment (int): Number of segments in the  biorbd model.
+    - nb_muscle (int): Number of muscles in the  biorbd model.
     - file_path (str): Path to the directory containing the 'model_config.json' file.
     - folder_name_for_prediction (str): Path to the folder containing files for plotting all q variations.
     """
@@ -458,7 +524,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
     # Generate plots based on the mode
     if mode == Mode.DLMT_DQ:
         plot_predictions_and_targets_from_filenames_dlmt_dq(
-            mode, mode, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, mode, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
     
     elif mode == Mode.MUSCLE_DLMT_DQ:
@@ -466,7 +532,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
             mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames_dlmt_dq(
-            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
     
     elif mode == Mode.TORQUE_MUS_DLMT_DQ:
@@ -474,7 +540,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
             mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames_dlmt_dq(
-            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames(
             mode, Mode.TORQUE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
@@ -482,7 +548,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
     
     elif mode == Mode.DLMT_DQ_FM:
         plot_predictions_and_targets_from_filenames_dlmt_dq(
-            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames(
             mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
@@ -494,7 +560,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, file_path, folder_n
         )
     elif mode == Mode.DLMT_DQ_F_TORQUE : 
         plot_predictions_and_targets_from_filenames_dlmt_dq(
-            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames(
             mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
