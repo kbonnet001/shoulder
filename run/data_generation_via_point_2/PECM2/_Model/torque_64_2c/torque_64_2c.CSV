@@ -1,0 +1,1 @@
+num_try,mode,val_loss,test_acc,test_error,test_abs_error,execution_time_train,execution_time_load_saved_model,execution_time_use_saved_model,batch_size,n_nodes,activations,L1_penalty,L2_penalty,learning_rate,dropout_prob,use_batch_norm,num_epoch_used,criterion_name,criterion_params

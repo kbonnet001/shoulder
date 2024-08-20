@@ -6,6 +6,7 @@ from wrapping.Cylinder import Cylinder
 from neural_networks.discontinuities import *
 import torch.nn as nn
 from neural_networks.Loss import *
+import random
 # from pyorerun import LiveModelAnimation
 
 from neural_networks.data_generation import *
@@ -22,6 +23,7 @@ from neural_networks.Timer import measure_time
 from neural_networks.save_model import load_saved_model
 from neural_networks.plot_pareto_front import plot_results_try_hyperparams, plot_results_try_hyperparams_comparaison, create_df_from_txt_saved_informations
 from neural_networks.analysis_torque_models import compare_model_torque_prediction
+from neural_networks.muscle_forces_and_torque import compute_fm_and_torque
 
 #################### 
 # Code des tests
@@ -98,8 +100,8 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10, 0, "dhhfgfhg", num_points = 20, 
-                        plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 50000, 0, "via_point_2", num_points = 20, 
+#                         plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
    
 # -----------------------------------------------------------------
@@ -141,14 +143,14 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "exemple"
-mode = Mode.DLMT_DQ_F_TORQUE
-batch_size = 64
-n_nodes = [[512, 512]]
+model_name = "torque_64_2c"
+mode = Mode.TORQUE
+batch_size = 256
+n_nodes = [[256, 256], [512, 512], [1024, 1024]]
 activations = [[nn.GELU(), nn.GELU()]]
 activation_names = [["GELU", "GELU"]]
-L1_penalty = [0.0, 0.1, 0.001]
-L2_penalty = [0.0, 0.1, 0.001]
+L1_penalty = [0.0, 0.1]
+L2_penalty = [0.0, 0.1]
 learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
@@ -158,7 +160,7 @@ criterion = [
     # (ExponentialLoss, {'alpha': [0.5]}),
     # (nn.MSELoss, {})
 ]
-p_dropout = [0.0, 0.2, 0.5]
+p_dropout = [0.0, 0.2]
 use_batch_norm = True
 
 
@@ -191,7 +193,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 10
+num_datas_for_dataset = 50000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
@@ -210,19 +212,25 @@ print(Hyperparameter_essai1)
 # one model per muscle !
 
 # main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), num_datas_for_dataset, 
-#                          folder_name="data_generation_via_point", muscle_name = "PECM2", retrain=True, 
+#                          folder_name="data_generation_dhhfgfhg", muscle_name = "PECM2", retrain=False, 
 #                          file_path=Hyperparameter_essai1.model_name, with_noise = False, plot_preparation=False, 
 #                          plot=True, save=True) 
 
-save_model_paths = ["data_generation_via_point/PECM2/_Model/torque_64_1c/Best_hyperparams",
-                    "data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/Best_hyperparams", 
-                    "data_generation_via_point/PECM2/_Model/dlmt_dq_fm_64_2c/Best_hyperparams"]
-modes = [Mode.TORQUE, Mode.DLMT_DQ_F_TORQUE, Mode.DLMT_DQ_FM]
-compare_model_torque_prediction(save_model_paths, modes, "data_generation_via_point/PECM2/PECM2.CSV")
+best_hyperparameters_loss \
+= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
+                            num_datas_for_dataset, "data_generation_via_point_2", "PECM2", with_noise)
 
-# best_hyperparameters_loss \
-# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
-#                             num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
+# save_model_paths = ["data_generation_via_point/PECM2/_Model/torque_64_1c/Best_hyperparams",
+#                     "data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/Best_hyperparams", 
+#                     "data_generation_via_point/PECM2/_Model/dlmt_dq_fm_64_2c/Best_hyperparams"]
+# modes = [Mode.TORQUE, Mode.DLMT_DQ_F_TORQUE, Mode.DLMT_DQ_FM]
+# compare_model_torque_prediction(save_model_paths, modes, "data_generation_via_point/PECM2/PECM2.CSV")
+
+# q = np.zeros(8)
+# qdot = np.array([random.uniform(-10*np.pi, 10*np.pi) for _ in range (len(q_ranges))])
+# dlmt_dq = model_biorbd.musclesLengthJacobian(q).to_array()
+# # dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8) # calcul avec wrapping
+# muscle_force, torque = compute_fm_and_torque(model_biorbd, 0, q, qdot, 1)
 
 # plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/dlmt_dq_f_torque_64_2c.CSV",
 #                                  "execution_time_use_saved_model", "val_loss", 'L2_penalty')
