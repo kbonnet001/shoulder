@@ -128,24 +128,26 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
     selected_columns.insert(0, 'segment_length')
     
   elif mode == Mode.TORQUE : 
-    selected_columns = ['torque']
+    selected_columns = [col for col in df_datas.columns if col.startswith('torque_')]
   
   elif mode == Mode.TORQUE_MUS_DLMT_DQ : 
-    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-    selected_columns.insert(0, 'segment_length')
-    selected_columns.insert(len(selected_columns), 'torque')
+    selected_columns_dlmt_dq = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns_torque = [col for col in df_datas.columns if col.startswith('torque_')]
+    selected_columns = ['segment_length'] + selected_columns_dlmt_dq + selected_columns_torque 
     
   elif mode == Mode.DLMT_DQ_FM : 
-    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-    selected_columns.insert(0, 'muscle_force')
+    selected_columns_dlmt_dq = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns_f = [col for col in df_datas.columns if col.startswith('muscle_force_')]
+    selected_columns = selected_columns_dlmt_dq + selected_columns_f
   
   elif mode == Mode.FORCE: 
-    selected_columns = ['muscle_force']
+    selected_columns = [col for col in df_datas.columns if col.startswith('muscle_force_')]
   
   elif mode == Mode.DLMT_DQ_F_TORQUE : 
-    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-    selected_columns.append('muscle_force')
-    selected_columns.append('torque')
+    selected_columns_dlmt_dq = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns_torque = [col for col in df_datas.columns if col.startswith('torque_')]
+    selected_columns_f = [col for col in df_datas.columns if col.startswith('muscle_force_')]
+    selected_columns = selected_columns_dlmt_dq + selected_columns_f + selected_columns_torque 
     
   else : # mode doesn't exist
     raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")

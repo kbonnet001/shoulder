@@ -301,42 +301,43 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
         mode, batch_size, mode_selected, folder_name, nb_q, nb_segment
     )
     
-    # Set up the figure and subplots for visualization
-    fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
-    
     # Iterate over each dataset to plot predictions and targets
     for q_index in range(nb_q):
-        row = q_index // 3
-        col = q_index % 3
+        # Set up the figure and subplots for visualization
+        fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
         
         # Get selected predictions and targets from the data loader
         predictions, targets = get_predictions_and_targets_from_selected_y_labels(
             model, loaders[q_index], y_labels, y_selected
         )
         
-        # Compute accuracy and error metrics
-        acc = mean_distance(np.array(predictions), np.array(targets))
-        error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array(predictions), np.array(targets))
-
-        # Plot the true values and predictions with annotations
-        axs[row, col].plot(targets[:num], label='True values', marker='o', markersize=2)
-        axs[row, col].plot(predictions[:num], label='Predictions', marker='D', linestyle='--', markersize=2)
-        axs[row, col].set_title(
-            f"File: {filenames[q_index].replace('.CSV', '')},\n"
-            f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
-            fontsize='smaller'
-        )
-        axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
-        axs[row, col].set_ylabel(f'{y_selected[0]}', fontsize='smaller')
-        axs[row, col].legend()
-    
-    # Add a title to the entire figure and adjust the layout
-    fig.suptitle(f'Predictions and targets of {y_selected[0]}', fontweight='bold')
-    plt.tight_layout()  
-    
-    # Save the plot to the specified file path
-    create_and_save_plot(file_path, f"plot_{y_selected[0]}_predictions_and_targets.png")
-    plt.show()
+        for i in range(nb_q):
+             
+            acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
+            error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), 
+                                                                            np.array([target[i] for target in targets]))
+            
+            row = i // col_fixed
+            col = i % col_fixed
+            
+            axs[row, col].plot([target[i] for target in targets][:num], label='True values', marker='o', markersize=2)
+            axs[row, col].plot([prediction[i] for prediction in predictions][:num], label='Predictions', marker='D', 
+                                linestyle='--', markersize=2)
+            axs[row, col].set_title(f"{y_selected[i]}\n"
+                                    f"acc = {acc:.6f}, error% = {error_pourcen:.3f}%, error abs% = {error_pourcen_abs:.3f}%",
+                                    fontsize='smaller')
+            axs[row, col].set_xlabel(f'q{q_index} Variation', fontsize='smaller')
+            axs[row, col].set_ylabel(f'{y_selected[i]}', fontsize='smaller')
+            axs[row, col].legend()
+            
+        # Add a title to the entire figure and adjust the layout
+        fig.suptitle(f'Predictions and targets of {str(mode).replace("Mode.", "")} File: {filenames[q_index].replace('.CSV', '')}', 
+                    fontweight='bold')
+        plt.tight_layout()  
+        
+        # Save the plot to the specified file path
+        create_and_save_plot(file_path, f"plot_{str(mode).replace("Mode.", "")}_predictions_and_targets.png")
+        plt.show()
 
 def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, folder_name, num):
     """Create plots to compare predictions and targets for DLMT_DQ.

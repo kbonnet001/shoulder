@@ -144,7 +144,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    create_directory(directory)
 
    # Initialize CSV writer for saving data
-   writer = CSVBatchWriter(f"{directory}/{filename}.CSV", q_ranges_names_with_dofs, batch_size=100)
+   writer = CSVBatchWriter(f"{directory}/{filename}.CSV", q_ranges_names_with_dofs, model.nbMuscles(), model.nbQ(), batch_size=100)
 
    # Initialize variables for storing results
    q = q_fixed
@@ -214,7 +214,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
                      ['PECM2', 'PECM3', 'LAT', 'DELT2', 'DELT3', 'INFSP', 'SUPSP', 'SUBSC', 'TMIN', 'TMAJ',
                      'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
    - cylinders : list of int, list of muscle cylinders (0, 1, or 2 cylinders)
-   - model : model object
+   - model : model biorbd
    - q_fixed : array of shape (4,), fixed q values (reference)
    - filename : str, name of the file to create
    - num_points : int, number of points to generate per movement (default 100)
@@ -247,7 +247,7 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
 
       # Check if the CSV file already exists; if not, create a new writer
       if not os.path.exists(file_path):
-         writer = CSVBatchWriter(file_path, q_ranges_names_with_dofs, batch_size=100)
+         writer = CSVBatchWriter(file_path, q_ranges_names_with_dofs, model.nbMuscles(), model.nbQ(), batch_size=100)
 
          # Initialize lists to store results
          segment_lengths = []
@@ -279,14 +279,15 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
                segment_lengths.append(segment_length)
 
                # Compute muscle length Jacobian and other metrics
-               dlmt_dq = model.musclesLengthJacobian(q).to_array()[muscle_index]
+               dlmt_dq = model.musclesLengthJacobian(q).to_array() #[muscle_index]
                # dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8) # calcul avec wrapping
                muscle_force, torque = compute_fm_and_torque(model, muscle_index, q, qdot, alpha)
                # muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
                # torque, f_sup_limit = compute_torque(dlmt_dq, muscle_force)
 
                # Write data to CSV
-               writer.add_line(muscle_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, copy.deepcopy(dlmt_dq), muscle_force, torque)
+               writer.add_line(muscle_index, q, qdot, alpha, origin_muscle, insertion_muscle, segment_length, 
+                               copy.deepcopy(dlmt_dq), copy.deepcopy(muscle_force), copy.deepcopy(torque))
 
          # Close the CSV writer
          writer.close()
@@ -389,8 +390,8 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
    
    # Create to writer to save datas, one with "purs datas" (no errors, discontinuties, etc) and an other with errors
    # To see distribution of datas (please, choose plot_discontinuities = True)
-   writer = CSVBatchWriter(filename+f"/{cylinders[0].muscle}.CSV", q_ranges_names_with_dofs, batch_size=100)
-   writer_datas_ignored = CSVBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.CSV", q_ranges_names_with_dofs, batch_size=100)
+   writer = CSVBatchWriter(filename+f"/{cylinders[0].muscle}.CSV", q_ranges_names_with_dofs, model.nbMuscles(), model.nbQ(), batch_size=100)
+   writer_datas_ignored = CSVBatchWriter(filename+f"/{cylinders[0].muscle}_datas_ignored.CSV", q_ranges_names_with_dofs, model.nbMuscles(), model.nbQ(), batch_size=100)
  
    # Limits of q
    min_vals_q = [row[0] for row in q_ranges]
@@ -435,7 +436,7 @@ def data_for_learning_without_discontinuites_ddl(muscle_selected, cylinders, mod
          # f_sup_limits.append(f_sup_limit)
 
          # Compute muscle length Jacobian and other metrics
-         dlmt_dq = model.musclesLengthJacobian(q).to_array()[muscle_index]
+         dlmt_dq = model.musclesLengthJacobian(q).to_array()
          # dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8) # calcul avec wrapping
          muscle_force, torque = compute_fm_and_torque(model, muscle_index, q, qdot, alpha)
          # muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
@@ -535,7 +536,7 @@ def data_for_learning_with_noise(model, csv_file_path, dataset_size_noise, batch
    """
    _, q_ranges_names_with_dofs = compute_q_ranges(model)
    
-   writer = CSVBatchWriterWithNoise(f"{csv_file_path.replace(".CSV", "")}_with_noise.CSV", q_ranges_names_with_dofs,
+   writer = CSVBatchWriterWithNoise(f"{csv_file_path.replace(".CSV", "")}_with_noise.CSV", q_ranges_names_with_dofs, model.nbMuscles(), model.nbQ(),
                                       batch_size, noise_std_dev)
    writer.augment_data_with_noise_batch(dataset_size_noise)
 

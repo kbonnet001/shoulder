@@ -2,17 +2,21 @@ import os
 import pandas as pd
 
 class CSVBatchWriter:
-    def __init__(self, filename, q_ranges_names_with_dofs, batch_size=100):
+    def __init__(self, filename, q_ranges_names_with_dofs, nb_muscles, nb_q, batch_size=100):
         """ Initialize the CSVBatchWriter with a file name, a list of degrees of freedom names,
         and an optional batch size.
         
         Args:
         - filename (str): The name - path of the CSV file to write data.
         - q_ranges_names_with_dofs (list of string): A list of names for the degrees of freedom.
+        - nb_muscle (int) : number of muscle in the biorbd model
+        - nb_q (int):  number of q in the biorbd model.
         - batch_size (int): The size of the batch for buffering data before writing to CSV.
         """
         self.filename = filename
         self.q_ranges_names_with_dofs = q_ranges_names_with_dofs
+        self.nb_muscles = nb_muscles
+        self.nb_q = nb_q
         self.batch_size = batch_size
         self.buffer = [] # Initialize an empty list to act as a buffer for batch writing
         
@@ -32,9 +36,9 @@ class CSVBatchWriter:
                 "insertion_muscle_y": [],
                 "insertion_muscle_z": [],
                 "segment_length": [],
-                **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
-                "muscle_force": [],
-                "torque": []
+                **{f"dlmt_dq_{j}_{self.q_ranges_names_with_dofs[k]}": [] for j in range(self.nb_muscles) for k in range(len(self.q_ranges_names_with_dofs)) },
+                **{f"muscle_force_{k}": [] for k in range(self.nb_q)},
+                **{f"torque_{k}": [] for k in range(self.nb_q)},
                  }
             # Create a DataFrame from the dictionary and write it to a CSV file
             pd.DataFrame(data).to_csv(filename, index=False)
@@ -69,10 +73,10 @@ class CSVBatchWriter:
             "insertion_muscle_x": insertion_muscle[0],
             "insertion_muscle_y": insertion_muscle[1],
             "insertion_muscle_z": insertion_muscle[2],
-            "segment_length": segment_length, 
-            **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": dlmt_dq[k] for k in range(len(dlmt_dq))},
-            "muscle_force": muscle_force,
-            "torque": torque
+            "segment_length": segment_length,            
+            **{f"dlmt_dq_{j}_{self.q_ranges_names_with_dofs[k]}": dlmt_dq[j][k] for j in range(self.nb_muscles) for k in range(len(self.q_ranges_names_with_dofs)) },
+            **{f"muscle_force_{k}": muscle_force[k] for k in range(self.nb_q)},
+            **{f"torque_{k}": torque[k] for k in range(self.nb_q)},
         }
         
         # Add the new line to the buffer

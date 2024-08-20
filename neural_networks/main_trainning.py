@@ -227,7 +227,7 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     # ------------------
     
     directory = f"{folder}/{muscle_name}/_Model/{try_hyperparams_ref.model_name}"
-    if os.path.exists(f"{f"{directory}/Best_hyperparams"}"): 
+    if os.path.exists(f"{f"{directory}/Best_hyperparams"}") and os.listdir(f"{f"{directory}/Best_hyperparams"}"): 
         # Get num_try
         num_try = get_num_try(directory)
         best_val_loss = get_min_value_from_csv(f"{directory}/{try_hyperparams_ref.model_name}.CSV", "val_loss")

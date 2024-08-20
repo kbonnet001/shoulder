@@ -3,17 +3,21 @@ import numpy as np
 import os
 
 class CSVBatchWriterWithNoise:
-    def __init__(self, filename, q_ranges_names_with_dofs, batch_size=1000, noise_std_dev=0.01):
+    def __init__(self, filename, q_ranges_names_with_dofs, nb_muscles, nb_q, batch_size=1000, noise_std_dev=0.01):
         """ Initialize the CSVBatchWriter instance.
 
         Args:
         - filename (str): Name - path of the CSV file to write data to.
         - q_ranges_names_with_dofs (list): List of names for the degrees of freedom.
+        - nb_muscle (int) : number of muscle in the biorbd model
+        - nb_q (int):  number of q in the biorbd model.
         - batch_size (int, optional): Number of entries to buffer before writing to the file. Default is 1000.
         - noise_std_dev (float, optional): Standard deviation of the noise to be added to the data. Default is 0.01.
         """
         self.filename = filename
         self.q_ranges_names_with_dofs = q_ranges_names_with_dofs
+        self.nb_muscles = nb_muscles
+        self.nb_q = nb_q
         self.batch_size = batch_size
         self.noise_std_dev = noise_std_dev
         self.buffer = []
@@ -32,9 +36,9 @@ class CSVBatchWriterWithNoise:
                 "insertion_muscle_y": [],
                 "insertion_muscle_z": [],
                 "segment_length": [],
-                **{f"dlmt_dq_{self.q_ranges_names_with_dofs[k]}": [] for k in range(len(self.q_ranges_names_with_dofs))},
-                "muscle_force": [],
-                "torque": []
+                **{f"dlmt_dq_{j}_{self.q_ranges_names_with_dofs[k]}": [] for j in range(self.nb_muscles) for k in range(len(self.q_ranges_names_with_dofs)) },
+                **{f"muscle_force_{k}": [] for k in range(self.nb_q)},
+                **{f"torque_{k}": [] for k in range(self.nb_q)},
                  }
             # Create a DataFrame with the initial structure and write it to the CSV file
             pd.DataFrame(data).to_csv(filename, index=False)
