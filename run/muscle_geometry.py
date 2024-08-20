@@ -143,9 +143,9 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "torque_64_2c"
+model_name = "torque_128_2c"
 mode = Mode.TORQUE
-batch_size = 256
+batch_size = 128
 n_nodes = [[256, 256], [512, 512], [1024, 1024]]
 activations = [[nn.GELU(), nn.GELU()]]
 activation_names = [["GELU", "GELU"]]
@@ -193,7 +193,7 @@ use_batch_norm = True
 # p_dropout=0.2
 # use_batch_norm=True
 
-num_datas_for_dataset = 50000
+num_datas_for_dataset = 30000
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
