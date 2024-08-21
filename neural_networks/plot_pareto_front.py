@@ -38,7 +38,7 @@ def find_points_front_pareto(num_points, x_axis, y_axis):
 
     return pareto_indices  # Return the indices of the Pareto front points
 
-def plot_results_try_hyperparams(csv_file, x_info, y_info, id="num_try"):
+def plot_results_try_hyperparams(csv_file, x_info, y_info, id="num_try", save=True):
     """
     Plots the results from a CSV file and highlights the Pareto front.
 
@@ -98,11 +98,12 @@ def plot_results_try_hyperparams(csv_file, x_info, y_info, id="num_try"):
     plt.grid(True)
     plt.legend()
 
-    # Save the plot to the specified directory
-    create_and_save_plot(f"{os.path.dirname(csv_file)}", f"{x_info} vs {y_info}.png")
+    if save : 
+        # Save the plot to the specified directory
+        create_and_save_plot(f"{os.path.dirname(csv_file)}", f"{x_info} vs {y_info}.png")
     plt.show()  # Display the plot
 
-def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_path, id="num_try"):
+def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_path, id="num_try", save=True):
     """
     Plots and compares results from multiple directories containing CSV files, highlighting differences.
 
@@ -160,7 +161,8 @@ def plot_results_try_hyperparams_comparaison(dir_paths, x_info, y_info, save_pat
 
     # Construct filename for saving the plot
     text_file_names = " vs ".join([file_name.split('.')[0] for file_name in file_names])
-    create_and_save_plot(f"{save_path}", f"{text_file_names}.png")
+    if save : 
+        create_and_save_plot(f"{save_path}", f"{text_file_names}.png")
 
     plt.show()  # Display the plot
 

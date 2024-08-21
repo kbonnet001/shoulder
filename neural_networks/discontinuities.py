@@ -51,7 +51,10 @@ def find_discontinuity(x, y, epsilon = 0.002, plot_discontinuities = False) :
     - plot_discontinuities : bool (default = False) plot the mouvement with discontinuity
     
     Returns : 
-    - discontinuities : [int], list of all index where a discontinuity is founded"""
+    - discontinuities : [int], list of all index where a discontinuity is founded
+    
+    Warning : Don't work correctly for muscle force and torque
+        ok for segment length"""
 
     # Compute distances beetween consecutives points
     distances = np.sqrt(np.diff(x)**2 + np.diff(y)**2)
