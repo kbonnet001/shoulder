@@ -315,7 +315,7 @@ def plot_all_q_variation(model, q_fixed, y_label, filename="", file_path=""):
       _, q_ranges_names_with_dofs = compute_q_ranges(model)
       
       # Compute the number of rows and columns for subplots
-      row_fixed, col_fixed = compute_row_col(model.nbQ(), 3)
+      row_fixed, col_fixed = compute_row_col(model.nbQ())
       fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10))
 
       # Loop through each q parameter

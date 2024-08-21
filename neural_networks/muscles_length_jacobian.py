@@ -116,7 +116,7 @@ def plot_all_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
         delta_qi = 1e-10  # Small variation for numerical differentiation
         
         # Determine the layout of subplots
-        row_size, col_size = compute_row_col(len(q_ranges), 3)
+        row_size, col_size = compute_row_col(len(q_ranges))
         fig, axs = plt.subplots(row_size, col_size, figsize=(15, 10))
         
         # Iterate over each joint angle to compute its derivative
@@ -206,7 +206,7 @@ def plot_one_length_jacobian(model, q_fixed, cylinders, muscle_selected, filenam
     delta_qi = 1e-10  # Small variation for numerical differentiation
 
     # Determine the layout of subplots
-    row_size, col_size = compute_row_col(len(q_ranges), 3)
+    row_size, col_size = compute_row_col(len(q_ranges))
 
     # Iterate over each joint angle index to generate plots
     for q_index in range(len(q_ranges)):

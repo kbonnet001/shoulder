@@ -5,6 +5,7 @@ import os
 from neural_networks.file_directory_operations import create_and_save_plot, read_info_model
 import pandas as pd
 from neural_networks.CSVBatchWriterTestHyperparams import CSVBatchWriterTestHyperparams
+from neural_networks.muscle_plotting_utils import get_markers
 
 def find_points_front_pareto(num_points, x_axis, y_axis):
     """
@@ -36,23 +37,6 @@ def find_points_front_pareto(num_points, x_axis, y_axis):
             pareto_indices.append(i)
 
     return pareto_indices  # Return the indices of the Pareto front points
-
-def get_markers(num_groups):
-    """
-    Generate a list of markers with a length matching the number of groups.
-
-    Args:
-        num_groups (int): Number of distinct groups or datasets.
-
-    Returns:
-        list: List of marker styles.
-    """
-    # Define a list of possible marker styles available in matplotlib
-    available_markers = ["o", "s", "D", "v", "^", "<", ">", "P", "X", "h", "*", "+", "x", "1", "2", "3", "4", "8", 
-                         "|", "_"]
-    # If the number of groups is greater than the available markers, cycle through them
-    markers = [available_markers[i % len(available_markers)] for i in range(num_groups)]
-    return markers
 
 def plot_results_try_hyperparams(csv_file, x_info, y_info, id="num_try"):
     """

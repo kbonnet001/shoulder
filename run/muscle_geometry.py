@@ -172,53 +172,53 @@ use_batch_norm = True
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-# model_name="hfhjsdf" 
-# mode = Mode.DLMT_DQ
-# batch_size=64
-# # n_layers=1
-# n_nodes=[256, 256]
-# activations=[nn.GELU(), nn.GELU()]
-# # activations = [nn.Sigmoid()]
+model_name="kugnbg" 
+mode = Mode.DLMT_DQ_F_TORQUE
+batch_size=128
+# n_layers=1
+n_nodes=[256, 256]
+activations=[nn.GELU(), nn.GELU()]
+# activations = [nn.Sigmoid()]
 
-# activation_names = ["GELU", "GELU"]
+activation_names = ["GELU", "GELU"]
 
-# L1_penalty=0.01
-# L2_penalty=0.01
-# learning_rate=0.01
-# num_epochs=1000 
-# optimizer=0.0
-# # criterion = LogCoshLoss(factor=1.8)
-# criterion = ModifiedHuberLoss(delta=0.1, factor=0.2)
-# # criterion = nn.MSELoss()
-# p_dropout=0.2
-# use_batch_norm=True
+L1_penalty=0.01
+L2_penalty=0.01
+learning_rate=0.01
+num_epochs=1000 
+optimizer=0.0
+# criterion = LogCoshLoss(factor=1.8)
+criterion = ModifiedHuberLoss(delta=0.1, factor=0.2)
+# criterion = nn.MSELoss()
+p_dropout=0.2
+use_batch_norm=True
 
-num_datas_for_dataset = 25000
+num_datas_for_dataset = 10
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 with_noise = False
 
-# Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
-#                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
-#                                              use_batch_norm)
-Hyperparameter_essai1 = ModelTryHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
+Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
                                              use_batch_norm)
+# Hyperparameter_essai1 = ModelTryHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
+#                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
+#                                              use_batch_norm)
 print(Hyperparameter_essai1)
 
 # test_limit_data_for_learning ("PECM2", cylinders_PECM2, model_biorbd, plot=True, plot_cadran=False)
 
 # one model per muscle !
 
-# main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), model_biorbd.nbMuscles(), num_datas_for_dataset, 
-#                          folder_name="data_generation_via_point_30000", muscle_name = "PECM2", retrain=False, 
-#                          file_path=Hyperparameter_essai1.model_name, with_noise = False, plot_preparation=False, 
-#                          plot=False, save=True) 
+main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), model_biorbd.nbMuscles(), num_datas_for_dataset, 
+                         folder_name="data_generation_via_point_25000", muscle_name = "PECM2", retrain=True, 
+                         file_path=Hyperparameter_essai1.model_name, with_noise = False, plot_preparation=False, 
+                         plot_loss_acc=True, plot_loader=True, save=True) 
 
-best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), model_biorbd.nbMuscles(), 
-                            num_datas_for_dataset, "data_generation_via_point_25000", "PECM2", with_noise)
+# best_hyperparameters_loss \
+# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), model_biorbd.nbMuscles(), 
+#                             num_datas_for_dataset, "data_generation_via_point_25000", "PECM2", with_noise)
 
 # save_model_paths = ["data_generation_via_point/PECM2/_Model/torque_64_1c/Best_hyperparams",
 #                     "data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/Best_hyperparams"]

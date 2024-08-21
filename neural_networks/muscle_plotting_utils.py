@@ -1,23 +1,46 @@
 import numpy as np
 import matplotlib as plt
 import matplotlib.pyplot as plt
+import math as mat
 
-def compute_row_col(sum, div) : 
+def compute_row_col(sum) : 
     """Compute ideal row and col for subplots
     
     Args : 
     - sum : int, sum of all number of plot to do in the figure
-    - div : int, number of col max 
     
     Returns : 
     - row : int, number of row for subplot
     - col : int, number of col for subplot """
+    
+    #  div : int, number of col max 
+    div = compute_div(sum)
     
     row = sum//div
     if sum%div != 0 :
         row+=1
     
     return row, min(sum, div)
+
+def compute_div(val):
+    """
+    Compute an adjusted square root value based on the given number.
+
+    Parameters:
+    val (float): The number for which the square root will be calculated.
+
+    Returns:
+    float: The adjusted square root value.
+    """
+    # Compute the integer part of the square root of the given value
+    int_sqrt = int(mat.sqrt(val))
+    
+    # Check if the actual square root is between int_sqrt and int_sqrt + 0.5
+    if int_sqrt <= mat.sqrt(val) < int_sqrt + 0.5:
+        return int_sqrt
+    else:
+        # If the actual square root is equal to or greater than int_sqrt + 0.5, return int_sqrt + 0.5
+        return int_sqrt + 1
 
 def plot_mvt_discontinuities_in_red(i, qs, segment_lengths, to_remove) : 
     """ Plots the muscle lengths as a function of joint angles (qs), 
@@ -69,3 +92,20 @@ def rice_rule(data):
 def scott_rule(data):
     bin_width = 3.5 * np.std(data) / (len(data) ** (1/3))
     return int((np.max(data) - np.min(data)) / bin_width)
+
+def get_markers(num_groups):
+    """
+    Generate a list of markers with a length matching the number of groups.
+
+    Args:
+        num_groups (int): Number of distinct groups or datasets.
+
+    Returns:
+        list: List of marker styles.
+    """
+    # Define a list of possible marker styles available in matplotlib
+    available_markers = ["o", "s", "D", "v", "^", "<", ">", "P", "X", "h", "*", "+", "x", "1", "2", "3", "4", "8", 
+                         "|", "_"]
+    # If the number of groups is greater than the available markers, cycle through them
+    markers = [available_markers[i % len(available_markers)] for i in range(num_groups)]
+    return markers

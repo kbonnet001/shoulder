@@ -362,7 +362,7 @@ def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_te
     - graph_labels: Labels for different datasets in the plot.
     """
     
-    row_fixed, col_fixed = compute_row_col(nb_q + len(y_labels), 4)
+    row_fixed, col_fixed = compute_row_col(nb_q + len(y_labels))
     
     fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
     

@@ -142,7 +142,7 @@ def get_num_try(directory_path):
     return max_n + 1
 
 def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder_name, muscle_name, retrain, 
-                            file_path, with_noise, plot_preparation, plot, save) : 
+                            file_path, with_noise, plot_preparation, plot_loss_acc, plot_loader, save) : 
 
     """ Main function to prepare, train, validate, test, and save a model.
     
@@ -160,7 +160,9 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, nb_muscle, num
     - file_path: str, the path where the model will be saved after training.
     - with_noise: bool, (default = True), True to include noisy data in the dataset for learning.
     - plot_preparation: bool, True to show the distribution of all data preparation.
-    - plot: bool, True to show plot loss, accuracy, predictions/targets.
+    - plot_loss_acc: bool, True to show plot loss, accuracy, predictions/targets.
+    - plot_loader: bool, True to show plot comparing the loader data (train, validation, test) with the target data
+        Warning : This plot is not available if the output height is set too large, as there may be too many subplots to display!
     - save: bool, True to save the model to file_path.
     """
     
@@ -169,7 +171,8 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, nb_muscle, num
     create_directory(f"{folder_name_muscle}/_Model") # Muscle/Model
     
     # Train_model if retrain == True or if none file_path already exist
-    if retrain or os.path.exists(f"{folder_name_muscle}/_Model/{file_path}") == False: 
+    if retrain or os.path.exists(f"{folder_name_muscle}/_Model/{file_path}")==False : 
+        create_directory(f"{folder_name_muscle}/_Model/{file_path}") # Muscle/Model
         
         # Prepare datas for trainning
         train_loader, val_loader, test_loader, input_size, output_size, y_labels \
@@ -178,11 +181,12 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, nb_muscle, num
         # Trainning
         model, _, _, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, 
                                                                output_size, Hyperparams, 
-                                                               f"{folder_name_muscle}/_Model/{file_path}", plot, save, 
+                                                               f"{folder_name_muscle}/_Model/{file_path}", plot_loss_acc, save, 
                                                                show_plot=True)
-        # Visualize tranning : predictions/targets for loaders train, val and test
-        visualize_prediction_training(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
-                                       val_loader, test_loader) 
+        if plot_loader : 
+            # Visualize tranning : predictions/targets for loaders train, val and test
+            visualize_prediction_training(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
+                                        val_loader, test_loader) 
     # Visualize : predictions/targets for all q variation
     visualize_prediction(mode, Hyperparams.batch_size, nb_q, nb_segment, nb_muscle, f"{folder_name_muscle}/_Model/{file_path}", 
                          f"{folder_name_muscle}/plot_all_q_variation_")
@@ -323,8 +327,8 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, nb_mu
     # Finally, plot figure predictions targets with the best model saved
 
     main_supervised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder, muscle_name, False,
-                            f"{try_hyperparams_ref.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
-                            save=True)
+                            f"{try_hyperparams_ref.model_name}/Best_hyperparams",with_noise, plot_preparation=True, 
+                            plot_loss_acc=True, plot_loader=False, save=True)
     
     return best_hyperparameters_loss
 
