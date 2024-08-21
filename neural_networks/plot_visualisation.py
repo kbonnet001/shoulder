@@ -284,7 +284,7 @@ def general_plot_predictions(mode, batch_size, mode_selected, folder_name, total
     
     return filenames, loaders, row_fixed, col_fixed, y_labels, y_selected
 
-def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, 
+def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batch_size, nb_q, nb_segment, nb_plot, file_path, 
                                                 folder_name, num):
     """Create plots to compare predictions and targets for a specific column of y (e.g., lmt, torque).
 
@@ -305,7 +305,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
     """
     # Prepare data and configurations for plotting using helper function
     filenames, loaders, row_fixed, col_fixed, y_labels, y_selected = general_plot_predictions(
-        mode, batch_size, mode_selected, folder_name, nb_q, nb_segment
+        mode, batch_size, mode_selected, folder_name, nb_plot, nb_segment
     )
     
     # Iterate over each dataset to plot predictions and targets
@@ -318,7 +318,7 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
             model, loaders[q_index], y_labels, y_selected
         )
         
-        for i in range(nb_q):
+        for i in range(nb_plot):
              
             acc = mean_distance(np.array([prediction[i] for prediction in predictions]), np.array([target[i] for target in targets]))
             error_pourcen, error_pourcen_abs = compute_pourcentage_error(np.array([prediction[i] for prediction in predictions]), 
@@ -564,7 +564,7 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, nb_muscle, file_pat
     
     elif mode == Mode.MUSCLE_DLMT_DQ:
         plot_predictions_and_targets_from_filenames(
-            mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, nb_q, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames_dlmt_dq(
             mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
@@ -572,13 +572,13 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, nb_muscle, file_pat
     
     elif mode == Mode.TORQUE_MUS_DLMT_DQ:
         plot_predictions_and_targets_from_filenames(
-            mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.MUSCLE, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames_dlmt_dq(
             mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames(
-            mode, Mode.TORQUE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.TORQUE, model, batch_size, nb_q, nb_segment, nb_q, file_path, folder_name_for_prediction, 100
         )
     
     elif mode == Mode.DLMT_DQ_FM:
@@ -586,22 +586,26 @@ def visualize_prediction(mode, batch_size, nb_q, nb_segment, nb_muscle, file_pat
             mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames(
-            mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
     
-    elif mode in [Mode.MUSCLE, Mode.TORQUE]:
+    elif mode == Mode.MUSCLE:
         plot_predictions_and_targets_from_filenames(
-            mode, mode, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, mode, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
+        )
+    elif mode ==  Mode.TORQUE:
+        plot_predictions_and_targets_from_filenames(
+            mode, mode, model, batch_size, nb_q, nb_segment, nb_q, file_path, folder_name_for_prediction, 100
         )
     elif mode == Mode.DLMT_DQ_F_TORQUE : 
         plot_predictions_and_targets_from_filenames_dlmt_dq(
             mode, Mode.DLMT_DQ, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames(
-            mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.FORCE, model, batch_size, nb_q, nb_segment, nb_muscle, file_path, folder_name_for_prediction, 100
         )
         plot_predictions_and_targets_from_filenames(
-            mode, Mode.TORQUE, model, batch_size, nb_q, nb_segment, file_path, folder_name_for_prediction, 100
+            mode, Mode.TORQUE, model, batch_size, nb_q, nb_segment, nb_q, file_path, folder_name_for_prediction, 100
         )
     
     else:
