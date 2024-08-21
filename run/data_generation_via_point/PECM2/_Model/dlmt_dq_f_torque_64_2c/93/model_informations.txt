@@ -1,0 +1,20 @@
+num_try = 93
+val_loss = 8.021867694854736
+val_acc = 2.252230405807495
+val_error = 86.67354583740234
+val_abs_error = 86.67354583740234
+execution_time_train = 241.20260977745056
+execution_time_load_saved_model = 0.008235147476196289
+execution_time_use_saved_model = 0.0006660797595977783
+mode = Mode.DLMT_DQ_F_TORQUE
+batch_size = 64
+n_nodes = [1024, 1024]
+activations = [GELU(approximate='none'), GELU(approximate='none')]
+L1_penalty = 0.01
+L2_penalty = 0.01
+learning_rate = 0.01
+dropout_prob = 0.0
+use_batch_norm = True
+num_epochs_used = 247
+criterion_name = ModifiedHuberLoss
+criterion_params = {'delta': 0.2, 'factor': 0.5}

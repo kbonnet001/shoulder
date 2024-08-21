@@ -3,11 +3,11 @@ from neural_networks.data_tranning import train_model_supervised_learning
 from neural_networks.activation_functions import *
 import os
 from neural_networks.save_model import measure_time, save_model, main_function_model, del_saved_model
-from neural_networks.plot_visualisation import visualize_prediction_training, visualize_prediction
+from neural_networks.plot_visualisation import visualize_prediction_training, visualize_prediction, mean_distance, compute_pourcentage_error
 from itertools import product
 from neural_networks.Loss import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
-from neural_networks.file_directory_operations import create_directory, save_text_to_file,save_informations_model
+from neural_networks.file_directory_operations import create_directory, save_text_to_file,save_informations_model, get_min_value_from_csv
 import time
 from neural_networks.plot_pareto_front import plot_results_try_hyperparams
 import numpy as np
@@ -47,12 +47,13 @@ def compute_time_testing_hyperparams(Hyperparams, time_per_configuration_seconde
     
     return total_time_estimated_secondes, total_time_estimated_minutes, total_time_estimated_hours
 
-def update_best_hyperparams(model, hyperparams_i, try_hyperparams_ref, input_size, output_size, directory) : 
+def update_best_hyperparams(model, num_try, hyperparams_i, try_hyperparams_ref, input_size, output_size, directory) : 
     """
     Update the best hyperparameters and save the corresponding model.
 
     Args:
     - model: The trained model that performed best with the current hyperparameters.
+    - num_try : Num id of the model 
     - hyperparams_i: The current instance of ModelHyperparameters that yielded the best performance.
     - try_hyperparams_ref: Reference instance of ModelTryHyperparameters containing common settings.
     - input_size: The size of the input layer of the model.
@@ -63,7 +64,7 @@ def update_best_hyperparams(model, hyperparams_i, try_hyperparams_ref, input_siz
     - best_hyperparameters_loss: Instance of ModelHyperparameters with the best hyperparameter settings.
     """
     # Create a new ModelHyperparameters instance to store the best hyperparameter settings.
-    best_hyperparameters_loss = ModelHyperparameters("Best_hyperparameter", try_hyperparams_ref.batch_size,
+    best_hyperparameters_loss = ModelHyperparameters(num_try, try_hyperparams_ref.batch_size,
                                                         hyperparams_i.n_nodes, hyperparams_i.activations, 
                                                         hyperparams_i.activation_names, 
                                                         hyperparams_i.L1_penalty, 
@@ -104,8 +105,44 @@ def compute_mean_model_timers(file_path, all_data_tensor) :
     
     return mean_model_load_timer, mean_model_timer
 
-def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_dataset, folder_name, muscle_name, retrain, 
-                            file_path, with_noise, plot_preparation, plot, save) : 
+def get_num_try(directory_path):
+    """
+    Function to determine the next numeric directory name to use.
+    
+    This function scans the specified directory for subdirectories with numeric names
+    (e.g., '0', '1', '2', etc.), determines the highest number, and returns the next 
+    number in the sequence (i.e., the maximum number found plus one).
+
+    Args:
+        directory_path (str): The path to the directory containing the numbered subdirectories.
+
+    Returns:
+        int: The next number to be used as a directory name.
+    
+    Raises:
+        AssertionError: If no numbered directories are found in the specified path.
+    """
+    
+    # Get the list of directories in the specified path
+    dirs = [d for d in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, d))]
+
+    # Filter to keep only directories whose names are numeric
+    numbered_dirs = [int(d) for d in dirs if d.isdigit()]
+
+    if numbered_dirs:
+        # Find the maximum number among the numeric directories
+        max_n = max(numbered_dirs)
+    else:
+        # If no numbered directory is found, raise an error
+        raise AssertionError(f"No numbered directories found in the specified path.",
+                             f"Ckeck you directory : {directory_path}.",
+                             f"Try to delete the directory and try again.")
+
+    # Return the next number in the sequence (max_n + 1)
+    return max_n + 1
+
+def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder_name, muscle_name, retrain, 
+                            file_path, with_noise, plot_preparation, plot_loss_acc, plot_loader, save) : 
 
     """ Main function to prepare, train, validate, test, and save a model.
     
@@ -115,6 +152,7 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
     - mode: Mode for the operation
     - nb_q: int, number of q (generalized coordinates) in the biorbd model.
     - nb_segment: int, number of segment in the biorbd model.
+    - nb_muscle: int, number of muscle in the biorbd model.
     - num_datas_for_dataset: int, number of data points for the dataset used for training.
     - folder_name: str, path/name of the folder containing all CSV data files for muscles (one for each muscle).
     - muscle_name: str, name of the muscle.
@@ -122,7 +160,9 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
     - file_path: str, the path where the model will be saved after training.
     - with_noise: bool, (default = True), True to include noisy data in the dataset for learning.
     - plot_preparation: bool, True to show the distribution of all data preparation.
-    - plot: bool, True to show plot loss, accuracy, predictions/targets.
+    - plot_loss_acc: bool, True to show plot loss, accuracy, predictions/targets.
+    - plot_loader: bool, True to show plot comparing the loader data (train, validation, test) with the target data
+        Warning : This plot is not available if the output height is set too large, as there may be too many subplots to display!
     - save: bool, True to save the model to file_path.
     """
     
@@ -131,7 +171,8 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
     create_directory(f"{folder_name_muscle}/_Model") # Muscle/Model
     
     # Train_model if retrain == True or if none file_path already exist
-    if retrain or os.path.exists(f"{folder_name_muscle}/_Model/{file_path}") == False: 
+    if retrain or os.path.exists(f"{folder_name_muscle}/_Model/{file_path}")==False : 
+        create_directory(f"{folder_name_muscle}/_Model/{file_path}") # Muscle/Model
         
         # Prepare datas for trainning
         train_loader, val_loader, test_loader, input_size, output_size, y_labels \
@@ -140,16 +181,17 @@ def main_supervised_learning(Hyperparams, mode, nb_q, nb_segment, num_datas_for_
         # Trainning
         model, _, _, _, _, _ = train_model_supervised_learning(train_loader, val_loader, test_loader, input_size, 
                                                                output_size, Hyperparams, 
-                                                               f"{folder_name_muscle}/_Model/{file_path}", plot, save, 
+                                                               f"{folder_name_muscle}/_Model/{file_path}", plot_loss_acc, save, 
                                                                show_plot=True)
-        # Visualize tranning : predictions/targets for loaders train, val and test
-        visualize_prediction_training(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
-                                       val_loader, test_loader) 
+        if plot_loader : 
+            # Visualize tranning : predictions/targets for loaders train, val and test
+            visualize_prediction_training(model, f"{folder_name_muscle}/_Model/{file_path}", y_labels, train_loader,
+                                        val_loader, test_loader) 
     # Visualize : predictions/targets for all q variation
-    visualize_prediction(mode, Hyperparams.batch_size, nb_q, nb_segment, f"{folder_name_muscle}/_Model/{file_path}", 
+    visualize_prediction(mode, Hyperparams.batch_size, nb_q, nb_segment, nb_muscle, f"{folder_name_muscle}/_Model/{file_path}", 
                          f"{folder_name_muscle}/plot_all_q_variation_")
     
-def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, 
+def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder, muscle_name, 
                               with_noise, save_all = False) : 
     
     """Try hyperparameters, keep all train-evaluated models in a list, and return the best hyperparameters.
@@ -159,6 +201,7 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     - mode: mode for the operation, could be a string or an identifier related to the data processing or model setup.
     - nb_q: int, number of q (generalized coordinates) in the biorbd model.
     - nb_segment: int, number of segment in the biorbd model.
+    - nb_muscle: int, number of muscle in the biorbd model.
     - num_datas_for_dataset: int, number of data points for the dataset used for training.
     - folder: str, path/name of the folder containing all CSV data files for muscles (one for each muscle).
     - muscle_name: str, name of the muscle.
@@ -167,8 +210,7 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
       Be cautious as saving all models can be heavy, especially if n_nodes are large. 
       The best model (in terms of validation loss) will always be saved.
 
-    Returns:
-    - list_simulation: list of all hyperparameters tried and results of training-evaluation (loss and accuracy).
+    Return:
     - best_hyperparameters: ModelHyperparameters, best hyperparameters (in terms of minimum validation loss).
       NOTE: best_hyperparameters is in the "single syntax". In this case, it is possible to use it with 
       "main_supervised_learning" with retrain = False for example.
@@ -189,9 +231,17 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     
     print("Let's go !")
     # ------------------
-    # Create directory to save all test
+    
     directory = f"{folder}/{muscle_name}/_Model/{try_hyperparams_ref.model_name}"
-    create_directory(f"{directory}/Best_hyperparams")
+    if os.path.exists(f"{f"{directory}/Best_hyperparams"}") and os.listdir(f"{f"{directory}/Best_hyperparams"}"): 
+        # Get num_try
+        num_try = get_num_try(directory)
+        best_val_loss = get_min_value_from_csv(f"{directory}/{try_hyperparams_ref.model_name}.CSV", "val_loss")
+    else : 
+        # Create directory to save all test
+        create_directory(f"{directory}/Best_hyperparams")
+        num_try = 0
+        best_val_loss = float('inf')
 
     # Create loaders for trainning
     folder_name = f"{folder}/{muscle_name}"
@@ -203,11 +253,8 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     
     writer = CSVBatchWriterTestHyperparams(f"{directory}/{try_hyperparams_ref.model_name}.CSV", batch_size=100)
 
-    list_simulation= []
-    best_val_loss = float('inf')
     best_criterion_class_loss = None
     best_criterion_params_loss = None
-    num_try = 0
     
     # Loop to try all configurations of hyperparameters
     for params in product(try_hyperparams_ref.n_nodes, try_hyperparams_ref.activations, 
@@ -232,15 +279,15 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
                 
                 with measure_time() as train_timer: # timer --> trainning time
                     # Please, consider this mesure time as an estimation !
-                    model, val_loss, val_acc, val_error, val_abs_error, epoch \
+                    model, val_loss, test_acc, test_error, test_abs_error, epoch \
                     = train_model_supervised_learning(train_loader, val_loader, test_loader, 
                                                       input_size, output_size, hyperparams_i, 
                                                       file_path=f"{directory}/{num_try}", plot = True, save = True, 
                                                       show_plot=False) # save temporaly 
                 # Timer for load model and model use
                 # Mean with data_test_tensor (20% of num_datas_for_dataset)
-                mean_model_load_timer, mean_model_timer = compute_mean_model_timers(f"{directory}/{num_try}", 
-                                                                                    all_data_test_tensor)
+                mean_model_load_timer, mean_model_timer \
+                    = compute_mean_model_timers(f"{directory}/{num_try}", all_data_test_tensor)
                 
                 if save_all == False : 
                     # deleted saved model
@@ -252,35 +299,20 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
                         best_criterion_class_loss = criterion_class
                         best_criterion_params_loss = criterion_params
                         # Update the best hyperparameters
-                        best_hyperparameters_loss = update_best_hyperparams(model, hyperparams_i, try_hyperparams_ref, 
+                        best_hyperparameters_loss = update_best_hyperparams(model, num_try, hyperparams_i, try_hyperparams_ref, 
                                                                             input_size, output_size, directory)
-
-                # Add results of the trainning
-                list_simulation.append([val_loss, f"\nnum_try : {num_try} | val_loss = {val_loss} | val acc = {val_acc}",
-                                        f"val_error = {val_error} | val_abs_error = {val_abs_error}",
-                                        f"Time execution (tranning): {train_timer.execution_time:.6f} seconds ",
-                                        f"Time execution (load saved model): {mean_model_load_timer:.6f} seconds ",
-                                        f"Time execution (use saved model): {mean_model_timer:.6f} seconds ",
-                                        f"Training with hyperparameters : {hyperparams_i} \n",
-                                        f"Num of epoch used : {epoch + 1}",
-                                        f"Criterion: {criterion_class.__name__}",
-                                        f"with parameters: {criterion_params}\n----------\n"])
                 
-                save_informations_model(f"{directory}/{num_try}", num_try, val_loss, val_acc, val_error, val_abs_error,
+                save_informations_model(f"{directory}/{num_try}", num_try, val_loss, test_acc, test_error, test_abs_error,
                                         train_timer.execution_time, mean_model_load_timer, mean_model_timer,
                                         hyperparams_i, mode, epoch+1, criterion_class.__name__, criterion_params)
                 
-                writer.add_line(num_try, val_loss, val_acc, val_error, val_abs_error, train_timer.execution_time, 
+                writer.add_line(num_try, val_loss, test_acc, test_error, test_abs_error, train_timer.execution_time, 
                                 mean_model_load_timer, mean_model_timer, hyperparams_i, mode, epoch+1, 
                                 criterion_class.__name__, criterion_params)
                 
                 num_try+=1
                 
     writer.close()
-    # Sort list to have val_loss in croissant order and save the file
-    list_simulation.sort(key=lambda x: x[0]) 
-    save_text_to_file('\n'.join([str(line) for sublist in list_simulation for line in sublist]), 
-                      f"{folder}/{muscle_name}/_Model/{try_hyperparams_ref.model_name}/list_simulation.txt")
   
     print(f"Best hyperparameters loss found : {best_hyperparameters_loss}")
     print(f'Best criterion: {best_criterion_class_loss.__name__} with parameters: {best_criterion_params_loss}')
@@ -294,10 +326,10 @@ def find_best_hyperparameters(try_hyperparams_ref, mode, nb_q, nb_segment, num_d
     
     # Finally, plot figure predictions targets with the best model saved
 
-    main_supervised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, num_datas_for_dataset, folder, muscle_name, False,
-                            f"{try_hyperparams_ref.model_name}/Best_hyperparams",with_noise, plot_preparation=True,plot=True,
-                            save=True)
+    main_supervised_learning(best_hyperparameters_loss, mode, nb_q, nb_segment, nb_muscle, num_datas_for_dataset, folder, muscle_name, False,
+                            f"{try_hyperparams_ref.model_name}/Best_hyperparams",with_noise, plot_preparation=True, 
+                            plot_loss_acc=True, plot_loader=False, save=True)
     
-    return list_simulation, best_hyperparameters_loss
+    return best_hyperparameters_loss
 
 

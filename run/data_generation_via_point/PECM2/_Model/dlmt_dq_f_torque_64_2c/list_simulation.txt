@@ -1,0 +1,4103 @@
+6.49975905418396
+
+num_try : 107 | val_loss = 6.49975905418396 | val acc = 2.00044846534729
+val_error = 33.653077483177185 | val_abs_error = 33.653077483177185
+Time execution (tranning): 408.687524 seconds 
+Time execution (load saved model): 0.008259 seconds 
+Time execution (use saved model): 0.000690 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 408
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+6.581640291213989
+
+num_try : 55 | val_loss = 6.581640291213989 | val acc = 2.07650089263916
+val_error = 32.297372817993164 | val_abs_error = 32.297372817993164
+Time execution (tranning): 165.796964 seconds 
+Time execution (load saved model): 0.003495 seconds 
+Time execution (use saved model): 0.000342 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 411
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+6.722211599349976
+
+num_try : 73 | val_loss = 6.722211599349976 | val acc = 2.074375629425049
+val_error = 28.44090461730957 | val_abs_error = 28.44090461730957
+Time execution (tranning): 118.924299 seconds 
+Time execution (load saved model): 0.003496 seconds 
+Time execution (use saved model): 0.000346 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 295
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+6.884763288497925
+
+num_try : 103 | val_loss = 6.884763288497925 | val acc = 2.032270908355713
+val_error = 22.42206037044525 | val_abs_error = 22.42206037044525
+Time execution (tranning): 384.031135 seconds 
+Time execution (load saved model): 0.008249 seconds 
+Time execution (use saved model): 0.000652 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 383
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+6.959400978088379
+
+num_try : 82 | val_loss = 6.959400978088379 | val acc = 2.054359197616577
+val_error = 22.369983792304993 | val_abs_error = 22.369983792304993
+Time execution (tranning): 270.055486 seconds 
+Time execution (load saved model): 0.008077 seconds 
+Time execution (use saved model): 0.000621 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 276
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+6.960358915328979
+
+num_try : 58 | val_loss = 6.960358915328979 | val acc = 2.1167025566101074
+val_error = 32.000476121902466 | val_abs_error = 32.000476121902466
+Time execution (tranning): 117.333382 seconds 
+Time execution (load saved model): 0.003589 seconds 
+Time execution (use saved model): 0.000360 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 286
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+6.991006603240967
+
+num_try : 98 | val_loss = 6.991006603240967 | val acc = 2.066953659057617
+val_error = 30.295053124427795 | val_abs_error = 30.295053124427795
+Time execution (tranning): 400.713759 seconds 
+Time execution (load saved model): 0.008292 seconds 
+Time execution (use saved model): 0.000666 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 394
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.022775201797486
+
+num_try : 100 | val_loss = 7.022775201797486 | val acc = 2.1490142345428467
+val_error = 37.17798888683319 | val_abs_error = 37.17798888683319
+Time execution (tranning): 164.813737 seconds 
+Time execution (load saved model): 0.008303 seconds 
+Time execution (use saved model): 0.000653 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 163
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.060286655426025
+
+num_try : 79 | val_loss = 7.060286655426025 | val acc = 2.126655340194702
+val_error = 30.18418848514557 | val_abs_error = 30.18418848514557
+Time execution (tranning): 120.899546 seconds 
+Time execution (load saved model): 0.003508 seconds 
+Time execution (use saved model): 0.000353 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 298
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.085333127975463
+
+num_try : 67 | val_loss = 7.085333127975463 | val acc = 2.090822696685791
+val_error = 35.648274421691895 | val_abs_error = 35.648274421691895
+Time execution (tranning): 105.494566 seconds 
+Time execution (load saved model): 0.003505 seconds 
+Time execution (use saved model): 0.000350 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 262
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.095784759521484
+
+num_try : 88 | val_loss = 7.095784759521484 | val acc = 2.1293203830718994
+val_error = 33.70664119720459 | val_abs_error = 33.70664119720459
+Time execution (tranning): 248.337167 seconds 
+Time execution (load saved model): 0.008170 seconds 
+Time execution (use saved model): 0.000629 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 251
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.129413871765137
+
+num_try : 83 | val_loss = 7.129413871765137 | val acc = 2.1077451705932617
+val_error = 31.23195767402649 | val_abs_error = 31.23195767402649
+Time execution (tranning): 357.324033 seconds 
+Time execution (load saved model): 0.008091 seconds 
+Time execution (use saved model): 0.000592 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 375
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.131048250198364
+
+num_try : 85 | val_loss = 7.131048250198364 | val acc = 2.093761444091797
+val_error = 37.37679719924927 | val_abs_error = 37.37679719924927
+Time execution (tranning): 297.700595 seconds 
+Time execution (load saved model): 0.008128 seconds 
+Time execution (use saved model): 0.000660 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 298
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.200518856048584
+
+num_try : 46 | val_loss = 7.200518856048584 | val acc = 2.198734760284424
+val_error = 14.597642421722412 | val_abs_error = 14.597642421722412
+Time execution (tranning): 133.988155 seconds 
+Time execution (load saved model): 0.003293 seconds 
+Time execution (use saved model): 0.000350 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 356
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.266987838745117
+
+num_try : 104 | val_loss = 7.266987838745117 | val acc = 2.167529344558716
+val_error = 28.615671396255493 | val_abs_error = 28.615671396255493
+Time execution (tranning): 322.767868 seconds 
+Time execution (load saved model): 0.008210 seconds 
+Time execution (use saved model): 0.000650 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 324
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.322513484954834
+
+num_try : 97 | val_loss = 7.322513484954834 | val acc = 2.233994722366333
+val_error = 25.89215338230133 | val_abs_error = 25.89215338230133
+Time execution (tranning): 279.059785 seconds 
+Time execution (load saved model): 0.008188 seconds 
+Time execution (use saved model): 0.000670 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 272
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.44367618560791
+
+num_try : 94 | val_loss = 7.44367618560791 | val acc = 2.2377676963806152
+val_error = 20.989112555980682 | val_abs_error = 20.989112555980682
+Time execution (tranning): 349.065477 seconds 
+Time execution (load saved model): 0.008212 seconds 
+Time execution (use saved model): 0.000647 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 343
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.4617791175842285
+
+num_try : 70 | val_loss = 7.4617791175842285 | val acc = 2.1833484172821045
+val_error = 34.17189419269562 | val_abs_error = 34.17189419269562
+Time execution (tranning): 140.398086 seconds 
+Time execution (load saved model): 0.003547 seconds 
+Time execution (use saved model): 0.000354 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 347
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.604454689025879
+
+num_try : 12 | val_loss = 7.604454689025879 | val acc = 2.242109775543213
+val_error = 41.788482666015625 | val_abs_error = 41.788482666015625
+Time execution (tranning): 129.026455 seconds 
+Time execution (load saved model): 0.003245 seconds 
+Time execution (use saved model): 0.000356 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 356
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.625868272781372
+
+num_try : 43 | val_loss = 7.625868272781372 | val acc = 2.261753559112549
+val_error = 18.79904717206955 | val_abs_error = 18.79904717206955
+Time execution (tranning): 98.825605 seconds 
+Time execution (load saved model): 0.003260 seconds 
+Time execution (use saved model): 0.000343 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 261
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.745435829162598
+
+num_try : 51 | val_loss = 7.745435829162598 | val acc = 2.273564338684082
+val_error = 40.697190165519714 | val_abs_error = 40.697190165519714
+Time execution (tranning): 153.241282 seconds 
+Time execution (load saved model): 0.003265 seconds 
+Time execution (use saved model): 0.000344 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 417
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.851009922027588
+
+num_try : 0 | val_loss = 7.851009922027588 | val acc = 2.3159713745117188
+val_error = 28.078147768974304 | val_abs_error = 28.078147768974304
+Time execution (tranning): 136.355852 seconds 
+Time execution (load saved model): 0.003226 seconds 
+Time execution (use saved model): 0.000337 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 363
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.941040306091309
+
+num_try : 106 | val_loss = 7.941040306091309 | val acc = 2.316128969192505
+val_error = 27.64875292778015 | val_abs_error = 27.64875292778015
+Time execution (tranning): 258.578785 seconds 
+Time execution (load saved model): 0.008262 seconds 
+Time execution (use saved model): 0.000645 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 257
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.9646492767333985
+
+num_try : 91 | val_loss = 7.9646492767333985 | val acc = 2.2428905963897705
+val_error = 18.389372527599335 | val_abs_error = 18.389372527599335
+Time execution (tranning): 292.132774 seconds 
+Time execution (load saved model): 0.008215 seconds 
+Time execution (use saved model): 0.000650 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 279
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.97354528427124
+
+num_try : 84 | val_loss = 7.97354528427124 | val acc = 2.3013017177581787
+val_error = 41.20261073112488 | val_abs_error = 41.20261073112488
+Time execution (tranning): 219.768145 seconds 
+Time execution (load saved model): 0.008152 seconds 
+Time execution (use saved model): 0.000649 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 241
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.976010704040528
+
+num_try : 45 | val_loss = 7.976010704040528 | val acc = 2.3039891719818115
+val_error = 29.57892417907715 | val_abs_error = 29.57892417907715
+Time execution (tranning): 113.311141 seconds 
+Time execution (load saved model): 0.003283 seconds 
+Time execution (use saved model): 0.000348 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 308
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+7.9787137413024904
+
+num_try : 18 | val_loss = 7.9787137413024904 | val acc = 2.3551273345947266
+val_error = 30.870869755744934 | val_abs_error = 30.870869755744934
+Time execution (tranning): 105.619013 seconds 
+Time execution (load saved model): 0.003232 seconds 
+Time execution (use saved model): 0.000403 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 289
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.018131828308105
+
+num_try : 92 | val_loss = 8.018131828308105 | val acc = 2.328544855117798
+val_error = 30.195870995521545 | val_abs_error = 30.195870995521545
+Time execution (tranning): 324.706563 seconds 
+Time execution (load saved model): 0.008245 seconds 
+Time execution (use saved model): 0.000671 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 317
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.021867694854736
+
+num_try : 93 | val_loss = 8.021867694854736 | val acc = 2.252230405807495
+val_error = 86.67354583740234 | val_abs_error = 86.67354583740234
+Time execution (tranning): 241.202610 seconds 
+Time execution (load saved model): 0.008235 seconds 
+Time execution (use saved model): 0.000666 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 247
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.023748245239258
+
+num_try : 96 | val_loss = 8.023748245239258 | val acc = 2.30210018157959
+val_error = 38.12739849090576 | val_abs_error = 38.12739849090576
+Time execution (tranning): 210.094979 seconds 
+Time execution (load saved model): 0.008253 seconds 
+Time execution (use saved model): 0.000678 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 218
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.04670955657959
+
+num_try : 40 | val_loss = 8.04670955657959 | val acc = 2.2979559898376465
+val_error = 22.554247081279755 | val_abs_error = 22.554247081279755
+Time execution (tranning): 135.097261 seconds 
+Time execution (load saved model): 0.003295 seconds 
+Time execution (use saved model): 0.000354 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 361
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.053578910827637
+
+num_try : 49 | val_loss = 8.053578910827637 | val acc = 2.302525281906128
+val_error = 28.07556688785553 | val_abs_error = 28.07556688785553
+Time execution (tranning): 117.973886 seconds 
+Time execution (load saved model): 0.003288 seconds 
+Time execution (use saved model): 0.000352 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 313
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.083909244537354
+
+num_try : 86 | val_loss = 8.083909244537354 | val acc = 2.288120985031128
+val_error = 28.241902589797974 | val_abs_error = 28.241902589797974
+Time execution (tranning): 320.095905 seconds 
+Time execution (load saved model): 0.008118 seconds 
+Time execution (use saved model): 0.000609 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 326
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.127145223617553
+
+num_try : 75 | val_loss = 8.127145223617553 | val acc = 2.2994277477264404
+val_error = 12.847146391868591 | val_abs_error = 12.847146391868591
+Time execution (tranning): 73.438787 seconds 
+Time execution (load saved model): 0.003499 seconds 
+Time execution (use saved model): 0.000352 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 186
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.192594184875489
+
+num_try : 78 | val_loss = 8.192594184875489 | val acc = 2.3310751914978027
+val_error = 29.044067859649658 | val_abs_error = 29.044067859649658
+Time execution (tranning): 115.766361 seconds 
+Time execution (load saved model): 0.003525 seconds 
+Time execution (use saved model): 0.000359 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 294
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.29812017440796
+
+num_try : 37 | val_loss = 8.29812017440796 | val acc = 2.290253162384033
+val_error = 20.08393704891205 | val_abs_error = 20.08393704891205
+Time execution (tranning): 114.311970 seconds 
+Time execution (load saved model): 0.003286 seconds 
+Time execution (use saved model): 0.000349 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 303
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.303688106536866
+
+num_try : 105 | val_loss = 8.303688106536866 | val acc = 2.3545494079589844
+val_error = 64.98472690582275 | val_abs_error = 64.98472690582275
+Time execution (tranning): 147.528525 seconds 
+Time execution (load saved model): 0.008236 seconds 
+Time execution (use saved model): 0.000658 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 152
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.357957286834717
+
+num_try : 81 | val_loss = 8.357957286834717 | val acc = 2.4253158569335938
+val_error = 104.26708459854126 | val_abs_error = 104.26708459854126
+Time execution (tranning): 216.850936 seconds 
+Time execution (load saved model): 0.008068 seconds 
+Time execution (use saved model): 0.000617 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 215
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.36065757751465
+
+num_try : 39 | val_loss = 8.36065757751465 | val acc = 2.3963253498077393
+val_error = 88.59847784042358 | val_abs_error = 88.59847784042358
+Time execution (tranning): 90.757317 seconds 
+Time execution (load saved model): 0.003292 seconds 
+Time execution (use saved model): 0.000350 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 246
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.36779628753662
+
+num_try : 99 | val_loss = 8.36779628753662 | val acc = 2.315397024154663
+val_error = 145.26106119155884 | val_abs_error = 145.26106119155884
+Time execution (tranning): 193.139456 seconds 
+Time execution (load saved model): 0.008225 seconds 
+Time execution (use saved model): 0.000657 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 192
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.422167510986329
+
+num_try : 33 | val_loss = 8.422167510986329 | val acc = 2.3709237575531006
+val_error = 8.080214262008667 | val_abs_error = 8.080214262008667
+Time execution (tranning): 97.651222 seconds 
+Time execution (load saved model): 0.003310 seconds 
+Time execution (use saved model): 0.000377 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 262
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.431336860656739
+
+num_try : 64 | val_loss = 8.431336860656739 | val acc = 2.419419765472412
+val_error = 32.64003098011017 | val_abs_error = 32.64003098011017
+Time execution (tranning): 135.349037 seconds 
+Time execution (load saved model): 0.003540 seconds 
+Time execution (use saved model): 0.000371 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 334
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.457428474426269
+
+num_try : 3 | val_loss = 8.457428474426269 | val acc = 2.3603739738464355
+val_error = 22.837620973587036 | val_abs_error = 22.837620973587036
+Time execution (tranning): 104.508891 seconds 
+Time execution (load saved model): 0.003232 seconds 
+Time execution (use saved model): 0.000344 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 288
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.573358240127563
+
+num_try : 52 | val_loss = 8.573358240127563 | val acc = 2.3447623252868652
+val_error = 23.126910626888275 | val_abs_error = 23.126910626888275
+Time execution (tranning): 106.532145 seconds 
+Time execution (load saved model): 0.003265 seconds 
+Time execution (use saved model): 0.000359 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 283
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.587084426879883
+
+num_try : 42 | val_loss = 8.587084426879883 | val acc = 2.4139633178710938
+val_error = 40.80064296722412 | val_abs_error = 40.80064296722412
+Time execution (tranning): 72.734416 seconds 
+Time execution (load saved model): 0.003261 seconds 
+Time execution (use saved model): 0.000345 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 197
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.724080486297607
+
+num_try : 72 | val_loss = 8.724080486297607 | val acc = 2.3800981044769287
+val_error = 26.48577392101288 | val_abs_error = 26.48577392101288
+Time execution (tranning): 124.338924 seconds 
+Time execution (load saved model): 0.003526 seconds 
+Time execution (use saved model): 0.000349 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 317
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.798601417541503
+
+num_try : 57 | val_loss = 8.798601417541503 | val acc = 2.339514970779419
+val_error = 19.836318492889404 | val_abs_error = 19.836318492889404
+Time execution (tranning): 106.248780 seconds 
+Time execution (load saved model): 0.003584 seconds 
+Time execution (use saved model): 0.000355 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 270
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.851538829803467
+
+num_try : 66 | val_loss = 8.851538829803467 | val acc = 2.4436957836151123
+val_error = 16.090644896030426 | val_abs_error = 16.090644896030426
+Time execution (tranning): 65.491251 seconds 
+Time execution (load saved model): 0.003493 seconds 
+Time execution (use saved model): 0.000345 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 167
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.857322750091553
+
+num_try : 28 | val_loss = 8.857322750091553 | val acc = 2.474454402923584
+val_error = 18.32781732082367 | val_abs_error = 18.32781732082367
+Time execution (tranning): 122.654665 seconds 
+Time execution (load saved model): 0.003300 seconds 
+Time execution (use saved model): 0.000349 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 323
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.8757696723938
+
+num_try : 61 | val_loss = 8.8757696723938 | val acc = 2.38588809967041
+val_error = 32.63646364212036 | val_abs_error = 32.63646364212036
+Time execution (tranning): 85.310346 seconds 
+Time execution (load saved model): 0.003552 seconds 
+Time execution (use saved model): 0.000351 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 209
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+8.908471698760986
+
+num_try : 30 | val_loss = 8.908471698760986 | val acc = 2.4956307411193848
+val_error = 17.69268661737442 | val_abs_error = 17.69268661737442
+Time execution (tranning): 125.310241 seconds 
+Time execution (load saved model): 0.003307 seconds 
+Time execution (use saved model): 0.000389 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 335
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.014814987182618
+
+num_try : 15 | val_loss = 9.014814987182618 | val acc = 2.433128833770752
+val_error = 30.698424577713013 | val_abs_error = 30.698424577713013
+Time execution (tranning): 126.513663 seconds 
+Time execution (load saved model): 0.003236 seconds 
+Time execution (use saved model): 0.000385 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 348
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.079634323120118
+
+num_try : 31 | val_loss = 9.079634323120118 | val acc = 2.509254217147827
+val_error = 25.178012251853943 | val_abs_error = 25.178012251853943
+Time execution (tranning): 97.843677 seconds 
+Time execution (load saved model): 0.003316 seconds 
+Time execution (use saved model): 0.000390 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 256
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.176617126464844
+
+num_try : 101 | val_loss = 9.176617126464844 | val acc = 2.492978572845459
+val_error = 28.291356563568115 | val_abs_error = 28.291356563568115
+Time execution (tranning): 428.212082 seconds 
+Time execution (load saved model): 0.008272 seconds 
+Time execution (use saved model): 0.000641 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 417
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.209155540466309
+
+num_try : 90 | val_loss = 9.209155540466309 | val acc = 2.4081037044525146
+val_error = 20.340044796466827 | val_abs_error = 20.340044796466827
+Time execution (tranning): 288.566610 seconds 
+Time execution (load saved model): 0.008260 seconds 
+Time execution (use saved model): 0.000649 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 308
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.229852123260498
+
+num_try : 102 | val_loss = 9.229852123260498 | val acc = 2.5137362480163574
+val_error = 14.535683393478394 | val_abs_error = 14.535683393478394
+Time execution (tranning): 245.195605 seconds 
+Time execution (load saved model): 0.008230 seconds 
+Time execution (use saved model): 0.000672 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 245
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.270610656738281
+
+num_try : 63 | val_loss = 9.270610656738281 | val acc = 2.5057289600372314
+val_error = 17.51803755760193 | val_abs_error = 17.51803755760193
+Time execution (tranning): 110.208466 seconds 
+Time execution (load saved model): 0.003500 seconds 
+Time execution (use saved model): 0.000348 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 282
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.282706184387207
+
+num_try : 95 | val_loss = 9.282706184387207 | val acc = 2.5260157585144043
+val_error = 29.97279465198517 | val_abs_error = 29.97279465198517
+Time execution (tranning): 269.127177 seconds 
+Time execution (load saved model): 0.008196 seconds 
+Time execution (use saved model): 0.000662 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 268
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.310684261322022
+
+num_try : 69 | val_loss = 9.310684261322022 | val acc = 2.532301187515259
+val_error = 23.438091576099396 | val_abs_error = 23.438091576099396
+Time execution (tranning): 121.087420 seconds 
+Time execution (load saved model): 0.003499 seconds 
+Time execution (use saved model): 0.000349 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 310
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.316399421691894
+
+num_try : 65 | val_loss = 9.316399421691894 | val acc = 2.4644858837127686
+val_error = 16.57504290342331 | val_abs_error = 16.57504290342331
+Time execution (tranning): 115.224041 seconds 
+Time execution (load saved model): 0.003498 seconds 
+Time execution (use saved model): 0.000347 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 284
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.390134811401367
+
+num_try : 24 | val_loss = 9.390134811401367 | val acc = 2.4849789142608643
+val_error = 19.569215178489685 | val_abs_error = 19.569215178489685
+Time execution (tranning): 88.950484 seconds 
+Time execution (load saved model): 0.003234 seconds 
+Time execution (use saved model): 0.000368 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 244
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.404874382019043
+
+num_try : 48 | val_loss = 9.404874382019043 | val acc = 2.493560552597046
+val_error = 23.011040687561035 | val_abs_error = 23.011040687561035
+Time execution (tranning): 81.343253 seconds 
+Time execution (load saved model): 0.003263 seconds 
+Time execution (use saved model): 0.000343 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 221
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.419775600433349
+
+num_try : 6 | val_loss = 9.419775600433349 | val acc = 2.4778852462768555
+val_error = 40.78061580657959 | val_abs_error = 40.78061580657959
+Time execution (tranning): 84.645604 seconds 
+Time execution (load saved model): 0.003234 seconds 
+Time execution (use saved model): 0.000371 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 234
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.460313091278076
+
+num_try : 89 | val_loss = 9.460313091278076 | val acc = 2.522871494293213
+val_error = 30.301502346992493 | val_abs_error = 30.301502346992493
+Time execution (tranning): 198.021996 seconds 
+Time execution (load saved model): 0.008146 seconds 
+Time execution (use saved model): 0.000648 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 203
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.491679592132568
+
+num_try : 9 | val_loss = 9.491679592132568 | val acc = 2.4574928283691406
+val_error = 49.131813645362854 | val_abs_error = 49.131813645362854
+Time execution (tranning): 104.523566 seconds 
+Time execution (load saved model): 0.003233 seconds 
+Time execution (use saved model): 0.000370 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 287
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.590162830352783
+
+num_try : 54 | val_loss = 9.590162830352783 | val acc = 2.4648311138153076
+val_error = 36.649590730667114 | val_abs_error = 36.649590730667114
+Time execution (tranning): 84.463071 seconds 
+Time execution (load saved model): 0.003500 seconds 
+Time execution (use saved model): 0.000342 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 213
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.736742610931396
+
+num_try : 27 | val_loss = 9.736742610931396 | val acc = 2.535306692123413
+val_error = 9.118196368217468 | val_abs_error = 9.118196368217468
+Time execution (tranning): 90.646425 seconds 
+Time execution (load saved model): 0.003305 seconds 
+Time execution (use saved model): 0.000350 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 244
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.74074598312378
+
+num_try : 13 | val_loss = 9.74074598312378 | val acc = 2.6090445518493652
+val_error = 8.070297539234161 | val_abs_error = 8.070297539234161
+Time execution (tranning): 88.096558 seconds 
+Time execution (load saved model): 0.003237 seconds 
+Time execution (use saved model): 0.000345 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 238
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.778302917480469
+
+num_try : 36 | val_loss = 9.778302917480469 | val acc = 2.582131862640381
+val_error = 50.85988640785217 | val_abs_error = 50.85988640785217
+Time execution (tranning): 93.175797 seconds 
+Time execution (load saved model): 0.003257 seconds 
+Time execution (use saved model): 0.000362 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 252
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.840853500366212
+
+num_try : 76 | val_loss = 9.840853500366212 | val acc = 2.5545356273651123
+val_error = 27.629560232162476 | val_abs_error = 27.629560232162476
+Time execution (tranning): 109.439420 seconds 
+Time execution (load saved model): 0.003526 seconds 
+Time execution (use saved model): 0.000354 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 269
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.933853702545166
+
+num_try : 87 | val_loss = 9.933853702545166 | val acc = 2.5791516304016113
+val_error = 4.635986313223839 | val_abs_error = 4.635986313223839
+Time execution (tranning): 202.150543 seconds 
+Time execution (load saved model): 0.008162 seconds 
+Time execution (use saved model): 0.000645 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[1024, 1024],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 216
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+9.991172885894775
+
+num_try : 10 | val_loss = 9.991172885894775 | val acc = 2.632122039794922
+val_error = 8.523930609226227 | val_abs_error = 8.523930609226227
+Time execution (tranning): 116.221500 seconds 
+Time execution (load saved model): 0.003242 seconds 
+Time execution (use saved model): 0.000367 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 314
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.096931838989258
+
+num_try : 80 | val_loss = 10.096931838989258 | val acc = 2.6957056522369385
+val_error = 14.17233794927597 | val_abs_error = 14.17233794927597
+Time execution (tranning): 148.536450 seconds 
+Time execution (load saved model): 0.003498 seconds 
+Time execution (use saved model): 0.000345 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 367
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.228746223449708
+
+num_try : 34 | val_loss = 10.228746223449708 | val acc = 2.7013416290283203
+val_error = 20.688696205615997 | val_abs_error = 20.688696205615997
+Time execution (tranning): 112.973346 seconds 
+Time execution (load saved model): 0.003309 seconds 
+Time execution (use saved model): 0.000348 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 297
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.264005527496337
+
+num_try : 74 | val_loss = 10.264005527496337 | val acc = 2.6204912662506104
+val_error = 15.393660962581635 | val_abs_error = 15.393660962581635
+Time execution (tranning): 100.565133 seconds 
+Time execution (load saved model): 0.003506 seconds 
+Time execution (use saved model): 0.000345 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 248
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.402528038024903
+
+num_try : 4 | val_loss = 10.402528038024903 | val acc = 2.7148101329803467
+val_error = 15.529206395149231 | val_abs_error = 15.529206395149231
+Time execution (tranning): 120.282164 seconds 
+Time execution (load saved model): 0.003228 seconds 
+Time execution (use saved model): 0.000342 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 325
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.474734725952148
+
+num_try : 19 | val_loss = 10.474734725952148 | val acc = 2.7650275230407715
+val_error = 6.104855239391327 | val_abs_error = 6.104855239391327
+Time execution (tranning): 123.256762 seconds 
+Time execution (load saved model): 0.003232 seconds 
+Time execution (use saved model): 0.000357 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 333
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.526466331481934
+
+num_try : 7 | val_loss = 10.526466331481934 | val acc = 2.678860664367676
+val_error = 11.271416395902634 | val_abs_error = 11.271416395902634
+Time execution (tranning): 96.650292 seconds 
+Time execution (load saved model): 0.003229 seconds 
+Time execution (use saved model): 0.000345 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 261
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.549203052520753
+
+num_try : 62 | val_loss = 10.549203052520753 | val acc = 2.7334299087524414
+val_error = 11.374051123857498 | val_abs_error = 11.374051123857498
+Time execution (tranning): 159.694108 seconds 
+Time execution (load saved model): 0.003571 seconds 
+Time execution (use saved model): 0.000381 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 394
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.564314975738526
+
+num_try : 25 | val_loss = 10.564314975738526 | val acc = 2.7245264053344727
+val_error = 13.121934235095978 | val_abs_error = 13.121934235095978
+Time execution (tranning): 116.857439 seconds 
+Time execution (load saved model): 0.003237 seconds 
+Time execution (use saved model): 0.000374 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 315
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.949153633117676
+
+num_try : 59 | val_loss = 10.949153633117676 | val acc = 2.745687246322632
+val_error = 16.237574815750122 | val_abs_error = 16.237574815750122
+Time execution (tranning): 134.277272 seconds 
+Time execution (load saved model): 0.003553 seconds 
+Time execution (use saved model): 0.000355 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 330
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+10.981767940521241
+
+num_try : 21 | val_loss = 10.981767940521241 | val acc = 2.6639301776885986
+val_error = 26.92936658859253 | val_abs_error = 26.92936658859253
+Time execution (tranning): 89.052626 seconds 
+Time execution (load saved model): 0.003264 seconds 
+Time execution (use saved model): 0.000341 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 245
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+11.052851314544677
+
+num_try : 77 | val_loss = 11.052851314544677 | val acc = 2.7588984966278076
+val_error = 14.605750143527985 | val_abs_error = 14.605750143527985
+Time execution (tranning): 135.103788 seconds 
+Time execution (load saved model): 0.003548 seconds 
+Time execution (use saved model): 0.000364 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 335
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+11.244132537841796
+
+num_try : 71 | val_loss = 11.244132537841796 | val acc = 2.7733476161956787
+val_error = 19.23368275165558 | val_abs_error = 19.23368275165558
+Time execution (tranning): 91.256051 seconds 
+Time execution (load saved model): 0.003506 seconds 
+Time execution (use saved model): 0.000356 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 224
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+11.493952770233154
+
+num_try : 60 | val_loss = 11.493952770233154 | val acc = 2.8079676628112793
+val_error = 39.40197229385376 | val_abs_error = 39.40197229385376
+Time execution (tranning): 138.367953 seconds 
+Time execution (load saved model): 0.003618 seconds 
+Time execution (use saved model): 0.000362 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.0, 
+- use_batch_norm=True 
+
+Num of epoch used : 347
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+11.696814956665039
+
+num_try : 68 | val_loss = 11.696814956665039 | val acc = 2.8840548992156982
+val_error = 10.917877405881882 | val_abs_error = 10.917877405881882
+Time execution (tranning): 100.488545 seconds 
+Time execution (load saved model): 0.003530 seconds 
+Time execution (use saved model): 0.000366 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 250
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+11.788255386352539
+
+num_try : 22 | val_loss = 11.788255386352539 | val acc = 2.9045145511627197
+val_error = 15.30400812625885 | val_abs_error = 15.30400812625885
+Time execution (tranning): 135.805452 seconds 
+Time execution (load saved model): 0.003232 seconds 
+Time execution (use saved model): 0.000347 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 366
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+11.79152997970581
+
+num_try : 16 | val_loss = 11.79152997970581 | val acc = 2.8536152839660645
+val_error = 11.116518080234528 | val_abs_error = 11.116518080234528
+Time execution (tranning): 112.304315 seconds 
+Time execution (load saved model): 0.003242 seconds 
+Time execution (use saved model): 0.000395 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 301
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+12.009749031066894
+
+num_try : 56 | val_loss = 12.009749031066894 | val acc = 2.9128026962280273
+val_error = 16.174644231796265 | val_abs_error = 16.174644231796265
+Time execution (tranning): 67.317999 seconds 
+Time execution (load saved model): 0.003498 seconds 
+Time execution (use saved model): 0.000351 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[256, 256],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 165
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+12.09610689163208
+
+num_try : 1 | val_loss = 12.09610689163208 | val acc = 2.853166103363037
+val_error = 4.492012038826942 | val_abs_error = 4.492012038826942
+Time execution (tranning): 82.254091 seconds 
+Time execution (load saved model): 0.003249 seconds 
+Time execution (use saved model): 0.000383 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.2, 
+- use_batch_norm=True 
+
+Num of epoch used : 221
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+12.323710403442384
+
+num_try : 47 | val_loss = 12.323710403442384 | val acc = 3.0040619373321533
+val_error = 4.8733774572610855 | val_abs_error = 4.8733774572610855
+Time execution (tranning): 119.722986 seconds 
+Time execution (load saved model): 0.003261 seconds 
+Time execution (use saved model): 0.000343 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 318
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+12.983995399475099
+
+num_try : 38 | val_loss = 12.983995399475099 | val acc = 3.1067633628845215
+val_error = 4.277629032731056 | val_abs_error = 4.277629032731056
+Time execution (tranning): 141.639775 seconds 
+Time execution (load saved model): 0.003265 seconds 
+Time execution (use saved model): 0.000345 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 376
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+13.782948112487793
+
+num_try : 50 | val_loss = 13.782948112487793 | val acc = 3.2426822185516357
+val_error = -0.05930709885433316 | val_abs_error = 0.05930709885433316
+Time execution (tranning): 99.993986 seconds 
+Time execution (load saved model): 0.003292 seconds 
+Time execution (use saved model): 0.000357 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 263
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+13.891284561157226
+
+num_try : 35 | val_loss = 13.891284561157226 | val acc = 3.184002161026001
+val_error = 11.477699875831604 | val_abs_error = 11.477699875831604
+Time execution (tranning): 98.806600 seconds 
+Time execution (load saved model): 0.003279 seconds 
+Time execution (use saved model): 0.000358 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 260
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+13.953939628601074
+
+num_try : 41 | val_loss = 13.953939628601074 | val acc = 3.188457489013672
+val_error = 5.144338309764862 | val_abs_error = 5.144338309764862
+Time execution (tranning): 101.784075 seconds 
+Time execution (load saved model): 0.003260 seconds 
+Time execution (use saved model): 0.000349 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 271
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+14.129377517700195
+
+num_try : 29 | val_loss = 14.129377517700195 | val acc = 3.2242422103881836
+val_error = 4.673919081687927 | val_abs_error = 4.673919081687927
+Time execution (tranning): 90.034882 seconds 
+Time execution (load saved model): 0.003312 seconds 
+Time execution (use saved model): 0.000369 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 234
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+14.239372901916504
+
+num_try : 53 | val_loss = 14.239372901916504 | val acc = 3.3009636402130127
+val_error = 4.005314037203789 | val_abs_error = 4.005314037203789
+Time execution (tranning): 102.574709 seconds 
+Time execution (load saved model): 0.003260 seconds 
+Time execution (use saved model): 0.000343 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 273
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+14.292808303833008
+
+num_try : 32 | val_loss = 14.292808303833008 | val acc = 3.212709426879883
+val_error = 4.501933231949806 | val_abs_error = 4.501933231949806
+Time execution (tranning): 93.347092 seconds 
+Time execution (load saved model): 0.003306 seconds 
+Time execution (use saved model): 0.000346 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 244
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+14.393472938537597
+
+num_try : 44 | val_loss = 14.393472938537597 | val acc = 3.316993236541748
+val_error = 3.9063766598701477 | val_abs_error = 3.9063766598701477
+Time execution (tranning): 110.347059 seconds 
+Time execution (load saved model): 0.003259 seconds 
+Time execution (use saved model): 0.000342 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[128, 128],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 292
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+20.260008010864258
+
+num_try : 14 | val_loss = 20.260008010864258 | val acc = 4.0874128341674805
+val_error = -10.760828852653503 | val_abs_error = 10.760828852653503
+Time execution (tranning): 107.605724 seconds 
+Time execution (load saved model): 0.003235 seconds 
+Time execution (use saved model): 0.000369 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 291
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+22.091202507019045
+
+num_try : 8 | val_loss = 22.091202507019045 | val acc = 4.268614292144775
+val_error = -13.663311302661896 | val_abs_error = 13.663311302661896
+Time execution (tranning): 125.893364 seconds 
+Time execution (load saved model): 0.003227 seconds 
+Time execution (use saved model): 0.000354 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 340
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+22.14441261291504
+
+num_try : 2 | val_loss = 22.14441261291504 | val acc = 4.229468822479248
+val_error = -10.530535876750946 | val_abs_error = 10.530535876750946
+Time execution (tranning): 78.399063 seconds 
+Time execution (load saved model): 0.003228 seconds 
+Time execution (use saved model): 0.000349 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 211
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+23.27589931488037
+
+num_try : 11 | val_loss = 23.27589931488037 | val acc = 4.334688663482666
+val_error = -9.941262751817703 | val_abs_error = 9.941262751817703
+Time execution (tranning): 124.613612 seconds 
+Time execution (load saved model): 0.003242 seconds 
+Time execution (use saved model): 0.000354 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-07
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 336
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+23.50374038696289
+
+num_try : 23 | val_loss = 23.50374038696289 | val acc = 4.38149356842041
+val_error = -9.7799152135849 | val_abs_error = 9.7799152135849
+Time execution (tranning): 76.615661 seconds 
+Time execution (load saved model): 0.003238 seconds 
+Time execution (use saved model): 0.000371 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 206
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+24.481589431762696
+
+num_try : 26 | val_loss = 24.481589431762696 | val acc = 4.384770393371582
+val_error = -8.777058869600296 | val_abs_error = 8.777058869600296
+Time execution (tranning): 112.251139 seconds 
+Time execution (load saved model): 0.003239 seconds 
+Time execution (use saved model): 0.000349 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 302
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+25.129341163635253
+
+num_try : 5 | val_loss = 25.129341163635253 | val acc = 4.48438024520874
+val_error = -7.554008811712265 | val_abs_error = 7.554008811712265
+Time execution (tranning): 96.084832 seconds 
+Time execution (load saved model): 0.003229 seconds 
+Time execution (use saved model): 0.000344 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.0,
+- L2_penalty=0.01,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 260
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+25.76591236114502
+
+num_try : 17 | val_loss = 25.76591236114502 | val acc = 4.5247721672058105
+val_error = -10.037771612405777 | val_abs_error = 10.037771612405777
+Time execution (tranning): 128.790315 seconds 
+Time execution (load saved model): 0.003247 seconds 
+Time execution (use saved model): 0.000386 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.01,
+- L2_penalty=0.001,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000004e-08
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 346
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------
+
+26.06894905090332
+
+num_try : 20 | val_loss = 26.06894905090332 | val acc = 4.624810695648193
+val_error = -11.762131750583649 | val_abs_error = 11.762131750583649
+Time execution (tranning): 87.176872 seconds 
+Time execution (load saved model): 0.003236 seconds 
+Time execution (use saved model): 0.000375 seconds 
+Training with hyperparameters : ModelConfig : 
+- model_name=Try Hyperparams,
+- batch_size=64,
+- n_nodes=[64, 64],
+- activations=[GELU(approximate='none'), GELU(approximate='none')],
+- L1_penalty=0.001,
+- L2_penalty=0.0,
+- learning_rate=0.01,
+- num_epochs=1000,
+- optimizer=Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1.0000000000000002e-06
+    maximize: False
+    weight_decay: 0
+),
+- criterion=ModifiedHuberLoss(),
+- p_dropout=0.5, 
+- use_batch_norm=True 
+
+Num of epoch used : 235
+Criterion: ModifiedHuberLoss
+with parameters: {'delta': 0.2, 'factor': 0.5}
+----------

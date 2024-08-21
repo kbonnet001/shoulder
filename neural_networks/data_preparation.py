@@ -81,7 +81,7 @@ def get_x(mode, df_datas, get_origin_and_insertion = False) :
         # For these modes, select columns starting with 'q_'
         selected_columns = [col for col in df_datas.columns if col.startswith('q_')]
     
-    elif mode in [Mode.TORQUE, Mode.TORQUE_MUS_DLMT_DQ, Mode.DLMT_DQ_FM, Mode.FORCE]:
+    elif mode in [Mode.TORQUE, Mode.TORQUE_MUS_DLMT_DQ, Mode.DLMT_DQ_FM, Mode.FORCE, Mode.DLMT_DQ_F_TORQUE]:
         # For these modes, select columns starting with 'q_', 'qdot_', and 'alpha'
         selected_columns_q = [col for col in df_datas.columns if col.startswith('q_')]
         selected_columns_qdot = [col for col in df_datas.columns if col.startswith('qdot_')]
@@ -128,19 +128,26 @@ def get_y_and_labels(mode, df_datas, get_y = True) :
     selected_columns.insert(0, 'segment_length')
     
   elif mode == Mode.TORQUE : 
-    selected_columns = ['torque']
+    selected_columns = [col for col in df_datas.columns if col.startswith('torque_')]
   
   elif mode == Mode.TORQUE_MUS_DLMT_DQ : 
-    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-    selected_columns.insert(0, 'segment_length')
-    selected_columns.insert(len(selected_columns), 'torque')
+    selected_columns_dlmt_dq = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns_torque = [col for col in df_datas.columns if col.startswith('torque_')]
+    selected_columns = ['segment_length'] + selected_columns_dlmt_dq + selected_columns_torque 
     
   elif mode == Mode.DLMT_DQ_FM : 
-    selected_columns = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
-    selected_columns.insert(0, 'muscle_force')
+    selected_columns_dlmt_dq = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns_f = [col for col in df_datas.columns if col.startswith('muscle_force_')]
+    selected_columns = selected_columns_dlmt_dq + selected_columns_f
   
   elif mode == Mode.FORCE: 
-    selected_columns = ['muscle_force']
+    selected_columns = [col for col in df_datas.columns if col.startswith('muscle_force_')]
+  
+  elif mode == Mode.DLMT_DQ_F_TORQUE : 
+    selected_columns_dlmt_dq = [col for col in df_datas.columns if col.startswith('dlmt_dq_')]
+    selected_columns_torque = [col for col in df_datas.columns if col.startswith('torque_')]
+    selected_columns_f = [col for col in df_datas.columns if col.startswith('muscle_force_')]
+    selected_columns = selected_columns_dlmt_dq + selected_columns_f + selected_columns_torque 
     
   else : # mode doesn't exist
     raise ValueError(f"Invalid mode: {mode}. The mode does not exist or is not supported.")
@@ -198,7 +205,7 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
   - nb_q (int): Number of degrees of freedom.
   - nb_segment: int, number of segment in the biorbd model.
   - num_datas_for_dataset (int): Number of data samples to include in the dataset.
-  - folder_name (str): Name of the folder containing the muscle dataframes (.csv).
+  - folder_name (str): Name of the folder containing the muscle dataframes (.CSV).
   - muscle_name (str): Name of the muscle for which to load data.
   - with_noise (bool): Whether to include data with noise in the dataset. Default is True.
   - plot (bool): Whether to show data distribution plots. Default is False.
@@ -212,10 +219,10 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
   - y_labels (list): Labels for the output tensor.
   """
     
-  file_path_df = os.path.join(folder_name, f"{muscle_name}.csv")
+  file_path_df = os.path.join(folder_name, f"{muscle_name}.CSV")
     
   if not os.path.exists(file_path_df):
-      error = "Error : File need extension .csv \n\
+      error = "Error : File need extension .CSV \n\
         If the file exist, maybe it's open in a window. Please close it and try again."
       sys.exit(error)
   else : 
@@ -235,9 +242,9 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
 
       # Load data with noise if available
       if with_noise :
-        if os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"):
+        if os.path.exists(f"{file_path_df.replace(".CSV", "_with_noise.CSV")}"):
           X_tensor_with_noise, y_tensor_with_noise, _ = \
-            data_preparation_create_tensor(mode, f"{file_path_df.replace(".csv", "_with_noise.csv")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".CSV", "_with_noise.CSV")}", 
                                            all_possible_categories)
       # Plot data distribution if requested
       if plot : 
@@ -248,9 +255,9 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
           y_tensors.append(y_tensor_with_noise)
           graph_labels.append("datas with noise")
         
-        if os.path.exists(f"{file_path_df.replace(".csv", "_datas_ignored.csv")}"):
+        if os.path.exists(f"{file_path_df.replace(".CSV", "_datas_ignored.CSV")}"):
           X_tensor_ignored, y_tensor_ignored, _ = \
-            data_preparation_create_tensor(mode, f"{file_path_df.replace(".csv", "_datas_ignored.csv")}", 
+            data_preparation_create_tensor(mode, f"{file_path_df.replace(".CSV", "_datas_ignored.CSV")}", 
                                            all_possible_categories)
           X_tensors.append(X_tensor_ignored)
           y_tensors.append(y_tensor_ignored)
@@ -262,7 +269,7 @@ def create_loaders_from_folder(Hyperparams, mode, nb_q, nb_segment, num_datas_fo
         # X_tensor = F.normalize(X_tensor)
       
       # Selecte datas to put in the dataset
-      if with_noise and os.path.exists(f"{file_path_df.replace(".csv", "_with_noise.csv")}"): 
+      if with_noise and os.path.exists(f"{file_path_df.replace(".CSV", "_with_noise.CSV")}"): 
         dataset = MuscleDataset(torch.cat((X_tensor, X_tensor_with_noise), dim=0), 
                                 torch.cat((y_tensor, y_tensor_with_noise), dim=0))
       else : 
@@ -355,7 +362,7 @@ def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_te
     - graph_labels: Labels for different datasets in the plot.
     """
     
-    row_fixed, col_fixed = compute_row_col(nb_q + len(y_labels), 4)
+    row_fixed, col_fixed = compute_row_col(nb_q + len(y_labels))
     
     fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
     

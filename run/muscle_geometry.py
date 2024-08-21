@@ -6,21 +6,24 @@ from wrapping.Cylinder import Cylinder
 from neural_networks.discontinuities import *
 import torch.nn as nn
 from neural_networks.Loss import *
+import random
 # from pyorerun import LiveModelAnimation
 
 from neural_networks.data_generation import *
 from neural_networks.ModelHyperparameters import ModelHyperparameters
 from neural_networks.ModelTryHyperparameters import ModelTryHyperparameters
-from neural_networks.data_generation_ddl import plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise
+from neural_networks.data_generation_ddl import plot_one_q_variation, data_for_learning_without_discontinuites_ddl, data_generation_muscles, data_for_learning_with_noise, test_limit_data_for_learning
 from neural_networks.k_cross_validation import cross_validation, try_best_hyperparams_cross_validation
 from neural_networks.functions_data_generation import compute_q_ranges
-from wrapping.muscles_length_jacobian import plot_length_jacobian
+from neural_networks.muscles_length_jacobian import plot_length_jacobian
 from neural_networks.Mode import Mode
 from neural_networks.main_trainning import main_supervised_learning, find_best_hyperparameters, plot_results_try_hyperparams
 from neural_networks.CSVBatchWriterWithNoise import CSVBatchWriterWithNoise
 from neural_networks.Timer import measure_time
 from neural_networks.save_model import load_saved_model
 from neural_networks.plot_pareto_front import plot_results_try_hyperparams, plot_results_try_hyperparams_comparaison, create_df_from_txt_saved_informations
+from neural_networks.analysis_torque_models import compare_model_torque_prediction
+from neural_networks.muscle_forces_and_torque import compute_fm_and_torque
 
 #################### 
 # Code des tests
@@ -77,9 +80,9 @@ muscles_selected = ["PECM2", "PECM3"]
 
 # test_limit_data_for_learning(muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, True, True) 
 
-# data_for_learning (muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.csv", False, False) 
+# data_for_learning (muscles_selected[0],cylinders_PECM2, model_biorbd, q_ranges, 5000, "df_PECM2_datas_without_error_partfdsadaf_5000.CSV", False, False) 
 
-# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model_biorbd, 10, "rgtrsfdd.csv", data_without_error = True, plot=False, plot_cadran = False)
+# data_for_learning_ddl (muscles_selected[0], cylinders_PECM2, model_biorbd, 10, "rgtrsfdd.CSV", data_without_error = True, plot=False, plot_cadran = False)
 
 # -----------------------------------------------------------------
 
@@ -97,7 +100,7 @@ q_fixed = np.array([0.0 for k in range (10)])
 
 # Generate datas : 
 #----------------
-# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 10000, 0, "datas_all", num_points = 20, 
+# data_generation_muscles(muscles_selected, cylinders, model_biorbd, 30000, 0, "via_point_30000", num_points = 20, 
 #                         plot_cylinder_3D=False, plot_discontinuities = False, plot_cadran = False, plot_graph=False)
 
    
@@ -140,25 +143,26 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "dlmt_dq_fm_64_2c"
-mode = Mode.DLMT_DQ_FM
-batch_size = 64
-n_nodes = [[32, 32], [64, 64], [128, 128], [256, 256], [512, 512]]
+model_name = "torque_128_3c"
+mode = Mode.TORQUE
+batch_size = 128
+n_nodes = [[128, 128, 128], [256, 256, 256], [512, 512, 512], [1024, 1024, 1024]]
 activations = [[nn.GELU(), nn.GELU()]]
 activation_names = [["GELU", "GELU"]]
-L1_penalty = [0.01, 0.001]
-L2_penalty = [0.01, 0.001]
+L1_penalty = [0.0, 0.1, 0.001]
+L2_penalty = [0.0, 0.1, 0.001]
 learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
 criterion = [
-    # (LogCoshLoss, {'factor': [1.0, 1.8]}),
-    (ModifiedHuberLoss,  {'delta': [0.2, 0.5], 'factor': [0.5, 1.0]}),
-    # (ExponentialLoss, {'alpha': [0.5, 1.0]}),
+    # (LogCoshLoss, {'factor': [1.0]}),
+    (ModifiedHuberLoss,  {'delta': [0.2], 'factor': [0.5]}),
+    # (ExponentialLoss, {'alpha': [0.5]}),
     # (nn.MSELoss, {})
 ]
 p_dropout = [0.0, 0.2, 0.5]
 use_batch_norm = True
+
 
 # model_name="essai_muscle_train"
 # mode = Mode.MUSCLE
@@ -168,71 +172,88 @@ use_batch_norm = True
 # activations=[nn.GELU()]
 # activation_names = ["GELU"]
 
-# model_name="hfhjsdf" 
-# mode = Mode.TORQUE
-# batch_size=64
-# # n_layers=1
-# n_nodes=[256, 256]
-# activations=[nn.GELU(), nn.GELU()]
-# # activations = [nn.Sigmoid()]
+model_name="kugnbg" 
+mode = Mode.DLMT_DQ_F_TORQUE
+batch_size=128
+# n_layers=1
+n_nodes=[256, 256]
+activations=[nn.GELU(), nn.GELU()]
+# activations = [nn.Sigmoid()]
 
-# activation_names = ["GELU", "GELU"]
+activation_names = ["GELU", "GELU"]
 
-# L1_penalty=0.001
-# L2_penalty=0.01
-# learning_rate=0.01
-# num_epochs=1000 
-# optimizer=0.0
-# # criterion = LogCoshLoss(factor=1.8)
-# criterion = ModifiedHuberLoss(delta=0.1, factor=0.2)
-# # criterion = nn.MSELoss()
-# p_dropout=0.2
-# use_batch_norm=True
+L1_penalty=0.01
+L2_penalty=0.01
+learning_rate=0.01
+num_epochs=1000 
+optimizer=0.0
+# criterion = LogCoshLoss(factor=1.8)
+criterion = ModifiedHuberLoss(delta=0.1, factor=0.2)
+# criterion = nn.MSELoss()
+p_dropout=0.2
+use_batch_norm=True
 
-num_datas_for_dataset = 10000
+num_datas_for_dataset = 10
 folder = "datas"
 num_folds = 5 # for 80% - 20%
 num_try_cross_validation = 10
 with_noise = False
 
-# Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
-#                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
-#                                              use_batch_norm)
-Hyperparameter_essai1 = ModelTryHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
+Hyperparameter_essai1 = ModelHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
                                              use_batch_norm)
+# Hyperparameter_essai1 = ModelTryHyperparameters(model_name, batch_size, n_nodes, activations, activation_names, 
+#                                              L1_penalty, L2_penalty, learning_rate, num_epochs, criterion, p_dropout, 
+#                                              use_batch_norm)
 print(Hyperparameter_essai1)
+
+# test_limit_data_for_learning ("PECM2", cylinders_PECM2, model_biorbd, plot=True, plot_cadran=False)
 
 # one model per muscle !
 
-# main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), num_datas_for_dataset, 
-#                          folder_name="data_generation_via_point", muscle_name = "PECM2", retrain=True, 
-#                          file_path=Hyperparameter_essai1.model_name, with_noise = False, plot_preparation=False, 
-#                          plot=True, save=True) 
+main_supervised_learning(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), model_biorbd.nbMuscles(), num_datas_for_dataset, 
+                         folder_name="data_generation_via_point_25000", muscle_name = "PECM2", retrain=True, 
+                         file_path=Hyperparameter_essai1.model_name, with_noise = False, plot_preparation=False, 
+                         plot_loss_acc=True, plot_loader=True, save=True) 
 
+# best_hyperparameters_loss \
+# = find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), model_biorbd.nbMuscles(), 
+#                             num_datas_for_dataset, "data_generation_via_point_25000", "PECM2", with_noise)
 
-list_simulation, best_hyperparameters_loss \
-= find_best_hyperparameters(Hyperparameter_essai1, mode, model_biorbd.nbQ(), model_biorbd.nbSegment(), 
-                            num_datas_for_dataset, "data_generation_via_point", "PECM2", with_noise)
+# save_model_paths = ["data_generation_via_point/PECM2/_Model/torque_64_1c/Best_hyperparams",
+#                     "data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/Best_hyperparams"]
+# modes = [Mode.TORQUE, Mode.DLMT_DQ_F_TORQUE]
+# compare_model_torque_prediction(save_model_paths, modes, "data_generation_via_point/PECM2/plot_all_q_variation_/2_scapula_effector_right_RotX_.CSV")
 
 # plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV",
-#                                  "execution_time_use_saved_model", "val_error", 'num_try')
+#                              "execution_time_use_saved_model", "val_loss", "n_nodes")
 
-# plot_results_try_hyperparams_comparaison(["data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_1c/dlmt_dq_64_1c.csv", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_64_2c/dlmt_dq_64_2c.csv", 
-#                                           "data_generation_datas_with_tau/PECM2/_Model/dlmt_dq_32_2c/dlmt_dq_32_2c.csv"], 
-#                                          "execution_time_load_saved_model", "val_loss", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
+# q = np.zeros(8)
+# qdot = np.array([random.uniform(-10*np.pi, 10*np.pi) for _ in range (len(q_ranges))])
+# dlmt_dq = model_biorbd.musclesLengthJacobian(q).to_array()
+# # dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8) # calcul avec wrapping
+# muscle_force, torque = compute_fm_and_torque(model_biorbd, 0, q, qdot, 1)
 
-# plot_results_try_hyperparams_comparaison(["data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV"], 
-#                                          "execution_time_use_saved_model", "val_loss", "data_generation_via_point/PECM2/_Model", 'criterion_params')
+# plot_results_try_hyperparams("data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/dlmt_dq_f_torque_64_2c.CSV",
+#                                  "execution_time_use_saved_model", "val_loss", 'L2_penalty')
 
-# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/train_torque_1c_64/train_torque_1c_64.csv") 
+# plot_results_try_hyperparams_comparaison(["data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV", 
+#                                           "data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV", 
+#                                           "data_generation_via_point/PECM2/_Model/dlmt_dq_f_torque_64_2c/dlmt_dq_f_torque_64_2c.CSV"], 
+#                                          "execution_time_use_saved_model", "val_acc", "data_generation_datas_with_tau/PECM2/_Model", "num_try")
+
+# plot_results_try_hyperparams_comparaison(["data_generation_via_point/PECM2/_Model/torque_64_2c/torque_64_2c.CSV", 
+#                                           "data_generation_via_point/PECM2/_Model/torque_64_1c/torque_64_1c.CSV"], 
+#                                          "execution_time_use_saved_model", "val_loss", 
+#                                          "data_generation_via_point/PECM2/_Model", 'num_try')
+
+# create_df_from_txt_saved_informations("data_generation_datas_with_tau/PECM2/_Model/train_torque_1c_64/train_torque_1c_64.CSV") 
 
 # all_cross_val_test = try_best_hyperparams_cross_validation(folder_name, list_simulation, num_try_cross_validation , num_folds)
 
 print("")
 
-# cross_validation("data_generation_datas_with_tau/PECM2", Hyperparameter_essai1, num_folds)
+# cross_validation("data_generation_via_point/PECM2", Hyperparameter_essai1, mode, num_folds, model_biorbd.nbSegment())
 
 
 # -----------------------------------------------------------------

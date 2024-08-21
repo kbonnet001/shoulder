@@ -10,9 +10,9 @@ def angle_between_points(p1, p2):
         p2 (tuple or list): Coordinates of the second point/vector (x2, y2).
     
     Returns:
-        angle_deg : float, The angle between the two points in degrees.
+        angle_deg (float): The angle between the two points in degrees.
     """
-
+    
     # Calculate the dot product of the two vectors
     dot_product = p1[0] * p2[0] + p1[1] * p2[1]
     
@@ -101,7 +101,7 @@ def determine_if_needed_change_side(point, point_ref_q_initial):
     point_transformed = apply_transformation(point, R)
     
     # Debug print to check the transformed point
-    print("Transformed point =", point_transformed)
+    # print("Transformed point =", point_transformed)
 
     # Determine if the point is in the first quadrant (both x and y are positive)
     if point_transformed[0] > 0 and point_transformed[1] > 0:

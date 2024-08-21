@@ -1,5 +1,6 @@
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def create_directory(directory_path):
     """
@@ -43,7 +44,7 @@ def save_text_to_file(text, file_path):
     with open(file_path, 'w') as file:
         file.write(text)
         
-def save_informations_model(file_path, num_try, val_loss, val_acc, val_error, val_abs_error, train_timer, 
+def save_informations_model(file_path, num_try, val_loss, test_acc, test_error, test_abs_error, train_timer, 
                             mean_model_load_timer, mean_model_timer, try_hyperparams, mode, epoch, criterion_name, 
                             criterion_params) : 
     """
@@ -56,14 +57,14 @@ def save_informations_model(file_path, num_try, val_loss, val_acc, val_error, va
         file_path (str): The directory path where the information text file will be saved.
         num_try (int): Number of the model try (test hyperparams)
         val_loss (float): The validation loss obtained at the end of training.
-        val_acc (float): The validation accuracy obtained at the end of training.
-        val_error (float): The validation error % obtained at the end of training.
-        val_abs_error (float): The validation abs error % obtained at the end of training.
+        test_acc (float): The test accuracy obtained at the end of training.
+        test_error (float): The test error % obtained at the end of training.
+        test_abs_error (float): The test abs error % obtained at the end of training.
         train_timer (float): Time taken to train the model.
         mean_model_load_timer (float): Average time taken to load the model.
         mean_model_timer (float): Average time taken to use the model for prediction.
         try_hyperparams (ModelHyperparameters): An instance containing the hyperparameters used for this training attempt.
-        mode (Mode): The mode in which the model was used (e.g., "training", "validation").
+        mode (Mode): The mode of the model .
         epoch (int): The number of epochs completed at the end of training.
         criterion_name (str): Name of the criterion (loss function) used.
         criterion_params (dict): Parameters of the criterion used.
@@ -72,9 +73,9 @@ def save_informations_model(file_path, num_try, val_loss, val_acc, val_error, va
     text = (
         f"num_try = {num_try}\n"
         f"val_loss = {val_loss}\n"
-        f"val_acc = {val_acc}\n"
-        f"val_error = {val_error}\n"
-        f"val_abs_error = {val_abs_error}\n"
+        f"test_acc = {test_acc}\n"
+        f"test_error = {test_error}\n"
+        f"test_abs_error = {test_abs_error}\n"
         f"execution_time_train = {train_timer}\n"
         f"execution_time_load_saved_model = {mean_model_load_timer}\n"
         f"execution_time_use_saved_model = {mean_model_timer}\n"
@@ -128,3 +129,31 @@ def read_info_model(file_path, infos):
                 extracted_values.append(value)
     
     return extracted_values
+
+def get_min_value_from_csv(csv_path, col):
+    """
+    Reads a CSV file, retrieves a specific column, sorts it in ascending order,
+    and returns the smallest value.
+
+    Args:
+        csv_path (str): The path to the CSV file.
+        col (str): The name of the column to retrieve and sort.
+
+    Returns:
+        The smallest value in the specified column.
+    
+    Raises:
+        ValueError: If the specified column does not exist in the CSV.
+    """
+    
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_path)
+    
+    # Check if the specified column exists in the DataFrame
+    if col not in df.columns:
+        raise ValueError(f"The column '{col}' does not exist in the CSV file.")
+    
+    # Sort the column in ascending order and get the smallest value
+    min_value = df[col].min()
+    
+    return min_value
