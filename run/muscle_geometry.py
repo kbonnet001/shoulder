@@ -143,14 +143,14 @@ cylinder_2 = Cylinder.from_points(1,-1, c21, c22)
 # data_loaders = prepare_data_from_folder(32, "datas", plot=False)
 # print("")
 
-model_name = "torque_128_2c"
+model_name = "torque_128_3c"
 mode = Mode.TORQUE
 batch_size = 128
-n_nodes = [[256, 256]]
+n_nodes = [[128, 128, 128], [256, 256, 256], [512, 512, 512], [1024, 1024, 1024]]
 activations = [[nn.GELU(), nn.GELU()]]
 activation_names = [["GELU", "GELU"]]
-L1_penalty = [0.0, 0.1]
-L2_penalty = [0.0, 0.1]
+L1_penalty = [0.0, 0.1, 0.001]
+L2_penalty = [0.0, 0.1, 0.001]
 learning_rate = [1e-2]
 num_epochs = 1000
 # criterion = ModifiedHuberLoss(delta=0.2, factor=1.0)
@@ -160,7 +160,7 @@ criterion = [
     # (ExponentialLoss, {'alpha': [0.5]}),
     # (nn.MSELoss, {})
 ]
-p_dropout = [0.0, 0.2]
+p_dropout = [0.0, 0.2, 0.5]
 use_batch_norm = True
 
 
