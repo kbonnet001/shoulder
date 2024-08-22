@@ -48,10 +48,10 @@ def compute_torque(dlmt_dq, f):
 
     # Compute the torque using the Jacobian and muscle forces
     torque = np.dot(-np.transpose(dlmt_dq), f)
-    total_torque = np.sum(torque)
+    # total_torque = np.sum(torque)
     # model_biorbd.muscularJointTorque(states, q, qdot).to_array()
     
-    return total_torque
+    return torque
 
 # def compute_fm(model_biorbd, q, qdot, alpha):
 #     """

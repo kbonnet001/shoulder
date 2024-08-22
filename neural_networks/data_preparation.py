@@ -347,7 +347,7 @@ def dataloader_to_tensor(loader):
     
     return all_data_tensor, all_labels_tensor
 
-def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_tensors, y_labels, graph_labels):
+def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_tensors, y_labels, graph_labels, limit = 16):
     """
     Visualize tensors distribution.
 
@@ -360,15 +360,18 @@ def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_te
     - y_tensors: List of y tensors with target values.
     - y_labels: list of string, Labels for the y variables.
     - graph_labels: Labels for different datasets in the plot.
+    - limit (int): defalt 16, limit of subplot to avoid bug
+    
+    Warning : Limit of subplot to avoid bug ! Please add corrections to see all datas distributions
     """
     
-    row_fixed, col_fixed = compute_row_col(nb_q + len(y_labels))
+    row_fixed, col_fixed = compute_row_col(nb_q + min(len(y_labels), limit))
     
     fig, axs = plt.subplots(row_fixed, col_fixed, figsize=(15, 10)) 
     
     for i in range(nb_q):
-        row = i // 4  
-        col = i % 4   
+        row = i // col_fixed
+        col = i % col_fixed
         axs[row, col].hist([X_tensors[k][:, i] for k in range (len(X_tensors))], bins=20, alpha=0.5, stacked=True, 
                            label=graph_labels)
         axs[row, col].set_xlabel('Value')
@@ -387,11 +390,11 @@ def plot_datas_distribution(mode, muscle_name, files_path, nb_q, X_tensors, y_te
       axs[row_fixed-1, col_fixed-1].legend()
     
     else : 
-      for j in range(len(y_labels)):
-        row_j = (j+i+1) // 4  
-        col_j = (j+i+1) % 4   
+      for j in range(min(len(y_labels), limit)):
+        row_j = (j+i+1) // col_fixed 
+        col_j = (j+i+1) % col_fixed   
         
-        y_plot = [y_tensors[k][:,j] for k in range (len(y_tensors))]
+        y_plot = [y_tensors[k][:,j] for k in range(len(y_tensors))]
         x_min = min(y_plot[0])
         x_max = max(y_plot[0])
         num_bins = compute_num_bins(y_plot[0], x_max, x_min)
