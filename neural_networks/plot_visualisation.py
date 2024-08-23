@@ -338,12 +338,12 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
             axs[row, col].legend()
             
         # Add a title to the entire figure and adjust the layout
-        fig.suptitle(f'Predictions and targets of {str(mode).replace("Mode.", "")} File: {filenames[q_index].replace('.CSV', '')}', 
+        fig.suptitle(f'Predictions and targets of {str(mode_selected).replace("Mode.", "")} File: {filenames[q_index].replace('.CSV', '')}', 
                     fontweight='bold')
         plt.tight_layout()  
         
         # Save the plot to the specified file path
-        create_and_save_plot(file_path, f"plot_{q_index}_{str(mode).replace("Mode.", "")}_predictions_and_targets.png")
+        create_and_save_plot(file_path, f"plot_{q_index}_{str(mode_selected).replace("Mode.", "")}_predictions_and_targets.png")
         plt.show()
 
 # def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, folder_name, num):

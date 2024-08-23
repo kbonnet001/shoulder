@@ -25,7 +25,6 @@ def test_limit_data_for_learning(muscle_selected, cylinders, model, plot=True, p
                         'CORB', 'TRIlong', 'PECM1', 'DELT1', 'BIClong', 'BICshort']
     - cylinders : list of int, list of muscle cylinders (0, 1, or 2 cylinders)
     - model : model object
-    - q_ranges : array of shape (4, 2), q ranges for the selected muscle
     - plot : bool, default True, whether to plot points P, S (and Q, G, H, and T) with cylinders
     - plot_cadran : bool, default False, whether to show cadran, view of each cylinder, and wrapping
     """
@@ -147,7 +146,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    writer = CSVBatchWriter(f"{directory}/{filename}.CSV", q_ranges_names_with_dofs, model.nbMuscles(), model.nbQ(), batch_size=100)
 
    # Initialize variables for storing results
-   q = q_fixed
+   q = copy.deepcopy(q_fixed)
    segment_lengths = []
    qs = []
 
@@ -177,7 +176,7 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
       segment_lengths.append(segment_length)
       
       # Compute muscle length Jacobian and other metrics
-      dlmt_dq = model.musclesLengthJacobian(q).to_array()[muscle_index]
+      dlmt_dq = model.musclesLengthJacobian(q).to_array()
       # dlmt_dq = compute_dlmt_dq(model, q, cylinders, muscle_index, delta_qi = 1e-8) # calcul avec wrapping
       muscle_force, torque = compute_fm_and_torque(model, muscle_index, q, qdot, alpha)
       # muscle_force = compute_fm(model, q, qdot, alpha)[muscle_index]
@@ -190,13 +189,13 @@ def plot_one_q_variation(muscle_selected, cylinders, model, q_fixed, i, filename
    plt.plot(qs, segment_lengths, marker='o', linestyle='-', color='b')
    plt.xlabel(f'q{i}')
    plt.ylabel('Muscle Length')
-   plt.title(f'Muscle Length as a Function of q{i} Values')
+   plt.title(f'Muscle Length as a Function of q{i} Values, q_fixed = {q_fixed}')
    plt.xticks(qs[::5])
    plt.yticks(segment_lengths[::5])
    plt.grid(True)
    
    # Save and display the plot
-   create_and_save_plot(f"{directory}", "one_q_variation.png")
+   create_and_save_plot(f"{directory}", f"one_q{i}_variation.png")
    plt.show()
    
    # Analyze and plot any discontinuities in the data
@@ -237,11 +236,11 @@ def create_all_q_variation_files(muscle_selected, cylinders, model, q_fixed, fil
    # Initialize the model with the selected muscle and cylinders
    initialisation_generation(model, muscle_index, cylinders)
 
-   # Copy the fixed q values
-   q = copy.deepcopy(q_fixed)
-
    # Iterate over all q parameters
    for q_index in range(model.nbQ()):
+      # Copy the fixed q values
+      q = copy.deepcopy(q_fixed)
+      
       # Define the file path for the current q parameter
       file_path = f"{directory}/{q_index}_{q_ranges_names_with_dofs[q_index]}_{filename}.CSV"
 
