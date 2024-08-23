@@ -338,12 +338,12 @@ def plot_predictions_and_targets_from_filenames(mode, mode_selected, model, batc
             axs[row, col].legend()
             
         # Add a title to the entire figure and adjust the layout
-        fig.suptitle(f'Predictions and targets of {str(mode).replace("Mode.", "")} File: {filenames[q_index].replace('.CSV', '')}', 
+        fig.suptitle(f'Predictions and targets of {str(mode_selected).replace("Mode.", "")} File: {filenames[q_index].replace('.CSV', '')}', 
                     fontweight='bold')
         plt.tight_layout()  
         
         # Save the plot to the specified file path
-        create_and_save_plot(file_path, f"plot_{q_index}_{str(mode).replace("Mode.", "")}_predictions_and_targets.png")
+        create_and_save_plot(file_path, f"plot_{q_index}_{str(mode_selected).replace("Mode.", "")}_predictions_and_targets.png")
         plt.show()
 
 # def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, model, batch_size, nb_q, nb_segment, file_path, folder_name, num):
@@ -473,29 +473,29 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
             
             for i in range(nb_q):     
                 color = colors[i]
-                special_marker = markers[i]  # Marqueur spécial pour le premier point
+                special_marker = markers[i]  # Market for the first point
                 
-                # Données pour la cible et les prédictions
+                # data prediction and targets
                 target_data = [target[nb_q * muscle_index + i] for target in targets][:num]
                 prediction_data = [prediction[nb_q * muscle_index + i] for prediction in predictions][:num]
                 
-                # Tracé des cibles avec un marqueur spécial pour le premier point
+                # First point target
                 axs[row, col].plot(range(num), target_data, 
                                 color="gray", alpha=0.5, marker='o', markersize=2)
 
-                # Ajouter un marqueur spécial au premier point des cibles
+                # Target
                 axs[row, col].scatter(0, target_data[0], label=f"Targ (q{i+1})" if muscle_index == 0 else None,
                                     color="gray", marker=special_marker, s=64, edgecolor='black', alpha=0.6)
                 
-                # Tracé des prédictions avec un marqueur spécial pour le premier point
+                # First point prediction
                 axs[row, col].plot(range(num), prediction_data, 
                                 linestyle='--', color=color, marker='o', markersize=2)
 
-                # Ajouter un marqueur spécial au premier point des prédictions
+                # Prediction
                 axs[row, col].scatter(0, prediction_data[0], label=f'Pred (q{i+1})' if muscle_index == 0 else None, 
                                     color=color, marker=special_marker, edgecolor='black', s=64)
             
-                # Affichage de la légende seulement pour le premier subplot
+                # Legend only on the first subplot
                 if muscle_index == 0:
                     axs[row, col].legend(loc='upper right', handletextpad=0.5, fontsize=6)
 
@@ -508,6 +508,7 @@ def plot_predictions_and_targets_from_filenames_dlmt_dq(mode, mode_selected, mod
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, bottom=0.05, left=0.05, right=0.75, hspace=0.2, wspace=0.2)
 
+        # Title wax removed because it was hided by subplot ...
         # fig.suptitle(f"Predictions and targets of Lever Arm, {filenames[q_index].replace('.CSV', '')}", fontweight='bold')
         plt.tight_layout()
         create_and_save_plot(file_path, f"{filenames[q_index].replace('.CSV', '')}_plot_length_jacobian_predictions_and_targets.png")

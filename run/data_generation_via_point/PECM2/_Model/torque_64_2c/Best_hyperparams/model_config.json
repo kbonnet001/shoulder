@@ -1,1 +1,0 @@
-{"input_size": 17, "output_size": 1, "activation": ["GELU", "GELU"], "n_nodes": [256, 256], "L1_penalty": 0.01, "L2_penalty": 0.01, "use_batch_norm": true, "dropout_prob": 0.2}
